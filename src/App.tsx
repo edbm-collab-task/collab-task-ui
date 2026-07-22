@@ -1,15 +1,13 @@
-import './App.css'
+/* On importe le système de routes */
+import AppRoutes from "./routes/AppRoutes";
 
+/* Composant principal de l'application */
 function App() {
-
   return (
-     <div className="flex min-h-screen items-center justify-center bg-gray-900">
-      <h1 className="text-5xl font-bold text-white">
-        Hello, World!
-      </h1>
-    </div>
-  )
-
+    /* Affiche la page correspondant à l'URL */
+    <AppRoutes />
+  );
 }
 
-export default App
+/* Export du composant principal */
+export default App;
