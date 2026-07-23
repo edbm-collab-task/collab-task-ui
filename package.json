@@ -15,8 +15,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.82.0",
-    "react-icons": "^5.7.0",
-    "react-router-dom": "^7.18.1",
+    "tailwindcss": "^4.3.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -24,10 +23,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "autoprefixer": "^10.5.4",
     "oxlint": "^1.71.0",
-    "postcss": "^8.5.22",
-    "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }
