@@ -1,15 +1,9 @@
-import './App.css'
+import Router from "./router";
 
 function App() {
 
-  return (
-     <div className="flex min-h-screen items-center justify-center bg-gray-900">
-      <h1 className="text-5xl font-bold text-white">
-        Hello, World!
-      </h1>
-    </div>
-  )
+    return <Router />;
 
 }
 
-export default App
+export default App;
