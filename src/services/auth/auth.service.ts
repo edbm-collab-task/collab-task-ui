@@ -1,6 +1,8 @@
 import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
-import type { UserLoginReq, UserLoginRes, UserRequest, UserResponse } from "@/types/user";
+import { toRecoverPasswordRequest } from "@/mappers/auth.mapper";
+import type { Email } from "@/types/email";
+import type { UserLoginReq, UserLoginRes, UserRequest, UserResponse,RecoveryMeResponse, RecoverPasswordFormUI} from "@/types/user";
 
 
 export const authService = {
@@ -49,6 +51,43 @@ export const authService = {
             API_ENDPOINTS.AUTH.LOGOUT,
             {}
         );
-    }
+    },
 
+    recovery: async (email: string ,data: RecoverPasswordFormUI): Promise<void> => {
+
+        var dataToSave = toRecoverPasswordRequest(email,data);
+
+        console.log(dataToSave);
+
+        await apiClient.put(
+            API_ENDPOINTS.USERS.RECOVERY,
+            dataToSave
+        );
+    },
+
+    verification: async (data: { code: number }): Promise<void> => {
+
+        await apiClient.get(
+            API_ENDPOINTS.AUTH.VERIFICATION,
+            data
+        );
+    },
+
+    searchUserByEmail: async (data: { email: string }): Promise<UserResponse> => {
+      return await apiClient.get(
+            API_ENDPOINTS.USERS.SEARCH_USER_BY_EMAIL,
+            data
+        );
+    },
+
+    sendVerificationCode: async (data: Email): Promise<void> => {
+        await apiClient.post(
+            API_ENDPOINTS.AUTH.CODE,
+            data
+        );
+    },
+
+   recoveryMe: async (): Promise<RecoveryMeResponse> => {
+       return await apiClient.get(API_ENDPOINTS.AUTH.RECOVERY_ME);
+   }
 };

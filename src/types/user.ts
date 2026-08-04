@@ -55,3 +55,19 @@ export interface UserLoginRes {
 export interface RegisterForm extends UserRequest {
     confirmPassword: string;
 }
+
+export interface RecoverPasswordForm {
+    email: string;
+    password: string;
+}
+
+export interface RecoverPasswordFormUI {
+    password: string;
+    confirmPassword: string;
+}
+
+export interface RecoveryMeResponse {
+    email: string;
+    recovery: boolean;
+}
+

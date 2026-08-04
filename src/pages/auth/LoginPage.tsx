@@ -15,8 +15,8 @@ export default function LoginPage() {
     const handleLogin = async (data: UserLoginReq) => {
         try {
             const user = await authService.login(data);
+             navigate("/admin");
             console.log("User logged :", user);
-            navigate("/admin");
         } catch (error) {
             console.error("Login failed :", error);
         }
@@ -54,7 +54,7 @@ export default function LoginPage() {
                         />
 
                         <div className="mt-4 text-right">
-                            <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition">
+                            <Link to="/reccuperation-comptes" className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition">
                                 Mot de passe oublié ?
                             </Link>
                         </div>
