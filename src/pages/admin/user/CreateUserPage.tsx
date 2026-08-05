@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import GlobalForm from "@/components/Form/GlobalForm";
+import GlobalForms from "@/components/form/GlobalForm";
 import { userFormFields } from "@/components/user/UserForm";
 import type { RegisterForm } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
@@ -29,11 +29,10 @@ export default function CreateUserPage() {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10">
+        <div className="mx-auto mt-10">
 
-            <GlobalForm<RegisterForm>
+            <GlobalForms<RegisterForm>
                 title="Créer un utilisateur"
-                subtitle="Remplissez les informations ci-dessous"
                 fields={userFormFields}
                 onSubmit={handleRegister}
                 submitLabel="Créer"

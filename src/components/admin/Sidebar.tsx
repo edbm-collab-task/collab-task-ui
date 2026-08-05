@@ -23,10 +23,10 @@ export default function Sidebar({ open, close }: Props) {
                 }`}
             >
 
-                <div className="flex h-20 items-center justify-between border-b border-slate-700 px-6">
+                <div className="flex h-20  items-center justify-between border-b border-slate-600 px-8">
 
-                    <h1 className="text-withe bg-clip-text text-3xl font-extrabold ">
-                        Collab Task 
+                    <h1 className="text-white bg-clip-text text-3xl font-extrabold ">
+                        CollaB Tasks
                     </h1>
 
                     <button

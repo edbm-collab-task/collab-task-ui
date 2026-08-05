@@ -1,6 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 
-import GlobalForm from "@/components/Form/GlobalForm";
+import GlobalForms from "@/components/form/GlobalForm";
 import type { UserLoginReq } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
 import { loginFormFields } from "@/components/user/auth/LoginForm";
@@ -45,7 +45,7 @@ export default function LoginPage() {
 
                     <div className="w-full max-w-md">
 
-                        <GlobalForm<UserLoginReq>
+                        <GlobalForms<UserLoginReq>
                             title="Connexion"
                             subtitle="Veuillez entrer vos identifiants"
                             fields={loginFormFields}

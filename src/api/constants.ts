@@ -39,6 +39,16 @@ export const API_ENDPOINTS = {
 
         SEARCH_USER_BY_EMAIL: "/users/email",
 
+        ALL: "/users",
+        
+        BY_ID: "/users",
+
+        CREATE: "/auth/register",
+        
+        UPDATE: "/auth/register",
+        
+        DELETE: "/users"
+
 
     }
 

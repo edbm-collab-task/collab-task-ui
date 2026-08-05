@@ -10,6 +10,7 @@ import SearchUserPage from "@/pages/user/SearchUserPage";
 import RecoveryProtectedRoute from "@/router/RecoveryProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
 import CreateUserPage from "@/pages/admin/user/CreateUserPage";
+import UserListPage from "@/pages/admin/user/UserListPage";
 import Dashboard from "@/components/admin/Dashboard";
 
 export default function Router() {
@@ -33,7 +34,7 @@ export default function Router() {
                 }
             >
                 <Route index element={< Dashboard />} />
-                <Route path="users" element={<CreateUserPage />} />
+                <Route path="users" element={<UserListPage />} />
             </Route>
 
               {/* Recovery */}

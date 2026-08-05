@@ -1,5 +1,5 @@
 import { useForm, type FieldValues } from "react-hook-form";
-import type { FormField } from "@/components/Form/Forms";
+import type { FormField } from "@/components/form/Forms";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -11,7 +11,7 @@ interface Props<T extends FieldValues> {
     submitLabel?: string;
 }
 
-export default function GlobalForm<T extends FieldValues>({
+export default function GlobalForms<T extends FieldValues>({
     title = "Formulaire",
     subtitle,
     fields,

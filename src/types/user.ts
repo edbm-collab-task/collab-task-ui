@@ -40,6 +40,27 @@ export interface UserResponse {
     role: RoleType;
 }
 
+
+export const userTr = {
+
+    id: "ID",
+
+    firstname: "Prénom",
+
+    lastname: "Nom",
+
+    email: "Email",
+
+    number: "Téléphone",
+
+    role: "Rôle",
+
+    status: "Statut",
+
+    createdAt: "Création"
+
+} as const;
+
 export interface UserLoginReq{
     email: string ;
     password: string;

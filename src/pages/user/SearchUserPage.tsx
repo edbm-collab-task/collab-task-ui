@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import GlobalForm from "@/components/Form/GlobalForm";
+import GlobalForms from "@/components/form/GlobalForm";
 import { userEmailFormFields } from "@/components/user/auth/UserEmailForm";
 
 import type { Email } from "@/types/email";
@@ -61,7 +61,7 @@ export default function SearchUserPage() {
 
                     <div className="w-full max-w-md">
 
-                        <GlobalForm<Email>
+                        <GlobalForms<Email>
 
                             title="Recherche du compte"
 
