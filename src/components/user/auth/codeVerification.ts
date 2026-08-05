@@ -1,4 +1,4 @@
-import type { FormField } from "@/components/Form/Forms";
+import type { FormField } from "@/components/form/Forms";
 import type { CodeVerification } from "@/types/codeVerification";
 
 export const codeVerificationFormFields: FormField<CodeVerification>[] = [

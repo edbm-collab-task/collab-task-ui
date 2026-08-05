@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import GlobalForm from "@/components/Form/GlobalForm";
+import GlobalForms from "@/components/form/GlobalForm";
 import { codeVerificationFormFields } from "@/components/user/auth/CodeVerification";
 
 import type { CodeVerification } from "@/types/codeVerification";
@@ -69,7 +69,7 @@ export default function VerificationPage() {
 
                     <div className="w-full max-w-md">
 
-                        <GlobalForm<CodeVerification>
+                        <GlobalForms<CodeVerification>
 
                             title="Code de vérification"
 

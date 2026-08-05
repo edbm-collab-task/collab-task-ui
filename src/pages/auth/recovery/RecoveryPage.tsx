@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import GlobalForm from "@/components/Form/GlobalForm";
+import GlobalForms from "@/components/form/GlobalForm";
 import { recoveryFormFields } from "@/components/user/auth/RecoveryForm";
 import Logo from "@/assets/logo.png";
 
@@ -65,7 +65,7 @@ export default function RecoveryPage() {
 
                     <div className="w-full max-w-md">
 
-                        <GlobalForm<RecoverPasswordFormUI>
+                        <GlobalForms<RecoverPasswordFormUI>
                             title="Nouveau mot de passe"
                             subtitle={`Compte : ${email}`}
                             fields={recoveryFormFields}
