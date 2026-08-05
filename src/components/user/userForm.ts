@@ -1,4 +1,4 @@
-import type { FormField } from "@/components/Form/form";
+import type { FormField } from "@/components/Form/Forms";
 import type { RegisterForm } from "@/types/user";
 import { Gender } from "@/enum/gender.enum";
 

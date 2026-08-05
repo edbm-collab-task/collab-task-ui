@@ -20,14 +20,25 @@ export const API_ENDPOINTS = {
 
         LOGOUT: "/auth/logout",
 
-        REFRESH: "/auth/refresh"
+        REFRESH: "/auth/refresh",
+
+        VERIFICATION: "/auth/verification-code",
+
+        CODE: "/auth/code",
+
+        RECOVERY_ME: "/auth/recovery/me"
 
     },
 
 
     USERS: {
 
-        BASE: "/users"
+        BASE: "/users" ,
+
+        RECOVERY: "/users/pwd",
+
+        SEARCH_USER_BY_EMAIL: "/users/email",
+
 
     }
 

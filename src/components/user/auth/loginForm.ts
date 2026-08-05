@@ -1,4 +1,4 @@
-import type { FormField } from "@/components/Form/form";
+import type { FormField } from "@/components/Form/Forms";
 import type { UserLoginReq } from "@/types/user";
 
 
@@ -7,7 +7,7 @@ export const loginFormFields: FormField<UserLoginReq>[] = [
         name: "email",
         label: "Email",
         type: "email",
-        placeholder: "example@gmail.com",
+        placeholder: "exemple@gmail.com",
         validation: {
             required: "Email is required"
         }

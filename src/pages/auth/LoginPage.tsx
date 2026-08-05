@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import GlobalForm from "@/components/Form/GlobalForm";
 import type { UserLoginReq } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
-import { loginFormFields } from "@/components/auth/loginForm";
+import { loginFormFields } from "@/components/user/auth/loginForm";
 
 import Logo from "@/assets/logo.png";
 
@@ -54,7 +54,7 @@ export default function LoginPage() {
                         />
 
                         <div className="mt-4 text-right">
-                            <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition">
+                            <Link to="/reccuperation-comptes" className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition">
                                 Mot de passe oublié ?
                             </Link>
                         </div>
