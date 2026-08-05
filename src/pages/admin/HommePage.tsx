@@ -1,3 +1,7 @@
+import AdminLayout from "@/components/admin/AdminLayout"
+
 export default  function HommeAdminPage(){
-    return "Welcome to admin page"
+    return (
+        <AdminLayout/>
+    );
 }

@@ -5,7 +5,7 @@ import { userFormFields } from "@/components/user/UserForm";
 import type { RegisterForm } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
 
-export default function RegisterPage() {
+export default function CreateUserPage() {
 
     const navigate = useNavigate();
 

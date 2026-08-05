@@ -8,6 +8,9 @@ import RecoveryPage from "@/pages/auth/recovery/RecoveryPage";
 import VerificationPage from "@/pages/auth/verification/VerificationPage";
 import SearchUserPage from "@/pages/user/SearchUserPage";
 import RecoveryProtectedRoute from "@/router/RecoveryProtectedRoute";
+import AdminLayout from "@/components/admin/AdminLayout";
+import CreateUserPage from "@/pages/admin/user/CreateUserPage";
+import Dashboard from "@/components/admin/Dashboard";
 
 export default function Router() {
 
@@ -16,11 +19,22 @@ export default function Router() {
         <Routes>
 
               {/* Auth */}
+              <Route path="/" element={<LoginPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
              
-              {/* Admin */}
-              <Route path="/admin" element={<ProtectedRoute> <HommeAdminPage /> </ProtectedRoute>}/>
+               {/* Admin */}
+            <Route
+                path="/admin"
+                element={
+                    <ProtectedRoute>
+                        <AdminLayout />
+                    </ProtectedRoute>
+                }
+            >
+                <Route index element={< Dashboard />} />
+                <Route path="users" element={<CreateUserPage />} />
+            </Route>
 
               {/* Recovery */}
               <Route path="/information-personnelle" element={<RecoveryProtectedRoute><RecoveryPage /></RecoveryProtectedRoute>} />

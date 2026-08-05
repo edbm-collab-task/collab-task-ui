@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 import GlobalForm from "@/components/Form/GlobalForm";
-import { userEmailFormFields } from "@/components/user/auth/userEmailForm";
+import { userEmailFormFields } from "@/components/user/auth/UserEmailForm";
 
 import type { Email } from "@/types/email";
 
@@ -21,7 +21,7 @@ export default function SearchUserPage() {
         } catch (error) {
 
             console.error("Account not found :", error);
-            navigate("/login");
+            navigate("/");
 
         }
 

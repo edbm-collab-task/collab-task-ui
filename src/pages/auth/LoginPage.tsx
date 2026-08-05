@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import GlobalForm from "@/components/Form/GlobalForm";
 import type { UserLoginReq } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
-import { loginFormFields } from "@/components/user/auth/loginForm";
+import { loginFormFields } from "@/components/user/auth/LoginForm";
 
 import Logo from "@/assets/logo.png";
 
