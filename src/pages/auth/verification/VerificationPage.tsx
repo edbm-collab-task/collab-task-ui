@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 import GlobalForm from "@/components/Form/GlobalForm";
-import { codeVerificationFormFields } from "@/components/auth/codeVerification";
+import { codeVerificationFormFields } from "@/components/user/auth/codeVerification";
 
 import type { CodeVerification } from "@/types/codeVerification";
 

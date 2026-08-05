@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 import GlobalForm from "@/components/Form/GlobalForm";
-import { userEmailFormFields } from "@/components/auth/userEmailForm";
+import { userEmailFormFields } from "@/components/user/auth/userEmailForm";
 
 import type { Email } from "@/types/email";
 
@@ -18,7 +18,6 @@ export default function SearchUserPage() {
         try {
             await authService.sendVerificationCode(data);
             navigate("/verification");
-
         } catch (error) {
 
             console.error("Account not found :", error);

@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import GlobalForm from "@/components/Form/GlobalForm";
 import type { UserLoginReq } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
-import { loginFormFields } from "@/components/auth/loginForm";
+import { loginFormFields } from "@/components/user/auth/loginForm";
 
 import Logo from "@/assets/logo.png";
 
@@ -15,8 +15,8 @@ export default function LoginPage() {
     const handleLogin = async (data: UserLoginReq) => {
         try {
             const user = await authService.login(data);
-             navigate("/admin");
             console.log("User logged :", user);
+            navigate("/admin");
         } catch (error) {
             console.error("Login failed :", error);
         }

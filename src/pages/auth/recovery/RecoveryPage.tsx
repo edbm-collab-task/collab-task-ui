@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import GlobalForm from "@/components/Form/GlobalForm";
-import { recoveryFormFields } from "@/components/auth/recoveryForm";
+import { recoveryFormFields } from "@/components/user/auth/recoveryForm";
 import Logo from "@/assets/logo.png";
 
 import type { RecoverPasswordFormUI } from "@/types/user";

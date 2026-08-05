@@ -4,8 +4,8 @@ import RegisterPage from "@/pages/auth/RegisterPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import HommeAdminPage from "@/pages/admin/HommePage";
 import ProtectedRoute from "@/router/ProtectedRoute";
-import RecoveryPage from "@/pages/recovery/RecoveryPage";
-import VerificationPage from "@/pages/verification/VerificationPage";
+import RecoveryPage from "@/pages/auth/recovery/RecoveryPage";
+import VerificationPage from "@/pages/auth/verification/VerificationPage";
 import SearchUserPage from "@/pages/user/SearchUserPage";
 import RecoveryProtectedRoute from "@/router/RecoveryProtectedRoute";
 
@@ -23,10 +23,10 @@ export default function Router() {
               <Route path="/admin" element={<ProtectedRoute> <HommeAdminPage /> </ProtectedRoute>}/>
 
               {/* Recovery */}
-              <Route path="/information-personnelle" element={<RecoveryPage />} />
+              <Route path="/information-personnelle" element={<RecoveryProtectedRoute><RecoveryPage /></RecoveryProtectedRoute>} />
 
               {/* Verification */}
-              <Route path="/verification" element={<VerificationPage />} />
+              <Route path="/verification" element={<RecoveryProtectedRoute><VerificationPage /></RecoveryProtectedRoute>} />
 
 
               {/*Search User */}
