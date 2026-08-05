@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import GlobalForm from "@/components/Form/GlobalForm";
-import { recoveryFormFields } from "@/components/user/auth/recoveryForm";
+import { recoveryFormFields } from "@/components/user/auth/RecoveryForm";
 import Logo from "@/assets/logo.png";
 
 import type { RecoverPasswordFormUI } from "@/types/user";
@@ -17,7 +17,7 @@ export default function RecoveryPage() {
     useEffect(() => {
         authService.recoveryMe()
             .then(res => setEmail(res.email))
-            .catch(() => navigate("/login"));
+            .catch(() => navigate("/"));
     }, [navigate]);
 
 
@@ -27,7 +27,7 @@ export default function RecoveryPage() {
 
         try {
             await authService.recovery(email, data);
-            navigate("/login");
+            navigate("/");
         } catch (error) {
             console.error(error);
         }
