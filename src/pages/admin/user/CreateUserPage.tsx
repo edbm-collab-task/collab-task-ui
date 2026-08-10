@@ -13,7 +13,7 @@ export default function CreateUserPage() {
     const navigate = useNavigate();
     const [directions, setDirections] = useState<DirectionRes[]>([]);
 
-    const handleRegister = async (data: CreateUse) => {
+    const handleRegister = async (data:CreateUser) => {
 
         try {
             const createdUser = await authService.create(data);
