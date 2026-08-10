@@ -18,7 +18,7 @@ export const authService = {
     },
 
     create: async (
-        data: UserRequest
+        data: CreateUser
     ): Promise<UserResponse> => {
 
         return apiClient.post<UserResponse, CreateUser>(
