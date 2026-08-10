@@ -11,8 +11,8 @@ export const createUserFormFields = (
         type: "text",
         placeholder: "Entrer votre nom...",
         validation: {
-            required: "Nom est requis"
-        }
+            required: "Nom est requis",
+        },
     },
 
     {
@@ -21,8 +21,8 @@ export const createUserFormFields = (
         type: "text",
         placeholder: "Entrer votre prénom...",
         validation: {
-            required: "Prénom est requis"
-        }
+            required: "Prénom est requis",
+        },
     },
 
     {
@@ -31,8 +31,8 @@ export const createUserFormFields = (
         type: "email",
         placeholder: "example@gmail.com",
         validation: {
-            required: "Email est requis"
-        }
+            required: "Email est requis",
+        },
     },
 
     {
@@ -40,12 +40,12 @@ export const createUserFormFields = (
         label: "Direction",
         type: "select",
         placeholder: "Choisir la direction...",
-        options: directions.map(direction => ({
-            label: direction.name,         
-            value: direction.directionId    
+        options: directions.map((direction) => ({
+            label: direction.name,
+            value: direction.directionId,
         })),
         validation: {
-            required: "La direction est requise"
-        }
-    }
+            required: "La direction est requise",
+        },
+    },
 ];
