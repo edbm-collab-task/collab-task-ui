@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import {LayoutDashboard,Users} from "lucide-react";
+import {LayoutDashboard,Users,Building2} from "lucide-react";
 
 const menus = [
     {
@@ -12,6 +12,11 @@ const menus = [
         path: "/admin/users",
         icon: Users,
     },
+    {
+        name: "Directions",
+        path: "/admin/directions",
+        icon: Building2
+    }
 ];
 
 export default function AdminMenu() {

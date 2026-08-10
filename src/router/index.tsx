@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import NotFoundPage from "@/pages/NotFoundPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import LoginPage from "@/pages/auth/LoginPage";
-import HommeAdminPage from "@/pages/admin/HommePage";
 import ProtectedRoute from "@/router/ProtectedRoute";
 import RecoveryPage from "@/pages/auth/recovery/RecoveryPage";
 import VerificationPage from "@/pages/auth/verification/VerificationPage";
@@ -12,6 +11,8 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import CreateUserPage from "@/pages/admin/user/CreateUserPage";
 import UserListPage from "@/pages/admin/user/UserListPage";
 import Dashboard from "@/components/admin/Dashboard";
+import CreateDirection from "@/pages/admin/direction/CreateDirectionPage"
+import DirectionsListPage from "@/pages/admin/direction/DirectionListPage";
 
 export default function Router() {
 
@@ -35,6 +36,11 @@ export default function Router() {
             >
                 <Route index element={< Dashboard />} />
                 <Route path="users" element={<UserListPage />} />
+                <Route path="users/create" element={<CreateUserPage />} />
+
+                <Route path="directions" element={<DirectionsListPage/>} />
+                <Route path="directions/create" element={<CreateDirection />} />
+
             </Route>
 
               {/* Recovery */}

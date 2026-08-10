@@ -65,7 +65,7 @@ export default function AuthProvider({children}: Props) {
     async function login(data: UserLoginReq): Promise<UserLoginRes>{
 
         const response = await authService.login(data);
-
+       
         setUser(response);
 
         return response;

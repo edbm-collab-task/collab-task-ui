@@ -17,6 +17,16 @@ export const authService = {
         );
     },
 
+    create: async (
+        data: UserRequest
+    ): Promise<UserResponse> => {
+
+        return apiClient.post<UserResponse, UserRequest>(
+            API_ENDPOINTS.AUTH.CREATE,
+            data
+        );
+    },
+
 
     login: async (
         data: UserLoginReq
@@ -45,7 +55,8 @@ export const authService = {
 
    },
 
-    logout: async (): Promise<void> => {
+    logout: async (
+    ): Promise<void> => {
 
         await apiClient.post(
             API_ENDPOINTS.AUTH.LOGOUT,

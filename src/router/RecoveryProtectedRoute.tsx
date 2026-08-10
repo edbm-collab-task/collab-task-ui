@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import useRecoveryAuth from "@/hooks/useRecoveryAuth";
+import VerificationPageSkeleton from "@/components/admin/skeleton/VerificationSkeleton";
 
 interface Props {
     children: React.ReactNode;
@@ -8,21 +9,7 @@ interface Props {
 function LoadingScreen() {
 
     return (
-
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-
-            <div className="flex flex-col items-center gap-4">
-
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
-
-                <p className="text-gray-600 text-sm">
-                    Vérification...
-                </p>
-
-            </div>
-
-        </div>
-
+        <VerificationPageSkeleton/>
     );
 
 }

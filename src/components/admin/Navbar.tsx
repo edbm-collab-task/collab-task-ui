@@ -1,5 +1,5 @@
 import { Menu } from "lucide-react";
-import UserDropdown from "./UserDropdown";
+import UserDropdown from "../user/UserDropdown";
 
 interface Props {
     toggleSidebar: () => void;

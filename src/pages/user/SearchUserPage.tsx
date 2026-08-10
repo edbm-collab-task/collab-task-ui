@@ -1,7 +1,5 @@
-import { useNavigate } from "react-router-dom";
-
 import GlobalForms from "@/components/form/GlobalForm";
-import { userEmailFormFields } from "@/components/user/auth/UserEmailForm";
+import { userEmailFormFields } from "@/components/user/auth/userEmailForm";
 
 import type { Email } from "@/types/email";
 
@@ -11,17 +9,15 @@ import Logo from "@/assets/logo.png";
 
 export default function SearchUserPage() {
 
-    const navigate = useNavigate();
-
     const handleSearchAccount = async (data: Email) => {
 
         try {
             await authService.sendVerificationCode(data);
-            navigate("/verification");
+            window.location.replace("/verification");
         } catch (error) {
 
             console.error("Account not found :", error);
-            navigate("/");
+            window.location.replace("/");
 
         }
 

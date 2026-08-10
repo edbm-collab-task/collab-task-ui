@@ -1,25 +1,28 @@
-import { useNavigate } from "react-router-dom";
-
 import GlobalForms from "@/components/form/GlobalForm";
-import { userFormFields } from "@/components/user/UserForm";
-import type { RegisterForm } from "@/types/user";
+import { userFormFields } from "@/components/user/userForm";
+import type { CreateUser } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
+import { useNavigate } from "react-router";
+import type { DirectionRes } from "@/types/direction";
+import { useState , useEffect } from "react";
+import { directionService } from "@/services/direction/direction.service";
+import {createUserFormFields } from "@/components/user/createUserForm"
 
 export default function CreateUserPage() {
 
     const navigate = useNavigate();
+    const [directions, setDirections] = useState<DirectionRes[]>([]);
 
-    const handleRegister = async (data: RegisterForm) => {
+    const handleRegister = async (data: CreateUse) => {
 
         try {
-
-            const { confirmPassword, ...user } = data;
-
-            const createdUser = await authService.register(user);
+            const createdUser = await authService.create(data);
 
             console.log("User created :", createdUser);
 
-            navigate("/");
+            navigate("/admin/users");
+
+            console.log("Navigation exécutée");
 
         } catch (error) {
 
@@ -28,12 +31,26 @@ export default function CreateUserPage() {
         }
     };
 
+    useEffect(() => {
+    const loadDirections = async () => {
+        try {
+            const response = await directionService.getAll();
+            setDirections(response);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    loadDirections();
+    }, []);
+  
     return (
         <div className="mx-auto mt-10">
 
-            <GlobalForms<RegisterForm>
+            <GlobalForms<CreateUser>
                 title="Créer un utilisateur"
-                fields={userFormFields}
+                subtitle="Veuiller remplir les informations pour l'utilisateur "
+                fields={createUserFormFields(directions)}
                 onSubmit={handleRegister}
                 submitLabel="Créer"
             />
