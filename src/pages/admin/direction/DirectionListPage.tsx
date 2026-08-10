@@ -1,24 +1,22 @@
 import { useEffect, useState } from "react";
-import { Eye, Pencil, Trash, Plus } from "lucide-react";
+import { Pencil, Trash, Plus } from "lucide-react";
 
 import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
 import { createColumns } from "@/components/table/createColumns";
 import TablePagination from "@/components/table/TablePagination";
-
-import { userTr, type UserResponse, type UserTable } from "@/types/user";
 import type {
     TableAction,
     HeaderAction
 } from "@/types/table";
 
-import { userService } from "@/services/user/user.service";
 import { useNavigate } from "react-router-dom";
-import { toUserTable } from "@/mappers/user.mapper";
+import  { directionTr, type DirectionRes } from "@/types/direction";
+import { directionService } from "@/services/direction/direction.service";
 
-export default function UserListPage() {
+export default function DirectionsListPage() {
 
-    const [users, setUsers] = useState<UserTable[]>([]);
+    const [directions, setDirections] = useState<DirectionRes[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
@@ -27,20 +25,15 @@ export default function UserListPage() {
 
     useEffect(() => {
 
-        const loadUsers = async () => {
+        const loadDirections = async () => {
 
             try {
 
                 setLoading(true);
 
-                const response = await userService.getAll();
+                const response = await directionService.getAll();
 
-                const userMapToUserTable = (user: UserResponse) => ({
-                   ...toUserTable(user)
-                });
-
-
-                setUsers(response.map(userMapToUserTable));
+                setDirections(response);
 
             } catch (error) {
 
@@ -54,14 +47,13 @@ export default function UserListPage() {
 
         };
 
-        loadUsers();
+        loadDirections();
 
     }, []);
 
-    const columns = createColumns(users, userTr);
+    const columns = createColumns(directions, directionTr);
 
-    
-    const actions: TableAction<UserTable>[] = [
+    const actions: TableAction<DirectionRes>[] = [
 
 
         {
@@ -84,9 +76,9 @@ export default function UserListPage() {
             icon: <Trash size={18} />,
             roles: ["ADMIN"],
 
-            onClick: async (user) => {
-                await userService.delete(user.id);
-                setUsers(users.filter(u => u.id !== user.id));
+            onClick: async (direction) => {
+                await directionService.delete(direction.directionId);
+                setDirections(directions.filter(u => u.directionId !== direction.directionId));
             }
 
         }
@@ -102,18 +94,18 @@ export default function UserListPage() {
             roles: ["USER", "ADMIN"],
 
             onClick: () => {
-                navigate("/admin/users/create");
+                navigate("/admin/directions/create");
             }
 
         }
 
     ];
 
-    const filteredUsers = users.filter(user => {
+    const filteredDirections = directions.filter(direction => {
 
         const value = search.toLowerCase();
 
-        return Object.values(user)
+        return Object.values(direction)
             .some(field =>
                 String(field)
                     .toLowerCase()
@@ -122,9 +114,9 @@ export default function UserListPage() {
 
     });
 
-    const totalPages = Math.ceil(filteredUsers.length / pageSize);
+    const totalPages = Math.ceil(filteredDirections.length / pageSize);
 
-    const paginatedUsers = filteredUsers.slice((page - 1) * pageSize, page * pageSize);
+    const paginatedDirections = filteredDirections.slice((page - 1) * pageSize, page * pageSize);
 
     return (
 
@@ -137,8 +129,8 @@ export default function UserListPage() {
                 actions={headerActions}
             />
 
-            <GlobalTable<UserTable>
-                data={paginatedUsers}
+            <GlobalTable<DirectionRes>
+                data={paginatedDirections}
                 columns={columns}
                 actions={actions}
                 roles={["ADMIN"]}

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 import GlobalForms from "@/components/form/GlobalForm";
-import { recoveryFormFields } from "@/components/user/auth/RecoveryForm";
+import { recoveryFormFields } from "@/components/user/auth/recoveryForm";
 import Logo from "@/assets/logo.png";
 
 import type { RecoverPasswordFormUI } from "@/types/user";
@@ -10,15 +8,13 @@ import { authService } from "@/services/auth/auth.service";
 
 
 export default function RecoveryPage() {
-
-    const navigate = useNavigate();
     const [email, setEmail] = useState<string | null>(null);
 
     useEffect(() => {
         authService.recoveryMe()
             .then(res => setEmail(res.email))
-            .catch(() => navigate("/"));
-    }, [navigate]);
+            .catch(() => window.location.replace("/"));
+    }, []);
 
 
     const handleRecovery = async (data: RecoverPasswordFormUI) => {
@@ -27,7 +23,7 @@ export default function RecoveryPage() {
 
         try {
             await authService.recovery(email, data);
-            navigate("/");
+            window.location.replace("/");
         } catch (error) {
             console.error(error);
         }

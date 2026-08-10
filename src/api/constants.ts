@@ -26,7 +26,9 @@ export const API_ENDPOINTS = {
 
         CODE: "/auth/code",
 
-        RECOVERY_ME: "/auth/recovery/me"
+        RECOVERY_ME: "/auth/recovery/me",
+
+        CREATE: "/auth/create"
 
     },
 
@@ -50,6 +52,19 @@ export const API_ENDPOINTS = {
         DELETE: "/users"
 
 
+    },
+
+    DIRECTION: {
+        
+        ALL: "/directions",
+        
+        BY_ID: "/directions",
+
+        CREATE: "/directions",
+        
+        UPDATE: "/directions",
+        
+        DELETE: "/directions"
     }
 
 } as const;

@@ -12,9 +12,23 @@ export interface UserRequest {
 
     number: string;
 
+    job : string ; 
+
+    directionId : number ;
+
     password: string;
 
     gender: Gender;
+}
+
+export interface CreateUser{
+    firstname: string;
+
+    lastname: string;
+
+    email: string;
+
+    directionId : number ;
 }
 
 
@@ -34,6 +48,27 @@ export interface UserResponse {
     gender: Gender;
 
     status: boolean;
+
+    createdAt: string;
+
+    role: RoleType;
+}
+
+export interface UserTable {
+
+    id: number;
+
+    firstname: string;
+
+    lastname: string;
+
+    email: string;
+
+    number: string;
+
+    gender: string;
+
+    status: string;
 
     createdAt: string;
 

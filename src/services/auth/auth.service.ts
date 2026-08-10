@@ -2,7 +2,7 @@ import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
 import { toRecoverPasswordRequest } from "@/mappers/auth.mapper";
 import type { Email } from "@/types/email";
-import type { UserLoginReq, UserLoginRes, UserRequest, UserResponse,RecoveryMeResponse, RecoverPasswordFormUI} from "@/types/user";
+import type { UserLoginReq,CreateUser, UserLoginRes, UserRequest, UserResponse,RecoveryMeResponse, RecoverPasswordFormUI} from "@/types/user";
 
 
 export const authService = {
@@ -13,6 +13,16 @@ export const authService = {
 
         return apiClient.post<UserResponse, UserRequest>(
             API_ENDPOINTS.AUTH.REGISTER,
+            data
+        );
+    },
+
+    create: async (
+        data: UserRequest
+    ): Promise<UserResponse> => {
+
+        return apiClient.post<UserResponse, CreateUser>(
+            API_ENDPOINTS.AUTH.CREATE,
             data
         );
     },
@@ -45,7 +55,8 @@ export const authService = {
 
    },
 
-    logout: async (): Promise<void> => {
+    logout: async (
+    ): Promise<void> => {
 
         await apiClient.post(
             API_ENDPOINTS.AUTH.LOGOUT,

@@ -30,20 +30,17 @@ export default function GlobalTable<T>({
     roles = []
 }: Props<T>) {
 
-
     return (
 
-        <div className="rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
 
+            <div className="overflow-x-auto custom-scrollbar">
 
-            <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
 
-                <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-gray-50">
 
-
-                    <thead>
-
-                        <tr className="border-b bg-gray-50">
+                        <tr>
 
                             {
                                 columns.map(column => (
@@ -58,29 +55,23 @@ export default function GlobalTable<T>({
                                 ))
                             }
 
-
                             <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                                 Actions
                             </th>
-
 
                         </tr>
 
                     </thead>
 
-
-
                     <tbody>
-
 
                         {
                             data.map((row, index) => (
 
                                 <tr
                                     key={index}
-                                    className="border-b last:border-none transition hover:bg-gray-50"
+                                    className={`${index % 2 === 0 ? "bg-white" : "bg-slate-50"} transition-colors duration-200 hover:bg-blue-50`}
                                 >
-
 
                                     {
                                         columns.map(column => (
@@ -92,27 +83,17 @@ export default function GlobalTable<T>({
 
                                                 {
                                                     column.render
-
-                                                    ?
-
-                                                    column.render(
-                                                        row[column.key as keyof T],
-                                                        row
-                                                    )
-
-                                                    :
-
-                                                    String(
-                                                        row[column.key as keyof T]
-                                                    )
+                                                        ? column.render(
+                                                            row[column.key as keyof T],
+                                                            row
+                                                        )
+                                                        : String(row[column.key as keyof T])
                                                 }
 
                                             </td>
 
                                         ))
                                     }
-
-
 
                                     <td className="px-5 py-4">
 
@@ -124,13 +105,10 @@ export default function GlobalTable<T>({
 
                                     </td>
 
-
                                 </tr>
 
                             ))
                         }
-
-
 
                         {
                             data.length === 0 && (
@@ -149,15 +127,11 @@ export default function GlobalTable<T>({
                             )
                         }
 
-
                     </tbody>
-
 
                 </table>
 
-
             </div>
-
 
         </div>
 

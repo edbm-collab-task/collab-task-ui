@@ -1,13 +1,9 @@
-import { useNavigate } from "react-router-dom";
-
 import GlobalForms from "@/components/form/GlobalForm";
-import { userFormFields } from "@/components/user/UserForm";
+import { userFormFields } from "@/components/user/userForm";
 import type { RegisterForm } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
 
 export default function RegisterPage() {
-
-    const navigate = useNavigate();
 
     const handleRegister = async (data: RegisterForm) => {
 
@@ -19,7 +15,7 @@ export default function RegisterPage() {
 
             console.log("User created :", createdUser);
 
-            navigate("/");
+            window.location.replace("/");
 
         } catch (error) {
 

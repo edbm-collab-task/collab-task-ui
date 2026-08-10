@@ -1,17 +1,10 @@
-import { useNavigate } from "react-router-dom";
-
 import GlobalForms from "@/components/form/GlobalForm";
-import { codeVerificationFormFields } from "@/components/user/auth/CodeVerification";
-
+import { codeVerificationFormFields } from "@/components/user/auth/codeVerification";
 import type { CodeVerification } from "@/types/codeVerification";
-
 import { authService } from "@/services/auth/auth.service";
-
 import Logo from "@/assets/logo.png";
 
 export default function VerificationPage() {
-
-    const navigate = useNavigate();
 
     const handleVerification = async (data: CodeVerification) => {
 
@@ -19,7 +12,7 @@ export default function VerificationPage() {
 
             await authService.verification(data);
 
-            navigate("/information-personnelle");
+            window.location.replace("/information-personnelle");
 
         } catch (error) {
 

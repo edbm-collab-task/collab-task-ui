@@ -72,14 +72,14 @@ export default function GlobalForms<T extends FieldValues>({
 
             <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
 
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-8 text-center">
+                <div className="bg-gradient-to-r py-8 text-center">
 
-                    <h2 className="text-3xl font-bold text-white">
+                    <h2 className="text-3xl font-bold text-black/80">
                         {title}
                     </h2>
 
                     {subtitle && (
-                        <p className="mt-2 text-sm text-blue-100">
+                        <p className=" pt-2 text-black">
                             {subtitle}
                         </p>
                     )}

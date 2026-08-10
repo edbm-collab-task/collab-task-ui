@@ -31,7 +31,7 @@ api.interceptors.response.use(
         break;
 
       case 401:
-        toast.error("Veuillez vous connecter.");
+        console.log("Veillez-vous connecter")
         break;
 
       case 403:
