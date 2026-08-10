@@ -2,7 +2,7 @@ import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
 import { toRecoverPasswordRequest } from "@/mappers/auth.mapper";
 import type { Email } from "@/types/email";
-import type { UserLoginReq, UserLoginRes, UserRequest, UserResponse,RecoveryMeResponse, RecoverPasswordFormUI} from "@/types/user";
+import type { UserLoginReq,CreateUser, UserLoginRes, UserRequest, UserResponse,RecoveryMeResponse, RecoverPasswordFormUI} from "@/types/user";
 
 
 export const authService = {
@@ -21,7 +21,7 @@ export const authService = {
         data: UserRequest
     ): Promise<UserResponse> => {
 
-        return apiClient.post<UserResponse, UserRequest>(
+        return apiClient.post<UserResponse, CreateUser>(
             API_ENDPOINTS.AUTH.CREATE,
             data
         );
