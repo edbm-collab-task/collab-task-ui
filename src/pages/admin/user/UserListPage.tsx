@@ -6,19 +6,19 @@ import TableHeader from "@/components/table/TableHeader";
 import { createColumns } from "@/components/table/createColumns";
 import TablePagination from "@/components/table/TablePagination";
 
-import { userTr, type UserResponse, type UserTable } from "@/types/user";
-import type {
-    TableAction,
-    HeaderAction
-} from "@/types/table";
+import { userTr, type UserResponse, type UserTable, type UserDetails } from "@/types/user";
+import type { TableAction, HeaderAction } from "@/types/table";
+import { DetailModal } from "@/components/details/globalDetail";
+import { userDetailFields } from "@/components/details/userDetails";
 
 import { userService } from "@/services/user/user.service";
 import { useNavigate } from "react-router-dom";
-import { toUserTable } from "@/mappers/user.mapper";
 
 export default function UserListPage() {
 
     const [users, setUsers] = useState<UserTable[]>([]);
+    const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
+    const [detailModalOpen, setDetailModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
@@ -34,13 +34,7 @@ export default function UserListPage() {
                 setLoading(true);
 
                 const response = await userService.getAll();
-
-                const userMapToUserTable = (user: UserResponse) => ({
-                   ...toUserTable(user)
-                });
-
-
-                setUsers(response.map(userMapToUserTable));
+                setUsers(response);
 
             } catch (error) {
 
@@ -58,11 +52,36 @@ export default function UserListPage() {
 
     }, []);
 
-    const columns = createColumns(users, userTr);
+    const columns = createColumns(users, userTr, [
+        "firstname",
+        "lastname",
+        "email",
+        "role"
+    ]);
 
-    
     const actions: TableAction<UserTable>[] = [
 
+        {
+            label: "Voir plus",
+            type: "view",
+            icon: <Eye size={18} />,
+            roles: ["ADMIN"],
+
+            onClick: async (user) => {
+                try {
+                    const details = await userService.getById(user.id);
+
+                    setSelectedUser(details);
+                    setDetailModalOpen(true);
+
+                } catch (error) {
+                    console.error(
+                        "Erreur lors du chargement des détails de l'utilisateur :",
+                        error
+                    );
+                }
+            },
+        },
 
         {
             label: "Modifier",
@@ -129,6 +148,18 @@ export default function UserListPage() {
     return (
 
         <div className="space-y-6">
+
+            <DetailModal<UserDetails>
+                open={detailModalOpen}
+                data={selectedUser}
+                title="Détails de l'utilisateur"
+                description="Informations du compte utilisateur"
+                fields={userDetailFields}
+                onClose={() => {
+                    setDetailModalOpen(false);
+                    setSelectedUser(null);
+                }}
+            />
 
             <TableHeader
                 title="Liste des utilisateurs"
