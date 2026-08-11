@@ -47,6 +47,10 @@ export interface UserResponse {
 
     gender: Gender;
 
+    direction: string;
+
+    job: string;
+
     status: boolean;
 
     createdAt: string;
@@ -64,11 +68,25 @@ export interface UserTable {
 
     email: string;
 
+    role: RoleType;
+}
+
+export interface UserDetails {
+    firstname: string;
+
+    lastname: string;
+
+    email: string;
+
     number: string;
 
-    gender: string;
+    gender: Gender;
 
-    status: string;
+    direction: string;
+
+    job: string;
+
+    status: boolean;
 
     createdAt: string;
 
@@ -78,21 +96,13 @@ export interface UserTable {
 
 export const userTr = {
 
-    id: "ID",
-
     firstname: "Prénom",
 
     lastname: "Nom",
 
     email: "Email",
 
-    number: "Téléphone",
-
     role: "Rôle",
-
-    status: "Statut",
-
-    createdAt: "Création"
 
 } as const;
 
