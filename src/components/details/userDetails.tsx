@@ -61,6 +61,7 @@ export const userDetailFields: DetailField<UserDetails>[] = [
         label: "Poste",
         icon: <BriefcaseBusiness className="h-4 w-4" />,
     },
+    
     {
         key: "status",
         label: "Statut",
@@ -82,6 +83,7 @@ export const userDetailFields: DetailField<UserDetails>[] = [
             </span>
         ),
     },
+    
     {
         key: "createdAt",
         label: "Date de création",
@@ -104,4 +106,27 @@ export const userDetailFields: DetailField<UserDetails>[] = [
         icon: <Shield className="h-4 w-4" />,
         render: (value) => String(value),
     },
+
+    {
+        key: "isActive",
+        label: "Compte",
+        icon: <CircleCheck className="h-4 w-4" />,
+        render: (value) => (
+            <span
+                className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-medium ${
+                    value
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                        : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                }`}
+            >
+                <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                        value ? "bg-emerald-500" : "bg-red-500"
+                    }`}
+                />
+                {value ? "Activer" : "Désactiver"}
+            </span>
+        ),
+    }
+    ,
 ];

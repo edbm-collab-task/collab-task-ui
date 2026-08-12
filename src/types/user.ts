@@ -88,6 +88,8 @@ export interface UserDetails {
 
     status: boolean;
 
+    isActive: boolean;
+
     createdAt: string;
 
     role: RoleType;
