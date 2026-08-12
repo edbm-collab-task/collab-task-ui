@@ -17,6 +17,21 @@ export const userService = {
 
     },
 
+    getAllActive: async (): Promise<UserResponse[]> => {
+
+        return apiClient.get<UserResponse[]>(
+            API_ENDPOINTS.USERS.ALL_ACTIVE
+        );
+
+    },
+
+      getAllDisable: async (): Promise<UserResponse[]> => {
+
+        return apiClient.get<UserResponse[]>(
+            API_ENDPOINTS.USERS.ALL_DISABLE
+        );
+
+    },
 
     getById: async (
         id: number
@@ -62,6 +77,18 @@ export const userService = {
             `${API_ENDPOINTS.USERS.DELETE}/${id}`
         );
 
-    }
+    },
+
+    updateAccountStatus: async (
+        email: string,
+        isActive: boolean
+    ): Promise<void> => {
+
+        await apiClient.put(
+            `${API_ENDPOINTS.USERS.DESACTIVATE}?email=${encodeURIComponent(email)}&isActive=${isActive}`,
+            {}
+        );
+
+    },
 
 };

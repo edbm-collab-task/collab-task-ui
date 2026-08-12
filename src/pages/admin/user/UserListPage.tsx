@@ -5,14 +5,23 @@ import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
 import { createColumns } from "@/components/table/createColumns";
 import TablePagination from "@/components/table/TablePagination";
+import { confirmDelete } from "@/components/modal/confirmDelete";
+import TableFilter from "@/components/table/TableFilter";
 
-import { userTr, type UserResponse, type UserTable, type UserDetails } from "@/types/user";
+import {
+    userTr,
+    type UserTable,
+    type UserDetails
+} from "@/types/user";
+
 import type { TableAction, HeaderAction } from "@/types/table";
+
 import { DetailModal } from "@/components/details/globalDetail";
 import { userDetailFields } from "@/components/details/userDetails";
 
 import { userService } from "@/services/user/user.service";
 import { useNavigate } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
 
 export default function UserListPage() {
 
@@ -22,35 +31,58 @@ export default function UserListPage() {
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
+    type StatusFilter = "all" | "active" | "disable";
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
     const pageSize = 5;
+
     const navigate = useNavigate();
 
-    useEffect(() => {
+    // Utilisateur actuellement connecté
+    const { user: currentUser } = useAuth();
 
-        const loadUsers = async () => {
+    const loadUsers = async (status: StatusFilter) => {
 
-            try {
+        try {
 
-                setLoading(true);
+            setLoading(true);
 
-                const response = await userService.getAll();
-                setUsers(response);
+            let response: UserTable[];
 
-            } catch (error) {
+            switch (status) {
 
-                console.error("Erreur lors du chargement des utilisateurs :", error);
+                case "active":
+                    response = await userService.getAllActive();
+                    break;
 
-            } finally {
+                case "disable":
+                    response = await userService.getAllDisable();
+                    break;
 
-                setLoading(false);
-
+                case "all":
+                default:
+                    response = await userService.getAll();
+                    break;
             }
 
-        };
+            setUsers(response);
 
-        loadUsers();
+        } catch (error) {
 
-    }, []);
+            console.error(
+                "Erreur lors du chargement des utilisateurs :",
+                error
+            );
+
+            setUsers([]);
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    };
+
+    useEffect(() => { loadUsers(statusFilter); }, [statusFilter]);
 
     const columns = createColumns(users, userTr, [
         "firstname",
@@ -58,6 +90,7 @@ export default function UserListPage() {
         "email",
         "role"
     ]);
+
 
     const actions: TableAction<UserTable>[] = [
 
@@ -68,18 +101,23 @@ export default function UserListPage() {
             roles: ["ADMIN"],
 
             onClick: async (user) => {
+
                 try {
+
                     const details = await userService.getById(user.id);
 
                     setSelectedUser(details);
                     setDetailModalOpen(true);
 
                 } catch (error) {
+
                     console.error(
                         "Erreur lors du chargement des détails de l'utilisateur :",
                         error
                     );
+
                 }
+
             },
         },
 
@@ -98,19 +136,43 @@ export default function UserListPage() {
         },
 
         {
-            label: "Supprimer",
+            label: "Désactiver",
             type: "delete",
             icon: <Trash size={18} />,
             roles: ["ADMIN"],
 
             onClick: async (user) => {
-                await userService.delete(user.id);
-                setUsers(users.filter(u => u.id !== user.id));
+
+                const confirmed = await confirmDelete("utilisateur");
+
+                if (!confirmed) {
+                    return;
+                }
+
+                try {
+
+                    await userService.updateAccountStatus(
+                        user.email,
+                        false
+                    );
+
+                    setUsers(prev =>
+                        prev.filter(u => u.id !== user.id)
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Erreur lors de la désactivation :",
+                        error
+                    );
+
+                }
+
             }
-
         }
-
     ];
+
 
     const headerActions: HeaderAction[] = [
 
@@ -121,29 +183,46 @@ export default function UserListPage() {
             roles: ["USER", "ADMIN"],
 
             onClick: () => {
+
                 navigate("/admin/users/create");
+
             }
 
         }
 
     ];
 
-    const filteredUsers = users.filter(user => {
 
-        const value = search.toLowerCase();
+    /*
+     * 1. On enlève l'utilisateur connecté
+     * 2. On applique la recherche
+     */
+    const filteredUsers = users
+        .filter(item => item.email !== currentUser?.email)
+        .filter(item => {
 
-        return Object.values(user)
-            .some(field =>
-                String(field)
-                    .toLowerCase()
-                    .includes(value)
-            );
+            const value = search.toLowerCase();
 
-    });
+            return Object.values(item)
+                .some(field =>
+                    String(field)
+                        .toLowerCase()
+                        .includes(value)
+                );
 
-    const totalPages = Math.ceil(filteredUsers.length / pageSize);
+        });
 
-    const paginatedUsers = filteredUsers.slice((page - 1) * pageSize, page * pageSize);
+
+    const totalPages = Math.ceil(
+        filteredUsers.length / pageSize
+    );
+
+
+    const paginatedUsers = filteredUsers.slice(
+        (page - 1) * pageSize,
+        page * pageSize
+    );
+
 
     return (
 
@@ -156,16 +235,41 @@ export default function UserListPage() {
                 description="Informations du compte utilisateur"
                 fields={userDetailFields}
                 onClose={() => {
+
                     setDetailModalOpen(false);
                     setSelectedUser(null);
+
                 }}
             />
+
 
             <TableHeader
                 title="Liste des utilisateurs"
                 search={search}
                 onSearch={setSearch}
                 actions={headerActions}
+            />
+
+            <TableFilter<StatusFilter>
+                value={statusFilter}
+                options={[
+                    {
+                        label: "Tous",
+                        value: "all"
+                    },
+                    {
+                        label: "Actifs",
+                        value: "active"
+                    },
+                    {
+                        label: "Désactivés",
+                        value: "disable"
+                    }
+                ]}
+                onChange={(value) => {
+                    setStatusFilter(value);
+                    setPage(1);
+                }}
             />
 
             <GlobalTable<UserTable>
@@ -176,6 +280,7 @@ export default function UserListPage() {
                 loading={loading}
                 emptyMessage="Aucun utilisateur trouvé"
             />
+
 
             <TablePagination
                 page={page}
