@@ -13,6 +13,7 @@ import UserListPage from "@/pages/admin/user/UserListPage";
 import Dashboard from "@/components/admin/Dashboard";
 import CreateDirection from "@/pages/admin/direction/CreateDirectionPage"
 import DirectionsListPage from "@/pages/admin/direction/DirectionListPage";
+import EditUserRolePage from "@/pages/admin/user/EditRolePage";
 
 export default function Router() {
 
@@ -20,12 +21,12 @@ export default function Router() {
 
         <Routes>
 
-              {/* Auth */}
-              <Route path="/" element={<LoginPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-             
-               {/* Admin */}
+            {/* Auth */}
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+
+            {/* Admin */}
             <Route
                 path="/admin"
                 element={
@@ -37,25 +38,26 @@ export default function Router() {
                 <Route index element={< Dashboard />} />
                 <Route path="users" element={<UserListPage />} />
                 <Route path="users/create" element={<CreateUserPage />} />
+                <Route path="users/edit-role" element={<EditUserRolePage />} />
 
-                <Route path="directions" element={<DirectionsListPage/>} />
+                <Route path="directions" element={<DirectionsListPage />} />
                 <Route path="directions/create" element={<CreateDirection />} />
 
             </Route>
 
-              {/* Recovery */}
-              <Route path="/information-personnelle" element={<RecoveryProtectedRoute><RecoveryPage /></RecoveryProtectedRoute>} />
+            {/* Recovery */}
+            <Route path="/information-personnelle" element={<RecoveryProtectedRoute><RecoveryPage /></RecoveryProtectedRoute>} />
 
-              {/* Verification */}
-              <Route path="/verification" element={<RecoveryProtectedRoute><VerificationPage /></RecoveryProtectedRoute>} />
-
-
-              {/*Search User */}
-              <Route path="/reccuperation-comptes" element={<SearchUserPage />} />
+            {/* Verification */}
+            <Route path="/verification" element={<RecoveryProtectedRoute><VerificationPage /></RecoveryProtectedRoute>} />
 
 
-              {/* Error */}
-              <Route path="*" element={<NotFoundPage />} />
+            {/*Search User */}
+            <Route path="/reccuperation-comptes" element={<SearchUserPage />} />
+
+
+            {/* Error */}
+            <Route path="*" element={<NotFoundPage />} />
 
         </Routes>
 

@@ -50,6 +50,8 @@ export interface UserResponse {
     direction: string;
 
     job: string;
+    
+    isActive: boolean;
 
     status: boolean;
 

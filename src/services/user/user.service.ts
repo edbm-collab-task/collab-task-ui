@@ -1,5 +1,6 @@
 import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
+import type { AttacheRole } from "@/types/role";
 
 import type {
     UserRequest,
@@ -63,6 +64,17 @@ export const userService = {
 
         return apiClient.put<UserResponse, UserRequest>(
             `${API_ENDPOINTS.USERS.UPDATE}/${id}`,
+            data
+        );
+
+    },
+
+    updateRole: async (
+        data: AttacheRole
+    ): Promise<UserResponse> => {
+
+        return apiClient.put<UserResponse,AttacheRole>(
+            `${API_ENDPOINTS.USERS.UPDATE_ROLE}`,
             data
         );
 
