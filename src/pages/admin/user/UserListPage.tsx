@@ -128,9 +128,11 @@ export default function UserListPage() {
             roles: ["ADMIN"],
 
             onClick: (user) => {
-
-                console.log("Modifier :", user);
-
+                navigate("/admin/users/edit-role", {
+                    state: {
+                        email: user.email
+                    }
+                });
             }
 
         },

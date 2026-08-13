@@ -55,7 +55,9 @@ export const API_ENDPOINTS = {
 
         DESACTIVATE: "/users/account",
 
-        ALL_DISABLE: "/users/disable"
+        ALL_DISABLE: "/users/disable",
+
+        UPDATE_ROLE: "/users/role"
 
     },
 

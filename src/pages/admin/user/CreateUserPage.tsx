@@ -44,11 +44,11 @@ export default function CreateUserPage() {
     }, []);
 
     return (
-        <div className="mx-auto mt-10">
+        <div className="mx-auto  mt-10">
 
             <GlobalForms<CreateUser>
                 title="Créer un utilisateur"
-                subtitle="Veuiller remplir les informations pour l'utilisateur "
+                subtitle="Veuiller definir"
                 fields={createUserFormFields(directions)}
                 onSubmit={handleRegister}
                 submitLabel="Créer"
