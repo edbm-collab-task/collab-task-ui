@@ -47,9 +47,17 @@ export interface UserResponse {
 
     gender: Gender;
 
+    direction: string;
+
+    job: string;
+    
+    isActive: boolean;
+
     status: boolean;
 
     createdAt: string;
+    
+    imagePath: string;
 
     role: RoleType;
 }
@@ -64,11 +72,27 @@ export interface UserTable {
 
     email: string;
 
+    role: RoleType;
+}
+
+export interface UserDetails {
+    firstname: string;
+
+    lastname: string;
+
+    email: string;
+
     number: string;
 
-    gender: string;
+    gender: Gender;
 
-    status: string;
+    direction: string;
+
+    job: string;
+
+    status: boolean;
+
+    isActive: boolean;
 
     createdAt: string;
 
@@ -78,21 +102,13 @@ export interface UserTable {
 
 export const userTr = {
 
-    id: "ID",
-
     firstname: "Prénom",
 
     lastname: "Nom",
 
     email: "Email",
 
-    number: "Téléphone",
-
     role: "Rôle",
-
-    status: "Statut",
-
-    createdAt: "Création"
 
 } as const;
 
@@ -127,3 +143,35 @@ export interface RecoveryMeResponse {
     recovery: boolean;
 }
 
+export interface UserProfile {
+    id: number;
+
+    firstname: string;
+    lastname: string;
+    email: string;
+    number: string;
+
+    gender: Gender;
+
+    direction: string;
+    job: string;
+
+    imagePath: string;
+
+    status: boolean;
+    isActive: boolean;
+
+    createdAt: string;
+
+    role: RoleType;
+}
+
+export interface EditUser {
+    firstname: string;
+    lastname: string;
+    job: string;
+    email: string;
+    number: string;
+    gender: Gender;
+    directionId?: number;
+}

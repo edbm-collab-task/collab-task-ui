@@ -42,6 +42,8 @@ export const API_ENDPOINTS = {
         SEARCH_USER_BY_EMAIL: "/users/email",
 
         ALL: "/users",
+
+        ALL_ACTIVE: "/users/active",
         
         BY_ID: "/users",
 
@@ -49,8 +51,15 @@ export const API_ENDPOINTS = {
         
         UPDATE: "/auth/register",
         
-        DELETE: "/users"
+        DELETE: "/users",
 
+        DESACTIVATE: "/users/account",
+
+        ALL_DISABLE: "/users/disable",
+
+        UPDATE_ROLE: "/users/role",
+        
+        IMAGE: (id: number) => `/users/${id}/image`,
 
     },
 
