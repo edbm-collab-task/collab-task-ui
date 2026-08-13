@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, User, LogOut, Settings } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 
 export default function UserDropdown() {
 
@@ -10,8 +9,6 @@ export default function UserDropdown() {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const { user, logout } = useAuth();
-
-    const navigate = useNavigate();
 
 
     useEffect(() => {

@@ -65,6 +65,38 @@ export const API_ENDPOINTS = {
         UPDATE: "/directions",
         
         DELETE: "/directions"
+    },
+
+    PROJECTS: {
+
+        ALL: "/projects",
+
+        BY_ID: "/projects",
+
+        CREATE: "/projects",
+
+        UPDATE: "/projects",
+
+        DELETE: "/projects"
+
+    },
+
+    TASKS: {
+
+        ALL: "/tasks",
+
+        BY_ID: "/tasks",
+
+        BY_PROJECT: "/tasks/project",
+
+        CREATE: "/tasks",
+
+        UPDATE: "/tasks",
+
+        CHANGE_STATUS: "/tasks",
+
+        DELETE: "/tasks"
+
     }
 
 } as const;

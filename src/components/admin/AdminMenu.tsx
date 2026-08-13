@@ -1,11 +1,16 @@
 import { NavLink } from "react-router-dom";
-import {LayoutDashboard,Users,Building2} from "lucide-react";
+import {LayoutDashboard,Users,Building2,FolderKanban} from "lucide-react";
 
 const menus = [
     {
         name: "Dashboard",
         path: "/admin",
         icon: LayoutDashboard,
+    },
+    {
+        name: "Projets",
+        path: "/admin/projects",
+        icon: FolderKanban,
     },
     {
         name: "Utilisateurs",

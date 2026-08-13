@@ -1,9 +1,10 @@
 import type { FormField } from "@/components/form/Forms";
 import type { DirectionRes } from "@/types/direction";
+import type { CreateUser } from "@/types/user";
 
 export const createUserFormFields = (
     directions: DirectionRes[]
-): FormField[] => [
+): FormField<CreateUser>[] => [
     {
         name: "firstname",
         label: "Nom",

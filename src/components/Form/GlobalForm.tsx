@@ -44,7 +44,7 @@ export default function GlobalForms<T extends FieldValues>({
         ...field.validation,
         ...(field.matchField && {
             validate: (value: unknown) =>
-                value === values[field.matchField] ||
+                value === values[field.matchField as keyof T] ||
                 `${field.label} does not match`
         })
     });
