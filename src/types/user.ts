@@ -56,6 +56,8 @@ export interface UserResponse {
     status: boolean;
 
     createdAt: string;
+    
+    imagePath: string;
 
     role: RoleType;
 }
@@ -141,3 +143,35 @@ export interface RecoveryMeResponse {
     recovery: boolean;
 }
 
+export interface UserProfile {
+    id: number;
+
+    firstname: string;
+    lastname: string;
+    email: string;
+    number: string;
+
+    gender: Gender;
+
+    direction: string;
+    job: string;
+
+    imagePath: string;
+
+    status: boolean;
+    isActive: boolean;
+
+    createdAt: string;
+
+    role: RoleType;
+}
+
+export interface EditUser {
+    firstname: string;
+    lastname: string;
+    job: string;
+    email: string;
+    number: string;
+    gender: Gender;
+    directionId?: number;
+}

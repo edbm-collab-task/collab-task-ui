@@ -14,6 +14,9 @@ import Dashboard from "@/components/admin/Dashboard";
 import CreateDirection from "@/pages/admin/direction/CreateDirectionPage"
 import DirectionsListPage from "@/pages/admin/direction/DirectionListPage";
 import EditUserRolePage from "@/pages/admin/user/EditRolePage";
+import UserProfile from "@/pages/admin/user/UserProfile";
+import EditUserPage from "@/pages/admin/user/EditUserPage";
+import ChangePwdPage from "@/pages/auth/recovery/SetPwd"
 
 export default function Router() {
 
@@ -39,6 +42,9 @@ export default function Router() {
                 <Route path="users" element={<UserListPage />} />
                 <Route path="users/create" element={<CreateUserPage />} />
                 <Route path="users/edit-role" element={<EditUserRolePage />} />
+                <Route path="users/profile" element={<UserProfile />} />
+                <Route path="users/:id/edit" element={<EditUserPage />} />
+                <Route path="users/change-pwd" element={<ChangePwdPage />} />
 
                 <Route path="directions" element={<DirectionsListPage />} />
                 <Route path="directions/create" element={<CreateDirection />} />
