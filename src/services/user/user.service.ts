@@ -1,6 +1,7 @@
 import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
 import type { AttacheRole } from "@/types/role";
+import type { EditUser } from "@/types/user";
 
 import type {
     UserRequest,
@@ -26,7 +27,15 @@ export const userService = {
 
     },
 
-      getAllDisable: async (): Promise<UserResponse[]> => {
+    getByEmail: async (data: { email: string }): Promise<UserResponse> => {
+        return await apiClient.get(
+            API_ENDPOINTS.USERS.SEARCH_USER_BY_EMAIL,
+            data
+        );
+    },
+
+
+    getAllDisable: async (): Promise<UserResponse[]> => {
 
         return apiClient.get<UserResponse[]>(
             API_ENDPOINTS.USERS.ALL_DISABLE
@@ -73,7 +82,7 @@ export const userService = {
         data: AttacheRole
     ): Promise<UserResponse> => {
 
-        return apiClient.put<UserResponse,AttacheRole>(
+        return apiClient.put<UserResponse, AttacheRole>(
             `${API_ENDPOINTS.USERS.UPDATE_ROLE}`,
             data
         );
@@ -101,6 +110,31 @@ export const userService = {
             {}
         );
 
+    },
+
+    updateUser: async (
+        data: EditUser
+    ): Promise<UserResponse> => {
+
+        return apiClient.post<UserResponse, EditUser>(
+            API_ENDPOINTS.AUTH.REGISTER,
+            data
+        );
+    },
+
+    addImageToUser: async (
+        id: number,
+        image: File
+    ): Promise<UserResponse> => {
+
+        const formData = new FormData();
+
+        formData.append("image", image);
+
+        return apiClient.post<UserResponse, FormData>(
+            API_ENDPOINTS.USERS.IMAGE(id),
+            formData
+        );
     },
 
 };

@@ -57,7 +57,9 @@ export const API_ENDPOINTS = {
 
         ALL_DISABLE: "/users/disable",
 
-        UPDATE_ROLE: "/users/role"
+        UPDATE_ROLE: "/users/role",
+        
+        IMAGE: (id: number) => `/users/${id}/image`,
 
     },
 
