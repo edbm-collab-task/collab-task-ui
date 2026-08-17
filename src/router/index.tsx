@@ -13,6 +13,14 @@ import UserListPage from "@/pages/admin/user/UserListPage";
 import Dashboard from "@/components/admin/Dashboard";
 import CreateDirection from "@/pages/admin/direction/CreateDirectionPage"
 import DirectionsListPage from "@/pages/admin/direction/DirectionListPage";
+import ProjectListPage from "@/pages/admin/project/ProjectListPage";
+import ProjectFormPage from "@/pages/admin/project/ProjectFormPage";
+import ProjectDetailPage from "@/pages/admin/project/ProjectDetailPage";
+import EditUserRolePage from "@/pages/admin/user/EditRolePage";
+import UserProfile from "@/pages/admin/user/UserProfile";
+import EditUserPage from "@/pages/admin/user/EditUserPage";
+import ChangePwdPage from "@/pages/auth/recovery/SetPwd";
+import MessagePage from "@/pages/admin/message/MessagePage";
 import EditUserRolePage from "@/pages/admin/user/EditRolePage";
 import UserProfile from "@/pages/admin/user/UserProfile";
 import EditUserPage from "@/pages/admin/user/EditUserPage";
@@ -48,6 +56,13 @@ export default function Router() {
 
                 <Route path="directions" element={<DirectionsListPage />} />
                 <Route path="directions/create" element={<CreateDirection />} />
+
+                <Route path="projects" element={<ProjectListPage />} />
+                <Route path="projects/create" element={<ProjectFormPage mode="create" />} />
+                <Route path="projects/:id" element={<ProjectDetailPage />} />
+                <Route path="projects/:id/edit" element={<ProjectFormPage mode="edit" />} />
+
+                <Route path="messages" element={<MessagePage />} />
 
             </Route>
 

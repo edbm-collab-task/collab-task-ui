@@ -5,7 +5,7 @@ import {directionService} from "@/services/direction/direction.service"
 import { useNavigate } from "react-router";
 
 
-export default function createDirection(){
+export default function CreateDirectionPage(){
 
     const navigate = useNavigate();
 

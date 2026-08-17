@@ -18,9 +18,7 @@ export default function UserDropdown() {
 
     const { user, logout } = useAuth();
 
-    /**
-     * Fermer le dropdown lorsqu'on clique en dehors
-     */
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -61,6 +59,10 @@ export default function UserDropdown() {
                 );
             }
         };
+
+        loadUserDetails();
+    }, [user?.email]);
+
 
         loadUserDetails();
     }, [user?.email]);
