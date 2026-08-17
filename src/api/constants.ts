@@ -23,15 +23,10 @@ export const API_ENDPOINTS = {
         SEARCH_USER_BY_EMAIL: "/users/email",
         ALL: "/users",
         ALL_ACTIVE: "/users/active",
-        ALL_ACTIVE: "/users/active",
         BY_ID: "/users",
         CREATE: "/auth/register",
         UPDATE: "/auth/register",
         DELETE: "/users",
-        DESACTIVATE: "/users/account",
-        ALL_DISABLE: "/users/disable",
-        UPDATE_ROLE: "/users/role",
-        IMAGE: (id: number) => `/users/${id}/image`
         DESACTIVATE: "/users/account",
         ALL_DISABLE: "/users/disable",
         UPDATE_ROLE: "/users/role",
@@ -82,7 +77,8 @@ export const API_ENDPOINTS = {
 
         ALL: "/statuses"
 
-    }
+    },
+
     MESSAGES: {
         CONVERSATIONS: "/conversations",
         USERS: "/conversations/users",

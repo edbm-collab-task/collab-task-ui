@@ -1,9 +1,5 @@
 import { NavLink } from "react-router-dom";
-<<<<<<< HEAD
-import {LayoutDashboard,Users,Building2,FolderKanban} from "lucide-react";
-=======
-import {LayoutDashboard,Users,Building2,MessageCircle} from "lucide-react";
->>>>>>> 4d150e9 (feat: Create base for message page)
+import {LayoutDashboard,Users,Building2,FolderKanban,MessageCircle} from "lucide-react";
 
 const menus = [
     {
