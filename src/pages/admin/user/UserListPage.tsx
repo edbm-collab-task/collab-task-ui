@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pencil, Trash, Plus } from "lucide-react";
+import { Eye, Pencil, Trash, Plus } from "lucide-react";
 
 import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
