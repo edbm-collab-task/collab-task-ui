@@ -7,6 +7,7 @@ import {
     type TaskReq,
     type TaskRes,
 } from "@/types/task";
+import type { Status } from "@/types/status";
 
 interface Props {
     open: boolean;
@@ -14,6 +15,7 @@ interface Props {
     task?: TaskRes | null;
     defaultStatusId?: number | null;
     tasks: TaskRes[];
+    statuses?: Status[];   // ← nouveau type
     onClose: () => void;
     onSubmit: (data: TaskReq) => Promise<void>;
     submitting?: boolean;
@@ -29,9 +31,30 @@ const emptyForm = (projectId: number, statusId: number): TaskReq => ({
     parentTaskId: null,
 });
 
-export default function TaskModal({ open, projectId, task = null, defaultStatusId = null, tasks, onClose, onSubmit, submitting = false }: Props) {
+export default function TaskModal({
+    open,
+    projectId,
+    task = null,
+    defaultStatusId = null,
+    tasks,
+    statuses,
+    onClose,
+    onSubmit,
+    submitting = false,
+}: Props) {
 
-    const [form, setForm] = useState<TaskReq>(emptyForm(projectId, STATUSES[0].id));
+    // Convertir les STATUSES statiques en type Status[] pour le fallback
+    const fallbackStatuses: Status[] = STATUSES.map(s => ({
+        statusId: s.id,
+        name: s.name,
+        sortOrder: 0,
+    }));
+
+    const availableStatuses = statuses ?? fallbackStatuses;
+
+    const [form, setForm] = useState<TaskReq>(
+        emptyForm(projectId, availableStatuses[0]?.statusId ?? 1)
+    );
 
     useEffect(() => {
         if (open) {
@@ -46,11 +69,14 @@ export default function TaskModal({ open, projectId, task = null, defaultStatusI
                     parentTaskId: task.parentTaskId,
                 });
             } else {
-                setForm(emptyForm(projectId, defaultStatusId ?? STATUSES[0].id));
+                // Utiliser defaultStatusId ou le premier statut disponible
+                const defaultId = defaultStatusId ?? availableStatuses[0]?.statusId ?? 1;
+                setForm(emptyForm(projectId, defaultId));
             }
         }
-    }, [open, task, projectId, defaultStatusId]);
+    }, [open, task, projectId, defaultStatusId, availableStatuses]);
 
+    // 🔥 Condition pour cacher la modale
     if (!open) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -120,8 +146,8 @@ export default function TaskModal({ open, projectId, task = null, defaultStatusI
                                 value={form.statusId}
                                 onChange={(e) => setForm({ ...form, statusId: Number(e.target.value) })}
                             >
-                                {STATUSES.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                {availableStatuses.map(s => (
+                                    <option key={s.statusId} value={s.statusId}>{s.name}</option>
                                 ))}
                             </select>
                         </div>

@@ -2,6 +2,8 @@ import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
 
 import type { ProjectReq, ProjectRes } from "@/types/project";
+import type { Status } from "@/types/task";
+import { statusService } from "@/services/status/status.service";
 
 
 export const projectService = {
@@ -31,6 +33,7 @@ export const projectService = {
             data
         );
 
+
     },
 
 
@@ -41,6 +44,7 @@ export const projectService = {
             data
         );
 
+
     },
 
 
@@ -50,6 +54,11 @@ export const projectService = {
             `${API_ENDPOINTS.PROJECTS.DELETE}/${id}`
         );
 
+
+    },
+
+    getStatuses: async (): Promise<Status[]> => {
+        return statusService.getAll();
     }
 
 };

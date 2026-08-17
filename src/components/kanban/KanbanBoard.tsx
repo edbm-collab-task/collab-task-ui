@@ -12,9 +12,12 @@ import {
     STATUSES,
     type TaskRes,
 } from "@/types/task";
+import type { Status } from "@/types/status";
 
 interface Props {
+    projectId: number;
     tasks: TaskRes[];
+    statuses?: Status[];
     onEditTask: (task: TaskRes) => void;
     onCreateTask: (statusId: number) => void;
     onDeleteTask: (task: TaskRes) => void;
@@ -31,10 +34,53 @@ function formatDate(date: string | null) {
     return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
 }
 
-export default function KanbanBoard({ tasks, onEditTask, onCreateTask, onDeleteTask, onMoveTask }: Props) {
+function getStatusStyle(status: Status): { column: string; dot: string } {
+    const name = status.name.toLowerCase();
+    const id = status.statusId;
 
+    const styleMap: Record<number, { column: string; dot: string }> = {
+        1: { column: "bg-gray-50 border-gray-200", dot: "bg-gray-400" },
+        2: { column: "bg-blue-50 border-blue-200", dot: "bg-blue-400" },
+        3: { column: "bg-amber-50 border-amber-200", dot: "bg-amber-400" },
+        4: { column: "bg-green-50 border-green-200", dot: "bg-green-400" },
+    };
+
+    if (id && styleMap[id]) return styleMap[id];
+
+    if (name.includes("todo") || name.includes("à faire")) {
+        return { column: "bg-gray-50 border-gray-200", dot: "bg-gray-400" };
+    }
+    if (name.includes("progress") || name.includes("en cours")) {
+        return { column: "bg-blue-50 border-blue-200", dot: "bg-blue-400" };
+    }
+    if (name.includes("review") || name.includes("relecture")) {
+        return { column: "bg-amber-50 border-amber-200", dot: "bg-amber-400" };
+    }
+    if (name.includes("done") || name.includes("terminé")) {
+        return { column: "bg-green-50 border-green-200", dot: "bg-green-400" };
+    }
+    return { column: "bg-gray-50 border-gray-200", dot: "bg-gray-400" };
+}
+
+export default function KanbanBoard({
+    projectId,
+    tasks,
+    statuses,
+    onEditTask,
+    onCreateTask,
+    onDeleteTask,
+    onMoveTask,
+}: Props) {
     const [draggedTask, setDraggedTask] = useState<TaskRes | null>(null);
     const [overColumn, setOverColumn] = useState<number | null>(null);
+
+    const fallbackStatuses: Status[] = STATUSES.map(s => ({
+        statusId: s.id,
+        name: s.name,
+        sortOrder: 0,
+    }));
+
+    const availableStatuses = statuses ?? fallbackStatuses;
 
     const handleDrop = (statusId: number) => {
         if (draggedTask && draggedTask.statusId !== statusId) {
@@ -46,34 +92,36 @@ export default function KanbanBoard({ tasks, onEditTask, onCreateTask, onDeleteT
 
     return (
         <div className="grid gap-5 md:grid-cols-3">
-            {STATUSES.map(status => {
-
-                const columnTasks = tasks.filter(t => t.statusId === status.id);
+            {availableStatuses.map(status => {
+                // ✅ Correction : on utilise directement status.statusId
+                const id = status.statusId;
+                const columnTasks = tasks.filter(t => t.statusId === id);
+                const style = getStatusStyle(status);
 
                 return (
                     <div
-                        key={status.id}
+                        key={id}
                         onDragOver={(e) => {
                             e.preventDefault();
-                            setOverColumn(status.id);
+                            setOverColumn(id);
                         }}
                         onDragLeave={() => setOverColumn(null)}
-                        onDrop={() => handleDrop(status.id)}
-                        className={`flex h-fit max-h-[calc(100vh-15rem)] flex-col rounded-2xl border p-3 transition ${status.column} ${
-                            overColumn === status.id ? "ring-2 ring-blue-400" : ""
+                        onDrop={() => handleDrop(id)}
+                        className={`flex h-fit max-h-[calc(100vh-15rem)] flex-col rounded-2xl border p-3 transition ${style.column} ${
+                            overColumn === id ? "ring-2 ring-blue-400" : ""
                         }`}
                     >
                         {/* En-tête colonne */}
                         <div className="mb-3 flex items-center justify-between px-1">
                             <div className="flex items-center gap-2">
-                                <span className={`h-2.5 w-2.5 rounded-full ${status.dot}`} />
+                                <span className={`h-2.5 w-2.5 rounded-full ${style.dot}`} />
                                 <h3 className="text-sm font-bold uppercase tracking-wide text-gray-700">{status.name}</h3>
                                 <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold text-gray-600 shadow-sm">
                                     {columnTasks.length}
                                 </span>
                             </div>
                             <button
-                                onClick={() => onCreateTask(status.id)}
+                                onClick={() => onCreateTask(id)}
                                 title={`Ajouter une tâche dans ${status.name}`}
                                 className="rounded-lg p-1.5 text-gray-500 transition hover:bg-white hover:text-blue-600"
                             >
@@ -93,7 +141,7 @@ export default function KanbanBoard({ tasks, onEditTask, onCreateTask, onDeleteT
                                 const priority = priorityBadge(task.priorityId);
                                 return (
                                     <div
-                                        key={task.taskId}
+                                        key={`${projectId}-${task.taskId}`}
                                         draggable
                                         onDragStart={() => setDraggedTask(task)}
                                         onDragEnd={() => {

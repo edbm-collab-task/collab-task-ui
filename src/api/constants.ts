@@ -97,6 +97,12 @@ export const API_ENDPOINTS = {
 
         DELETE: "/tasks"
 
+    },
+
+    STATUSES: {
+
+        ALL: "/statuses"
+
     }
 
 } as const;
