@@ -2,15 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, User, LogOut, Settings } from "lucide-react";
 
 import useAuth from "@/hooks/useAuth";
-<<<<<<< HEAD
-=======
 import { authService } from "@/services/auth/auth.service";
 import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
 
 import type { Email } from "@/types/email";
 import type { UserResponse } from "@/types/user";
 import { useNavigate } from "react-router-dom";
->>>>>>> 9097b48 (feat: Manager account user)
 
 export default function UserDropdown() {
     const [open, setOpen] = useState(false);
@@ -21,13 +18,7 @@ export default function UserDropdown() {
 
     const { user, logout } = useAuth();
 
-<<<<<<< HEAD
 
-=======
-    /**
-     * Fermer le dropdown lorsqu'on clique en dehors
-     */
->>>>>>> 9097b48 (feat: Manager account user)
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -68,6 +59,10 @@ export default function UserDropdown() {
                 );
             }
         };
+
+        loadUserDetails();
+    }, [user?.email]);
+
 
         loadUserDetails();
     }, [user?.email]);

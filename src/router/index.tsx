@@ -21,6 +21,10 @@ import UserProfile from "@/pages/admin/user/UserProfile";
 import EditUserPage from "@/pages/admin/user/EditUserPage";
 import ChangePwdPage from "@/pages/auth/recovery/SetPwd";
 import MessagePage from "@/pages/admin/message/MessagePage";
+import EditUserRolePage from "@/pages/admin/user/EditRolePage";
+import UserProfile from "@/pages/admin/user/UserProfile";
+import EditUserPage from "@/pages/admin/user/EditUserPage";
+import ChangePwdPage from "@/pages/auth/recovery/SetPwd"
 
 export default function Router() {
 

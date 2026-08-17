@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
         SEARCH_USER_BY_EMAIL: "/users/email",
         ALL: "/users",
         ALL_ACTIVE: "/users/active",
+        ALL_ACTIVE: "/users/active",
         BY_ID: "/users",
         CREATE: "/auth/register",
         UPDATE: "/auth/register",
@@ -31,6 +32,10 @@ export const API_ENDPOINTS = {
         ALL_DISABLE: "/users/disable",
         UPDATE_ROLE: "/users/role",
         IMAGE: (id: number) => `/users/${id}/image`
+        DESACTIVATE: "/users/account",
+        ALL_DISABLE: "/users/disable",
+        UPDATE_ROLE: "/users/role",
+        IMAGE: (id: number) => `/users/${id}/image`,
     },
 
     DIRECTION: {
@@ -41,7 +46,6 @@ export const API_ENDPOINTS = {
         DELETE: "/directions"
     },
 
-<<<<<<< HEAD
     PROJECTS: {
 
         ALL: "/projects",
@@ -79,12 +83,10 @@ export const API_ENDPOINTS = {
         ALL: "/statuses"
 
     }
-=======
     MESSAGES: {
         CONVERSATIONS: "/conversations",
         USERS: "/conversations/users",
         MESSAGES: "/conversations",
     },
->>>>>>> 4d150e9 (feat: Create base for message page)
 
 } as const;
