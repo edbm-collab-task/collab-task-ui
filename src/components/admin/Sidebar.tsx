@@ -18,7 +18,7 @@ export default function Sidebar({ open, close }: Props) {
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-72 transform bg-[#0f172a] text-white shadow-2xl transition-transform duration-300 lg:static lg:translate-x-0 ${
+                className={`fixed inset-y-0 left-0 z-50 w-72 transform bg-[#270f2a] text-white shadow-2xl transition-transform duration-300 lg:static lg:translate-x-0 ${
                     open ? "translate-x-0" : "-translate-x-full"
                 }`}
             >
