@@ -40,6 +40,7 @@ export interface Conversation {
     archived: boolean;
     pinned: boolean;
     unreadCount: number;
+    lastMessage: Message | null;
 }
 
 export interface MessageDatabase {
@@ -64,5 +65,5 @@ export interface AddMembersRequest {
 export interface SendMessageRequest {
     content: string;
     replyToId?: number | null;
-    attachments?: Attachment[];
+    attachments?: File[];
 }

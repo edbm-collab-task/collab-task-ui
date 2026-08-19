@@ -1,20 +1,23 @@
 import { apiClient } from "@/api/api-client";
 
 import type {
-    Attachment,
     ChatUser,
     Conversation,
     Message,
+    SendMessageRequest,
 } from "@/types/message";
 
 export const messageService = {
+
     async getCurrentUser(): Promise<ChatUser> {
+
         return apiClient.get<ChatUser>(
             "/auth/me"
         );
     },
 
     async getUsers(): Promise<ChatUser[]> {
+
         return apiClient.get<ChatUser[]>(
             "/conversations/users"
         );
@@ -23,25 +26,35 @@ export const messageService = {
     async getConversations(
         archived = false
     ): Promise<Conversation[]> {
+
         return apiClient.get<Conversation[]>(
-            `/conversations?archived=${archived}`
+            "/conversations",
+            {
+                archived
+            }
         );
     },
 
     async getConversation(
         conversationId: number
     ): Promise<Conversation> {
+
         return apiClient.get<Conversation>(
             `/conversations/${conversationId}`
         );
     },
 
     async createPrivateConversation(
-        data: { userId: number }
+        data: {
+            userId: number;
+        }
     ): Promise<Conversation> {
+
         return apiClient.post<
             Conversation,
-            { userId: number }
+            {
+                userId: number;
+            }
         >(
             "/conversations/private",
             data
@@ -54,6 +67,7 @@ export const messageService = {
             memberIds: number[];
         }
     ): Promise<Conversation> {
+
         return apiClient.post<
             Conversation,
             {
@@ -69,35 +83,85 @@ export const messageService = {
     async getMessages(
         conversationId: number
     ): Promise<Message[]> {
+
         return apiClient.get<Message[]>(
             `/conversations/${conversationId}/messages`
         );
     },
 
+    /**
+     * Envoie un message en multipart/form-data.
+     *
+     * Backend attendu :
+     *
+     * content
+     * replyToId
+     * attachments[]
+     */
     async sendMessage(
         conversationId: number,
-        data: {
-            content: string;
-            attachments: Attachment[];
-            replyToId: number | null;
-        }
+        data: SendMessageRequest
     ): Promise<Message> {
+
+        const formData = new FormData();
+
+        /**
+         * Content
+         */
+        if (data.content.trim()) {
+            formData.append(
+                "content",
+                data.content.trim()
+            );
+        }
+
+        /**
+         * Réponse à un message
+         */
+        if (data.replyToId !== null &&
+            data.replyToId !== undefined) {
+
+            formData.append(
+                "replyToId",
+                String(data.replyToId)
+            );
+        }
+
+        /**
+         * Fichiers
+         *
+         * Le nom "attachments" doit correspondre
+         * exactement à :
+         *
+         * @RequestPart("attachments")
+         */
+        if (data.attachments &&
+            data.attachments.length > 0) {
+
+            data.attachments.forEach(
+                (file) => {
+
+                    formData.append(
+                        "attachments",
+                        file
+                    );
+                }
+            );
+        }
+
         return apiClient.post<
             Message,
-            {
-                content: string;
-                attachments: Attachment[];
-                replyToId: number | null;
-            }
+            FormData
         >(
             `/conversations/${conversationId}/messages`,
-            data
+            formData
         );
     },
 
     async deleteMessage(
         messageId: number
     ): Promise<void> {
+
         await apiClient.delete<void>(
             `/conversations/messages/${messageId}`
         );
@@ -106,6 +170,7 @@ export const messageService = {
     async getMembers(
         conversationId: number
     ) {
+
         return apiClient.get(
             `/conversations/${conversationId}/members`
         );
@@ -113,11 +178,16 @@ export const messageService = {
 
     async addMembers(
         conversationId: number,
-        data: { memberIds: number[] }
+        data: {
+            memberIds: number[];
+        }
     ): Promise<Conversation> {
+
         return apiClient.post<
             Conversation,
-            { memberIds: number[] }
+            {
+                memberIds: number[];
+            }
         >(
             `/conversations/${conversationId}/members`,
             data
@@ -128,6 +198,7 @@ export const messageService = {
         conversationId: number,
         userId: number
     ): Promise<void> {
+
         await apiClient.delete<void>(
             `/conversations/${conversationId}/members/${userId}`
         );
@@ -136,6 +207,7 @@ export const messageService = {
     async leaveGroup(
         conversationId: number
     ): Promise<void> {
+
         await apiClient.delete<void>(
             `/conversations/${conversationId}/leave`
         );
@@ -144,6 +216,7 @@ export const messageService = {
     async markAsRead(
         conversationId: number
     ): Promise<void> {
+
         await apiClient.patch<
             void,
             Record<string, never>
@@ -156,6 +229,7 @@ export const messageService = {
     async togglePin(
         conversationId: number
     ): Promise<Conversation> {
+
         return apiClient.patch<
             Conversation,
             Record<string, never>
@@ -168,6 +242,7 @@ export const messageService = {
     async archiveConversation(
         conversationId: number
     ): Promise<Conversation> {
+
         return apiClient.patch<
             Conversation,
             Record<string, never>
@@ -180,6 +255,7 @@ export const messageService = {
     async deleteConversation(
         conversationId: number
     ): Promise<void> {
+
         await apiClient.delete<void>(
             `/conversations/${conversationId}`
         );
