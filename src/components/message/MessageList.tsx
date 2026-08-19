@@ -1,11 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import MessageItem from "./MessageItem";
 
-import type {
-    Message,
-    ChatUser,
-} from "@/types/message";
+import type { Message, ChatUser } from "@/types/message";
+
+import { userService } from "@/services/user/user.service";
 
 interface Props {
     messages: Message[];
@@ -26,11 +25,130 @@ const MessageList = ({
 }: Props) => {
     const bottomRef = useRef<HTMLDivElement | null>(null);
 
+    const [loadedUsers, setLoadedUsers] = useState<ChatUser[]>(users);
+    const loadingUserIds = useRef<Set<number>>(new Set());
+
+    useEffect(() => {
+        setLoadedUsers((previousUsers) => {
+            const usersMap = new Map<number, ChatUser>();
+
+            previousUsers.forEach((user) => {
+                usersMap.set(user.id, user);
+            });
+
+            users.forEach((user) => {
+                usersMap.set(user.id, user);
+            });
+
+            return Array.from(usersMap.values());
+        });
+    }, [users]);
+
+    useEffect(() => {
+        const loadMissingUsers = async () => {
+            const senderIds = [
+                ...new Set(
+                    messages.map(
+                        (message) => message.senderId
+                    )
+                ),
+            ];
+
+            const missingUserIds = senderIds.filter(
+                (id) =>
+                    !loadedUsers.some(
+                        (user) => user.id === id
+                    ) &&
+                    !loadingUserIds.current.has(id)
+            );
+
+            if (missingUserIds.length === 0) {
+                return;
+            }
+
+            missingUserIds.forEach((id) => {
+                loadingUserIds.current.add(id);
+            });
+
+            const results = await Promise.all(
+                missingUserIds.map(async (id) => {
+                    try {
+                        return await userService.getById(id);
+                    } catch (error) {
+                        console.error(
+                            `Impossible de récupérer l'utilisateur ${id}`,
+                            error
+                        );
+
+                        return null;
+                    } finally {
+                        loadingUserIds.current.delete(id);
+                    }
+                })
+            );
+
+            const newUsers: ChatUser[] = results
+                .filter(
+                    (
+                        user
+                    ): user is NonNullable<typeof user> =>
+                        user !== null
+                )
+                .map((user) => ({
+                    id: user.id,
+                    firstname: user.firstname ?? "",
+                    lastname: user.lastname ?? "",
+                    email: user.email ?? "",
+                    avatar: user.imagePath ?? null,
+                    online: user.status ?? false,
+                }));
+
+            if (newUsers.length === 0) {
+                return;
+            }
+
+            setLoadedUsers((previousUsers) => {
+                const usersMap = new Map<number, ChatUser>();
+
+                previousUsers.forEach((user) => {
+                    usersMap.set(user.id, user);
+                });
+
+                newUsers.forEach((user) => {
+                    usersMap.set(user.id, user);
+                });
+
+                return Array.from(usersMap.values());
+            });
+        };
+
+        void loadMissingUsers();
+    }, [messages, users, loadedUsers]);
+
     useEffect(() => {
         bottomRef.current?.scrollIntoView({
             behavior: "smooth",
         });
     }, [messages]);
+
+    const getUserById = (userId: number): ChatUser => {
+        const user = loadedUsers.find(
+            (item) => item.id === userId
+        );
+
+        if (user) {
+            return user;
+        }
+
+        return {
+            id: userId,
+            firstname: "Utilisateur",
+            lastname: "",
+            email: "",
+            avatar: null,
+            online: false,
+        };
+    };
 
     let previousDate = "";
 
@@ -55,22 +173,9 @@ const MessageList = ({
                     </div>
                 ) : (
                     messages.map((message) => {
-                        const sender = users.find(
-                            (user) =>
-                                user.id === message.senderId
+                        const messageSender = getUserById(
+                            message.senderId
                         );
-
-                        const fallbackSender: ChatUser = {
-                            id: message.senderId,
-                            firstname: "Utilisateur",
-                            lastname: "",
-                            email: "",
-                            avatar: null,
-                            online: false,
-                        };
-
-                        const messageSender =
-                            sender ?? fallbackSender;
 
                         const date = new Date(
                             message.createdAt
@@ -113,12 +218,7 @@ const MessageList = ({
                                 <MessageItem
                                     message={message}
                                     sender={messageSender}
-                                    currentUserId={
-                                        currentUserId
-                                    }
-                                    replyMessage={
-                                        replyMessage
-                                    }
+                                    replyMessage={replyMessage}
                                     onReply={onReply}
                                     onDelete={onDelete}
                                     onCopy={onCopy}
