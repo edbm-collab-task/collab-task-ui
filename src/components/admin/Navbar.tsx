@@ -1,5 +1,6 @@
 import { Menu } from "lucide-react";
 import UserDropdown from "../user/UserDropdown";
+import NotificationBell from "../notification/NotificationBell";
 
 interface Props {
     toggleSidebar: () => void;
@@ -21,7 +22,8 @@ export default function Navbar({ toggleSidebar }: Props) {
 
 
             {/* Right */}
-            <div className="ml-auto flex items-center">
+            <div className="ml-auto flex items-center gap-2">
+                <NotificationBell />
                 <UserDropdown />
             </div>
 

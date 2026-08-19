@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ArrowLeft, CalendarDays, Loader2, Save, User as UserIcon } from "lucide-react";
+import { ArrowLeft, CalendarDays, Save } from "lucide-react";
+import Spinner from "@/components/common/Spinner";
 
 import { projectService } from "@/services/project/project.service";
-import { userService } from "@/services/user/user.service";
 
 import type { ProjectReq } from "@/types/project";
-import type { UserResponse } from "@/types/user";
 
 interface ProjectForm {
     title: string;
     description: string;
     startDate: string;
     endDate: string;
-    ownerId: string;
 }
 
 const emptyForm: ProjectForm = {
@@ -22,7 +20,6 @@ const emptyForm: ProjectForm = {
     description: "",
     startDate: "",
     endDate: "",
-    ownerId: "",
 };
 
 export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
@@ -32,7 +29,6 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
     const isEdit = mode === "edit" && id;
 
     const [form, setForm] = useState<ProjectForm>(emptyForm);
-    const [users, setUsers] = useState<UserResponse[]>([]);
     const [loading, setLoading] = useState(isEdit);
     const [submitting, setSubmitting] = useState(false);
 
@@ -40,12 +36,7 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
 
         const load = async () => {
             try {
-                const [userList, project] = await Promise.all([
-                    userService.getAll(),
-                    isEdit ? projectService.getById(Number(id)) : Promise.resolve(null),
-                ]);
-
-                setUsers(userList);
+                const project = isEdit ? await projectService.getById(Number(id)) : null;
 
                 if (project) {
                     setForm({
@@ -53,7 +44,6 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                         description: project.description ?? "",
                         startDate: project.startDate?.slice(0, 10) ?? "",
                         endDate: project.endDate?.slice(0, 10) ?? "",
-                        ownerId: String(project.ownerId),
                     });
                 }
             } catch (error) {
@@ -75,17 +65,11 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
             return;
         }
 
-        if (!form.ownerId) {
-            toast.error("Veuillez sélectionner un propriétaire");
-            return;
-        }
-
         const payload: ProjectReq = {
             title: form.title.trim(),
             description: form.description.trim(),
             startDate: form.startDate,
             endDate: form.endDate,
-            ownerId: Number(form.ownerId),
         };
 
         try {
@@ -93,16 +77,15 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
 
             if (isEdit) {
                 await projectService.update(Number(id), payload);
-                toast.success("Projet modifié avec succès");
             } else {
                 await projectService.create(payload);
-                toast.success("Projet créé avec succès");
             }
 
             navigate("/admin/projects");
+            setTimeout(() => toast.success(isEdit ? "Projet modifié avec succès" : "Projet créé avec succès"));
         } catch (error) {
             console.error(error);
-            toast.error("Une erreur est survenue");
+            setTimeout(() => toast.error("Une erreur est survenue"));
         } finally {
             setSubmitting(false);
         }
@@ -114,7 +97,7 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center text-gray-400">
-                <Loader2 size={28} className="animate-spin" />
+                <Spinner size={28} />
             </div>
         );
     }
@@ -192,27 +175,6 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                         </div>
                     </div>
 
-                    <div>
-                        <label className={labelClass}>
-                            <span className="inline-flex items-center gap-1">
-                                <UserIcon size={12} />
-                                Propriétaire *
-                            </span>
-                        </label>
-                        <select
-                            className={inputClass}
-                            value={form.ownerId}
-                            onChange={(e) => setForm({ ...form, ownerId: e.target.value })}
-                        >
-                            <option value="">— Sélectionner un utilisateur —</option>
-                            {users.map(user => (
-                                <option key={user.id} value={user.id}>
-                                    {user.firstname} {user.lastname} ({user.email})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
                     <div className="flex justify-end gap-3 pt-2">
                         <button
                             type="button"
@@ -226,7 +188,7 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                             disabled={submitting}
                             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            {submitting && <Loader2 size={16} className="animate-spin" />}
+                            {submitting && <Spinner size={16} />}
                             <Save size={16} />
                             {isEdit ? "Enregistrer" : "Créer le projet"}
                         </button>

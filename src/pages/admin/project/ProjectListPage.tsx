@@ -5,12 +5,12 @@ import {
     Archive,
     CalendarDays,
     FolderKanban,
-    Loader2,
     Pencil,
     Plus,
     Search,
     User as UserIcon,
 } from "lucide-react";
+import Spinner from "@/components/common/Spinner";
 
 import { projectService } from "@/services/project/project.service";
 import { taskService } from "@/services/task/task.service";
@@ -74,18 +74,18 @@ export default function ProjectListPage() {
         if (!window.confirm(`Archiver le projet « ${project.title} » ?`)) return;
         try {
             await projectService.archive(project.projectId);
-            toast.success("Projet archivé");
             setProjects(prev => prev.filter(p => p.projectId !== project.projectId));
+            setTimeout(() => toast.success("Projet archivé"));
         } catch (error) {
             console.error(error);
-            toast.error("Impossible d'archiver le projet");
+            setTimeout(() => toast.error("Impossible d'archiver le projet"));
         }
     };
 
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center text-gray-400">
-                <Loader2 size={28} className="animate-spin" />
+                <Spinner size={28} />
             </div>
         );
     }

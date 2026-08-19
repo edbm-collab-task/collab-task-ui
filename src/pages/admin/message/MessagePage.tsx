@@ -151,71 +151,6 @@ const MessagePage = () => {
         []
     );
 
-    const refresh = useCallback(
-        async () => {
-            try {
-                const [
-                    loadedUsers,
-                    loadedConversations,
-                ] = await Promise.all([
-                    messageService.getUsers(),
-                    messageService.getConversations(),
-                ]);
-
-                setUsers(loadedUsers);
-                setConversations(
-                    loadedConversations
-                );
-
-                if (
-                    selectedConversation
-                ) {
-                    const updated =
-                        loadedConversations.find(
-                            (conversation) =>
-                                conversation.id ===
-                                selectedConversation.id
-                        );
-
-                    if (updated) {
-                        setSelectedConversation(
-                            updated
-                        );
-
-                        await loadMessages(
-                            updated.id
-                        );
-                    } else {
-                        const next =
-                            loadedConversations[0] ??
-                            null;
-
-                        setSelectedConversation(
-                            next
-                        );
-
-                        if (next) {
-                            await loadMessages(
-                                next.id
-                            );
-                        } else {
-                            setMessages([]);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error(
-                    "Erreur lors du rafraîchissement de la messagerie :",
-                    error
-                );
-            }
-        },
-        [
-            selectedConversation,
-            loadMessages,
-        ]
-    );
-
     useEffect(() => {
         let mounted = true;
 
@@ -844,6 +779,7 @@ const MessagePage = () => {
                             selectedConversation
                         }
                         users={users}
+                        currentUserId={currentUser?.id ?? 0}
                         onSearch={() =>
                             setShowSearch(
                                 true

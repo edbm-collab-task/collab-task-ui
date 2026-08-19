@@ -5,6 +5,7 @@ import {
     CalendarDays,
     Plus,
     GitBranch,
+    Users,
 } from "lucide-react";
 
 import {
@@ -172,6 +173,28 @@ export default function KanbanBoard({
 
                                         {task.description && (
                                             <p className="mt-1 line-clamp-2 text-xs text-gray-500">{task.description}</p>
+                                        )}
+
+                                        {task.assignees && task.assignees.length > 0 && (
+                                            <div className="mt-2 flex items-center gap-1">
+                                                <Users size={11} className="text-gray-400" />
+                                                <div className="flex -space-x-1.5">
+                                                    {task.assignees.slice(0, 4).map(a => (
+                                                        <span
+                                                            key={a.userId}
+                                                            title={`${a.firstname} ${a.lastname}`}
+                                                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[9px] font-bold text-blue-700 ring-1 ring-white"
+                                                        >
+                                                            {a.firstname?.[0]}{a.lastname?.[0]}
+                                                        </span>
+                                                    ))}
+                                                    {task.assignees.length > 4 && (
+                                                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-[9px] font-bold text-gray-500 ring-1 ring-white">
+                                                            +{task.assignees.length - 4}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
                                         )}
 
                                         <div className="mt-3 flex flex-wrap items-center gap-2">

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ArrowLeft, CalendarDays, Loader2, Pencil, User as UserIcon, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, Pencil, User as UserIcon, Plus, Trash2, Users, History } from "lucide-react";
+import Spinner from "@/components/common/Spinner";
 
 import KanbanBoard from "@/components/kanban/KanbanBoard";
 import TaskModal from "@/components/kanban/TaskModal";
@@ -9,10 +10,14 @@ import TaskModal from "@/components/kanban/TaskModal";
 import { projectService } from "@/services/project/project.service";
 import { taskService } from "@/services/task/task.service";
 import { statusService } from "@/services/status/status.service";
+import { contributorService } from "@/services/contributor/contributor.service";
+import { userService } from "@/services/user/user.service";
 import type { ProjectRes } from "@/types/project";
 import type { TaskReq, TaskRes } from "@/types/task";
 import type { Status } from "@/types/status";
-import { STATUSES } from "@/types/task"; // pour le fallback
+import type { Contributor } from "@/types/contributor";
+import type { UserResponse } from "@/types/user";
+import { STATUSES } from "@/types/task";
 
 function formatDate(date: string | null) {
     if (!date) return "—";
@@ -35,7 +40,9 @@ export default function ProjectDetailPage() {
 
     const [project, setProject] = useState<ProjectRes | null>(null);
     const [tasks, setTasks] = useState<TaskRes[]>([]);
-    const [statuses, setStatuses] = useState<Status[]>(convertSTATUSES); // ✅ initialisation correcte
+    const [statuses, setStatuses] = useState<Status[]>(convertSTATUSES);
+    const [contributors, setContributors] = useState<Contributor[]>([]);
+    const [allUsers, setAllUsers] = useState<UserResponse[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -62,6 +69,24 @@ export default function ProjectDetailPage() {
             toast.error("Impossible de charger les statuts");
         }
     }, [projectId]);
+
+    const loadContributors = useCallback(async () => {
+        try {
+            const data = await contributorService.getAll(projectId);
+            setContributors(data);
+        } catch (error) {
+            console.error("Erreur lors du chargement des contributeurs", error);
+        }
+    }, [projectId]);
+
+    const loadUsers = useCallback(async () => {
+        try {
+            const data = await userService.getAll();
+            setAllUsers(data);
+        } catch (error) {
+            console.error("Erreur lors du chargement des utilisateurs", error);
+        }
+    }, []);
     useEffect(() => {
         const load = async () => {
             try {
@@ -70,7 +95,7 @@ export default function ProjectDetailPage() {
                     projectService.getById(projectId),
                 ]);
                 setProject(projectData);
-                await Promise.all([loadTasks(), loadStatuses()]);
+                await Promise.all([loadTasks(), loadStatuses(), loadContributors(), loadUsers()]);
             } catch (error) {
                 console.error(error);
                 toast.error("Projet introuvable");
@@ -80,7 +105,7 @@ export default function ProjectDetailPage() {
             }
         };
         load();
-    }, [projectId, loadTasks, loadStatuses, navigate]);
+    }, [projectId, loadTasks, loadStatuses, loadContributors, loadUsers, navigate]);
 
     // Reset au changement de projet
     useEffect(() => {
@@ -110,13 +135,13 @@ export default function ProjectDetailPage() {
         }
         try {
             await statusService.create({ name: newStatusName.trim(), projectId });
-            toast.success("Statut créé avec succès");
             setNewStatusName("");
             setShowNewStatus(false);
             await loadStatuses();
+            setTimeout(() => toast.success("Statut créé avec succès"));
         } catch (error) {
             console.error(error);
-            toast.error("Impossible de créer le statut");
+            setTimeout(() => toast.error("Impossible de créer le statut"));
         }
     };
 
@@ -124,30 +149,64 @@ export default function ProjectDetailPage() {
         if (!window.confirm(`Supprimer le statut « ${status.name} » ? Les tâches associées devront être réassignées.`)) return;
         try {
             await statusService.delete(status.statusId);
-            toast.success("Statut supprimé");
             await loadStatuses();
+            setTimeout(() => toast.success("Statut supprimé"));
         } catch (error) {
             console.error(error);
-            toast.error("Impossible de supprimer le statut");
+            setTimeout(() => toast.error("Impossible de supprimer le statut"));
         }
     };
 
+    const [addingContributor, setAddingContributor] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
+    const handleAddContributor = async () => {
+        if (!selectedUserId) return;
+        try {
+            setAddingContributor(true);
+            await contributorService.add(projectId, selectedUserId);
+            setSelectedUserId(null);
+            await loadContributors();
+            setTimeout(() => toast.success("Contributeur ajouté"));
+        } catch (error) {
+            console.error(error);
+            setTimeout(() => toast.error("Impossible d'ajouter le contributeur"));
+        } finally {
+            setAddingContributor(false);
+        }
+    };
+
+    const handleRemoveContributor = async (userId: number, userName: string) => {
+        if (!window.confirm(`Retirer ${userName} des contributeurs de ce projet ?`)) return;
+        try {
+            await contributorService.remove(projectId, userId);
+            await loadContributors();
+            setTimeout(() => toast.success("Contributeur retiré"), 0);
+        } catch (error) {
+            console.error(error);
+            setTimeout(() => toast.error("Impossible de retirer le contributeur"), 0);
+        }
+    };
 
     const handleSubmitTask = async (data: TaskReq) => {
         try {
             setSubmitting(true);
             if (editingTask) {
                 await taskService.update(editingTask.taskId, data);
-                toast.success("Tâche mise à jour");
+                setModalOpen(false);
+                setEditingTask(null);
+                await loadTasks();
+                setTimeout(() => toast.success("Tâche mise à jour"));
             } else {
                 await taskService.create(data);
-                toast.success("Tâche créée");
+                setModalOpen(false);
+                setEditingTask(null);
+                await loadTasks();
+                setTimeout(() => toast.success("Tâche créée"));
             }
-            setModalOpen(false);
-            await loadTasks();
         } catch (error) {
             console.error(error);
-            toast.error("Une erreur est survenue");
+            setTimeout(() => toast.error("Une erreur est survenue"));
         } finally {
             setSubmitting(false);
         }
@@ -162,7 +221,7 @@ export default function ProjectDetailPage() {
         } catch (error) {
             console.error(error);
             setTasks(previous);
-            toast.error("Impossible de déplacer la tâche");
+            setTimeout(() => toast.error("Impossible de déplacer la tâche"));
         }
     };
 
@@ -170,18 +229,18 @@ export default function ProjectDetailPage() {
         if (!window.confirm(`Archiver la tâche « ${task.title} » ?`)) return;
         try {
             await taskService.archive(task.taskId);
-            toast.success("Tâche archivée");
             setTasks(prev => prev.filter(t => t.taskId !== task.taskId));
+            setTimeout(() => toast.success("Tâche archivée"));
         } catch (error) {
             console.error(error);
-            toast.error("Impossible d'archiver la tâche");
+            setTimeout(() => toast.error("Impossible d'archiver la tâche"));
         }
     };
 
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center text-gray-400">
-                <Loader2 size={28} className="animate-spin" />
+                <Spinner size={28} />
             </div>
         );
     }
@@ -235,6 +294,14 @@ export default function ProjectDetailPage() {
                     >
                         <Pencil size={15} />
                         Modifier le projet
+                    </button>
+
+                    <button
+                        onClick={() => navigate(`/admin/projects/${project.projectId}/history`)}
+                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-300 hover:text-blue-600"
+                    >
+                        <History size={15} />
+                        Historique
                     </button>
                 </div>
             </div>
@@ -291,6 +358,71 @@ export default function ProjectDetailPage() {
                 </div>
             )}
 
+            {/* Section Contributeurs — propriétaire uniquement */}
+            {project.isOwner && (
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                        <Users size={16} className="text-gray-500" />
+                        <p className="text-sm font-medium text-gray-700">
+                            Contributeurs ({contributors.length})
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-3">
+                    {contributors.map(c => (
+                        <span
+                            key={c.userId}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-600"
+                        >
+                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[9px] font-bold text-blue-700">
+                                {c.userName?.[0]?.toUpperCase() ?? "?"}
+                            </span>
+                            {c.userName}
+                            {c.userId !== project.ownerId && (
+                                <button
+                                    onClick={() => handleRemoveContributor(c.userId, c.userName)}
+                                    className="ml-1 text-gray-400 transition hover:text-red-500"
+                                    title="Retirer ce contributeur"
+                                >
+                                    <Trash2 size={13} />
+                                </button>
+                            )}
+                        </span>
+                    ))}
+                    {contributors.length === 0 && (
+                        <p className="text-xs text-gray-400">Aucun contributeur ajouté.</p>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <select
+                        value={selectedUserId ?? ""}
+                        onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : null)}
+                        className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    >
+                        <option value="">Sélectionner un utilisateur…</option>
+                        {allUsers
+                            .filter(u => u.id !== project.ownerId && !contributors.some(c => c.userId === u.id))
+                            .map(u => (
+                                <option key={u.id} value={u.id}>
+                                    {u.firstname} {u.lastname} ({u.email})
+                                </option>
+                            ))}
+                    </select>
+                    <button
+                        onClick={handleAddContributor}
+                        disabled={!selectedUserId || addingContributor}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+                    >
+                        {addingContributor ? <Spinner size={14} /> : <Plus size={14} />}
+                        Ajouter
+                    </button>
+                </div>
+            </div>
+            )}
+
             {/* Kanban avec statuts dynamiques */}
             <KanbanBoard
                 projectId={projectId}
@@ -306,11 +438,13 @@ export default function ProjectDetailPage() {
             <TaskModal
                 open={modalOpen}
                 projectId={projectId}
+                projectOwnerId={project.ownerId}
                 task={editingTask}
                 defaultStatusId={defaultStatusId}
                 tasks={tasks}
-                statuses={statuses}        // ✅ on passe aussi les statuts
-                onClose={() => setModalOpen(false)}
+                statuses={statuses}
+                contributors={contributors}
+                onClose={() => { setModalOpen(false); setEditingTask(null); }}
                 onSubmit={handleSubmitTask}
                 submitting={submitting}
             />
