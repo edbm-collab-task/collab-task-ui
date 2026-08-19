@@ -85,4 +85,47 @@ export const API_ENDPOINTS = {
         MESSAGES: "/conversations",
     },
 
+    CONVERSATIONS: {
+        ALL: "/conversations",
+        USERS: "/conversations/users",
+        BY_ID: "/conversations",
+        PRIVATE: "/conversations/private",
+        GROUP: "/conversations/group",
+        MEMBERS: (conversationId: number) =>
+            `/conversations/${conversationId}/members`,
+        ADD_MEMBERS: (conversationId: number) =>
+            `/conversations/${conversationId}/members`,
+        REMOVE_MEMBER: (
+            conversationId: number,
+            userId: number
+        ) =>
+            `/conversations/${conversationId}/members/${userId}`,
+        LEAVE: (conversationId: number) =>
+            `/conversations/${conversationId}/leave`,
+
+        READ: (conversationId: number) =>
+            `/conversations/${conversationId}/read`,
+
+        PIN: (conversationId: number) =>
+            `/conversations/${conversationId}/pin`,
+
+        ARCHIVE: (conversationId: number) =>
+            `/conversations/${conversationId}/archive`,
+
+        DELETE: (conversationId: number) =>
+            `/conversations/${conversationId}`,
+
+        MESSAGES: (conversationId: number) =>
+            `/conversations/${conversationId}/messages`,
+
+        SEND_MESSAGE: (conversationId: number) =>
+            `/conversations/${conversationId}/messages`,
+
+        MESSAGE_BY_ID: (messageId: number) =>
+            `/conversations/messages/${messageId}`,
+
+        DELETE_MESSAGE: (messageId: number) =>
+            `/conversations/messages/${messageId}`,
+    },
+
 } as const;
