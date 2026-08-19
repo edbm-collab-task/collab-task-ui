@@ -70,7 +70,7 @@ const getFileIcon = (type: string) => {
     }
 
     if (type === "application/pdf") {
-        return <FileText size={22} className="text-red-500" />;
+        return <FileText size={22} className="text-white-500" />;
     }
 
     if (type?.includes("word") || type?.includes("document")) {
