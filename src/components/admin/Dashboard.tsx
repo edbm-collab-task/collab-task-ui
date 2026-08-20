@@ -8,8 +8,8 @@ import {
     TrendingUp,
     Clock3,
     ArrowRight,
-    Loader2,
 } from "lucide-react";
+import Spinner from "@/components/common/Spinner";
 
 import { userService } from "@/services/user/user.service";
 import { projectService } from "@/services/project/project.service";
@@ -52,7 +52,7 @@ export default function Dashboard() {
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center text-gray-400">
-                <Loader2 size={28} className="animate-spin" />
+                <Spinner size={28} />
             </div>
         );
     }

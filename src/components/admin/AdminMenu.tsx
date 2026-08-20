@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import {LayoutDashboard,Users,Building2,FolderKanban,MessageCircle} from "lucide-react";
+import {LayoutDashboard,Users,Building2,FolderKanban,MessageCircle,Bell} from "lucide-react";
 
 const menus = [
     {
@@ -26,6 +26,11 @@ const menus = [
         name: "Message",
         path: "/admin/messages",
         icon: MessageCircle
+    },
+    {
+        name: "Notifications",
+        path: "/admin/notifications",
+        icon: Bell
     }
 ];
 

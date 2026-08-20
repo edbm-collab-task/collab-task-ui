@@ -20,6 +20,17 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
 
     const fileRef = useRef<HTMLInputElement | null>(null);
 
+    const handleFiles = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const fileList = event.target.files;
+        if (!fileList) return;
+
+        setFiles((current) => [
+            ...current,
+            ...Array.from(fileList),
+        ]);
+
     const handleFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (!event.target.files) return;
 

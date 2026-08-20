@@ -31,6 +31,15 @@ export interface TaskRes {
     statusId: number;
     statusName: string;
     parentTaskId: number | null;
+    assignees: AssigneeRes[];
+}
+
+export interface AssigneeRes {
+    userId: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    imagePath: string | null;
 }
 
 export interface TaskReq {
@@ -41,6 +50,7 @@ export interface TaskReq {
     priorityId: number;
     statusId: number;
     parentTaskId: number | null;
+    assigneeIds: number[];
 }
 
 // Type Status minimal : utilisé par l'API /api/statuses pour les statuts personnalisés.

@@ -21,6 +21,8 @@ import UserProfile from "@/pages/admin/user/UserProfile";
 import EditUserPage from "@/pages/admin/user/EditUserPage";
 import ChangePwdPage from "@/pages/auth/recovery/SetPwd";
 import MessagePage from "@/pages/admin/message/MessagePage";
+import NotificationsPage from "@/pages/admin/notification/NotificationsPage";
+import ActivityHistoryPage from "@/pages/admin/project/ActivityHistoryPage";
 
 export default function Router() {
 
@@ -57,8 +59,11 @@ export default function Router() {
                 <Route path="projects/create" element={<ProjectFormPage mode="create" />} />
                 <Route path="projects/:id" element={<ProjectDetailPage />} />
                 <Route path="projects/:id/edit" element={<ProjectFormPage mode="edit" />} />
+                <Route path="projects/:id/history" element={<ActivityHistoryPage />} />
 
                 <Route path="messages" element={<MessagePage />} />
+
+                <Route path="notifications" element={<NotificationsPage />} />
 
             </Route>
 

@@ -6,10 +6,6 @@ export function toUserTable(user: UserResponse): UserTable {
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
-        number: user.number,
-        gender: user.gender === "M" ? "Homme" : "Femme",
-        status: user.status === true ? "Actif" : "Inactif",
-        createdAt: user.createdAt,
         role: user.role
     };
 }

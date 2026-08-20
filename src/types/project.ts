@@ -7,6 +7,7 @@ export interface ProjectRes {
     isActive: boolean;
     ownerId: number;
     ownerName: string;
+    isOwner: boolean;
 }
 
 export interface ProjectReq {
@@ -14,7 +15,6 @@ export interface ProjectReq {
     description: string;
     startDate: string;
     endDate: string;
-    ownerId: number;
 }
 
 export const projectTr: Record<string, string> = {
