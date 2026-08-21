@@ -118,10 +118,12 @@ export interface UserLoginReq{
 }
 
 export interface UserLoginRes {
+  userId: number;
   role: string;
   firstname: string;
   lastname: string;
   email: string;
+  permissions: string[];
 }
 
 export interface RegisterForm extends UserRequest {

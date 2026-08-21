@@ -18,7 +18,7 @@ interface Props {
 const MessageList = ({
     messages,
     users,
-    currentUserId,
+    currentUserId: _currentUserId,
     onReply,
     onDelete,
     onCopy,

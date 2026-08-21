@@ -83,5 +83,6 @@ export const mapConversation = (
             Number(
                 conversation.unreadCount ?? 0
             ),
+        lastMessage: conversation.lastMessage ?? null,
     };
 };

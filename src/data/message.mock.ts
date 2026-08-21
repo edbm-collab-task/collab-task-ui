@@ -74,6 +74,7 @@ export const initialMessageDatabase: MessageDatabase = {
             archived: false,
             pinned: true,
             unreadCount: 0,
+            lastMessage: null,
         },
         {
             id: 101,
@@ -86,6 +87,7 @@ export const initialMessageDatabase: MessageDatabase = {
             archived: false,
             pinned: false,
             unreadCount: 2,
+            lastMessage: null,
         },
     ],
 

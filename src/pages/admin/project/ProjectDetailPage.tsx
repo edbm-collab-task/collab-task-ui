@@ -12,6 +12,7 @@ import { taskService } from "@/services/task/task.service";
 import { statusService } from "@/services/status/status.service";
 import { contributorService } from "@/services/contributor/contributor.service";
 import { userService } from "@/services/user/user.service";
+import useAuth from "@/hooks/useAuth";
 import type { ProjectRes } from "@/types/project";
 import type { TaskReq, TaskRes } from "@/types/task";
 import type { Status } from "@/types/status";
@@ -37,12 +38,14 @@ export default function ProjectDetailPage() {
     const { id } = useParams();
     const projectId = Number(id);
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [project, setProject] = useState<ProjectRes | null>(null);
     const [tasks, setTasks] = useState<TaskRes[]>([]);
     const [statuses, setStatuses] = useState<Status[]>(convertSTATUSES);
     const [contributors, setContributors] = useState<Contributor[]>([]);
     const [allUsers, setAllUsers] = useState<UserResponse[]>([]);
+    const [usersLoaded, setUsersLoaded] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -80,13 +83,15 @@ export default function ProjectDetailPage() {
     }, [projectId]);
 
     const loadUsers = useCallback(async () => {
+        if (usersLoaded) return;
         try {
             const data = await userService.getAll();
             setAllUsers(data);
+            setUsersLoaded(true);
         } catch (error) {
             console.error("Erreur lors du chargement des utilisateurs", error);
         }
-    }, []);
+    }, [usersLoaded]);
     useEffect(() => {
         const load = async () => {
             try {
@@ -95,7 +100,7 @@ export default function ProjectDetailPage() {
                     projectService.getById(projectId),
                 ]);
                 setProject(projectData);
-                await Promise.all([loadTasks(), loadStatuses(), loadContributors(), loadUsers()]);
+                await Promise.all([loadTasks(), loadStatuses(), loadContributors()]);
             } catch (error) {
                 console.error(error);
                 toast.error("Projet introuvable");
@@ -105,7 +110,7 @@ export default function ProjectDetailPage() {
             }
         };
         load();
-    }, [projectId, loadTasks, loadStatuses, loadContributors, loadUsers, navigate]);
+    }, [projectId, loadTasks, loadStatuses, loadContributors, navigate]);
 
     // Reset au changement de projet
     useEffect(() => {
@@ -114,6 +119,10 @@ export default function ProjectDetailPage() {
         setShowNewStatus(false);
         setNewStatusName("");
     }, [projectId]);
+
+    useEffect(() => {
+        loadUsers();
+    }, [loadUsers]);
 
     const openCreate = (statusId: number) => {
         setEditingTask(null);
@@ -245,7 +254,13 @@ export default function ProjectDetailPage() {
         );
     }
 
-    if (!project) return null;
+    if (!project) {
+        return (
+            <div className="flex h-64 items-center justify-center text-gray-400">
+                <Spinner size={28} />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -416,8 +431,17 @@ export default function ProjectDetailPage() {
                         disabled={!selectedUserId || addingContributor}
                         className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {addingContributor ? <Spinner size={14} /> : <Plus size={14} />}
-                        Ajouter
+                        {addingContributor ? (
+                            <span className="flex items-center gap-1.5">
+                                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                Ajout...
+                            </span>
+                        ) : (
+                            <>
+                                <Plus size={14} />
+                                Ajouter
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
@@ -427,11 +451,13 @@ export default function ProjectDetailPage() {
             <KanbanBoard
                 projectId={projectId}
                 tasks={tasks}
-                statuses={statuses}        // ✅ on passe les statuts au bon type
+                statuses={statuses}
+                allUsers={allUsers}
                 onEditTask={openEdit}
                 onCreateTask={openCreate}
                 onDeleteTask={handleDeleteTask}
                 onMoveTask={handleMoveTask}
+                currentUserId={user?.userId ?? 0}
             />
 
             {/* Modal */}

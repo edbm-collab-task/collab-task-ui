@@ -86,7 +86,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
     const isMine =
         Boolean(user?.email) &&
         Boolean(sender?.email) &&
-        user.email.trim().toLowerCase() === sender.email.trim().toLowerCase();
+        user?.email?.trim().toLowerCase() === sender.email.trim().toLowerCase();
 
     const fullName = `${sender.firstname ?? ""} ${sender.lastname ?? ""}`.trim();
 

@@ -79,6 +79,19 @@ export const API_ENDPOINTS = {
 
     },
 
+    ROLES: {
+        ALL: "/roles",
+        BY_ID: "/roles",
+        CREATE: "/roles",
+        UPDATE: "/roles",
+        DELETE: "/roles",
+        PERMISSIONS: "/roles/permissions",
+    },
+
+    ADMINS: {
+        ALL: "/users/admins",
+    },
+
     MESSAGES: {
         CONVERSATIONS: "/conversations",
         USERS: "/conversations/users",
