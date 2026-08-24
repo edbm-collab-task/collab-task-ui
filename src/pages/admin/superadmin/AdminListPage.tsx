@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { Eye, Pencil, Trash, Plus } from "lucide-react";
+import { Eye, Pencil, Plus } from "lucide-react";
 
 import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
 import { createColumns } from "@/components/table/createColumns";
 import TablePagination from "@/components/table/TablePagination";
 import { confirmDelete } from "@/components/modal/confirmDelete";
+import TableFilter from "@/components/table/TableFilter";
 
 import { type UserTable, type UserDetails } from "@/types/user";
-
 import type { TableAction, HeaderAction } from "@/types/table";
 
 import { DetailModal } from "@/components/details/globalDetail";
@@ -32,139 +32,369 @@ export default function AdminListPage() {
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
+
+    type StatusFilter = "all" | "active" | "disable";
+
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
+
     const pageSize = 5;
 
     const navigate = useNavigate();
 
+
+    /**
+     * Charge tous les administrateurs.
+     */
     const loadAdmins = async () => {
+
         try {
+
             setLoading(true);
-            const response = await userService.getAdmins();
+
+            const response =
+                await userService.getAdmins();
+
             setAdmins(response);
+
         } catch (error) {
-            console.error("Erreur lors du chargement des administrateurs :", error);
+
+            console.error(
+                "Erreur lors du chargement des administrateurs :",
+                error
+            );
+
             setAdmins([]);
+
         } finally {
+
             setLoading(false);
         }
     };
 
-    useEffect(() => { loadAdmins(); }, []);
 
-    const columns = createColumns(admins, adminTr, [
-        "firstname",
-        "lastname",
-        "email",
-        "role"
-    ]);
+    /**
+     * Recharge les administrateurs.
+     */
+    useEffect(() => {
 
+        loadAdmins();
+
+    }, []);
+
+
+    /**
+     * Création des colonnes.
+     */
+    const columns = createColumns(
+        admins,
+        adminTr,
+        [
+            "firstname",
+            "lastname",
+            "email",
+            "role"
+        ]
+    );
+
+
+    /**
+     * Actions disponibles pour chaque administrateur.
+     */
     const actions: TableAction<UserTable>[] = [
+
+        /**
+         * Voir plus.
+         */
         {
             label: "Voir plus",
+
             type: "view",
+
             icon: <Eye size={18} />,
+
             roles: ["SUPER_ADMIN"],
+
             onClick: async (admin) => {
+
                 try {
-                    const details = await userService.getById(admin.id);
+
+                    const details =
+                        await userService.getById(admin.id);
+
                     setSelectedAdmin(details);
+
                     setDetailModalOpen(true);
+
                 } catch (error) {
-                    console.error("Erreur lors du chargement des détails :", error);
+
+                    console.error(
+                        "Erreur lors du chargement des détails :",
+                        error
+                    );
                 }
             },
         },
+
+
+        /**
+         * Modifier le rôle.
+         */
         {
             label: "Modifier le rôle",
+
             type: "edit",
-            icon: <Pencil size={18} />,
+
+            icon: (
+                <Pencil
+                    size={18}
+                    className="text-red-400"
+                />
+            ),
+
             roles: ["SUPER_ADMIN"],
+
             onClick: (admin) => {
-                navigate("/admin/users/edit-role", {
-                    state: { email: admin.email }
-                });
+
+                navigate(
+                    "/admin/users/edit-role",
+                    {
+                        state: {
+                            email: admin.email
+                        }
+                    }
+                );
             }
         },
+
+
+        /**
+         * Activer / Désactiver.
+         */
         {
-            label: "Désactiver",
+            label: statusFilter === "disable"
+                ? "Activer"
+                : "Désactiver",
+
             type: "delete",
-            icon: <Trash size={18} />,
+
+            icon: (admin) => (
+                <div className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${admin.isActive ? "bg-sky-600" : "bg-gray-400"}`}>
+                    <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${admin.isActive ? "right-0.5" : "left-0.5"}`} />
+                </div>
+            ),
+
             roles: ["SUPER_ADMIN"],
+
             onClick: async (admin) => {
-                const confirmed = await confirmDelete("administrateur");
-                if (!confirmed) return;
+
+                const newStatus =
+                    !admin.isActive;
+
+
+                const confirmed =
+                    await confirmDelete(
+                        newStatus
+                            ? "activer ce compte"
+                            : "désactiver ce compte"
+                    );
+
+
+                if (!confirmed) {
+                    return;
+                }
+
+
                 try {
-                    await userService.updateAccountStatus(admin.email, false);
-                    setAdmins(prev => prev.filter(a => a.id !== admin.id));
+
+                    await userService.updateAccountStatus(
+                        admin.email,
+                        newStatus
+                    );
+
+
+                    await loadAdmins();
+
                 } catch (error) {
-                    console.error("Erreur lors de la désactivation :", error);
+
+                    console.error(
+                        newStatus
+                            ? "Erreur lors de l'activation :"
+                            : "Erreur lors de la désactivation :",
+                        error
+                    );
                 }
             }
         }
     ];
 
+
+    /**
+     * Actions de l'en-tête.
+     */
     const headerActions: HeaderAction[] = [
+
         {
             label: "Ajouter un admin",
+
             icon: <Plus size={18} />,
+
             type: "primary",
+
             roles: ["SUPER_ADMIN"],
+
             onClick: () => {
-                navigate("/admin/users/create");
+
+                navigate(
+                    "/admin/users/create"
+                );
             }
         }
     ];
 
+
+    /**
+     * Filtrage par statut + recherche.
+     *
+     * Le statut est filtré localement
+     * à partir de isActive.
+     */
     const filteredAdmins = admins
-        .filter(item => {
-            const value = search.toLowerCase();
-            return Object.values(item)
+
+        .filter(admin => {
+
+            if (statusFilter === "active") {
+                return admin.isActive;
+            }
+
+            if (statusFilter === "disable") {
+                return !admin.isActive;
+            }
+
+            return true;
+        })
+
+        .filter(admin => {
+
+            const value =
+                search.toLowerCase();
+
+            return Object.values(admin)
                 .some(field =>
-                    String(field).toLowerCase().includes(value)
+                    String(field)
+                        .toLowerCase()
+                        .includes(value)
                 );
         });
 
-    const totalPages = Math.ceil(filteredAdmins.length / pageSize);
-    const paginatedAdmins = filteredAdmins.slice(
-        (page - 1) * pageSize,
-        page * pageSize
+
+    /**
+     * Nombre total de pages.
+     */
+    const totalPages = Math.ceil(
+        filteredAdmins.length / pageSize
     );
 
+
+    /**
+     * Administrateurs de la page actuelle.
+     */
+    const paginatedAdmins =
+        filteredAdmins.slice(
+            (page - 1) * pageSize,
+            page * pageSize
+        );
+
+
     return (
+
         <div className="space-y-6">
+
             <DetailModal<UserDetails>
+
                 open={detailModalOpen}
+
                 data={selectedAdmin}
+
                 title="Détails de l'administrateur"
+
                 description="Informations du compte administrateur"
+
                 fields={userDetailFields}
+
                 onClose={() => {
+
                     setDetailModalOpen(false);
+
                     setSelectedAdmin(null);
                 }}
             />
 
+
             <TableHeader
+
                 title="Gestion des administrateurs"
+
                 search={search}
+
                 onSearch={setSearch}
+
                 actions={headerActions}
             />
 
+
+            <TableFilter<StatusFilter>
+
+                value={statusFilter}
+
+                options={[
+                    {
+                        label: "Tous",
+                        value: "all"
+                    },
+                    {
+                        label: "Actifs",
+                        value: "active"
+                    },
+                    {
+                        label: "Désactivés",
+                        value: "disable"
+                    }
+                ]}
+
+                onChange={(value) => {
+
+                    setStatusFilter(value);
+
+                    setPage(1);
+                }}
+            />
+
+
             <GlobalTable<UserTable>
+
                 data={paginatedAdmins}
+
                 columns={columns}
+
                 actions={actions}
+
                 roles={["SUPER_ADMIN"]}
+
                 loading={loading}
+
                 emptyMessage="Aucun administrateur trouvé"
             />
 
+
             <TablePagination
+
                 page={page}
+
                 totalPages={totalPages}
+
                 onChange={setPage}
             />
+
         </div>
     );
 }
