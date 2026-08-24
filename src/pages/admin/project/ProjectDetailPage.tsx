@@ -85,7 +85,7 @@ export default function ProjectDetailPage() {
     const loadUsers = useCallback(async () => {
         if (usersLoaded) return;
         try {
-            const data = await userService.getAll();
+            const data = await userService.getAll({ silent: true });
             setAllUsers(data);
             setUsersLoaded(true);
         } catch (error) {

@@ -3,6 +3,7 @@ import { X, MessageSquare, Send } from "lucide-react";
 import type { TaskComment } from "@/types/comment";
 import type { UserResponse } from "@/types/user";
 import { commentService } from "@/services/comment/comment.service";
+import { userService } from "@/services/user/user.service";
 import CommentItem from "./CommentItem";
 import MentionDropdown from "./MentionDropdown";
 
@@ -22,10 +23,21 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
     const [replyTo, setReplyTo] = useState<number | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+    const [users, setUsers] = useState<UserResponse[]>(availableUsers);
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const onCountChangeRef = useRef(onCountChange);
     onCountChangeRef.current = onCountChange;
+
+    useEffect(() => {
+        setUsers(availableUsers);
+    }, [availableUsers]);
+
+    useEffect(() => {
+        if (open && users.length === 0) {
+            userService.getAll({ silent: true }).then(setUsers).catch(() => {});
+        }
+    }, [open, users.length]);
 
     const loadComments = useCallback(async () => {
         if (!taskId) return;
@@ -85,7 +97,7 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
         const textBeforeCursor = newComment.slice(0, cursorPos);
         const textAfterCursor = newComment.slice(cursorPos);
         const atIndex = textBeforeCursor.lastIndexOf("@");
-        const mention = `@{${user.id}}`;
+        const mention = `@${user.firstname} ${user.lastname}`;
         const newText = textBeforeCursor.slice(0, atIndex) + mention + " " + textAfterCursor;
         setNewComment(newText);
         setMentionQuery(null);
@@ -200,7 +212,7 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
                                     comment={comment}
                                     taskId={taskId!}
                                     currentUserId={currentUserId}
-                                    availableUsers={availableUsers}
+                                    availableUsers={users}
                                     onUpdate={handleUpdate}
                                     onDelete={handleDelete}
                                     onReaction={handleReaction}
@@ -238,7 +250,7 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
                         <div className="relative flex-1">
                             {mentionQuery !== null && (
                                 <MentionDropdown
-                                    users={availableUsers}
+                                    users={users}
                                     query={mentionQuery}
                                     onSelect={handleMentionSelect}
                                     onClose={() => setMentionQuery(null)}

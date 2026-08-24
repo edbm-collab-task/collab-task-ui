@@ -55,29 +55,43 @@ export default function CommentItem({
     };
 
     const renderContent = (text: string) => {
-        const mentionRegex = /@\{(\d+)\}/g;
         const parts: React.ReactNode[] = [];
         let lastIndex = 0;
-        let match;
 
-        while ((match = mentionRegex.exec(text)) !== null) {
-            if (match.index > lastIndex) {
-                parts.push(text.slice(lastIndex, match.index));
+        const sortedUsers = [...availableUsers].sort((a, b) => {
+            const nameA = `${a.firstname} ${a.lastname}`;
+            const nameB = `${b.firstname} ${b.lastname}`;
+            return nameB.length - nameA.length;
+        });
+
+        for (const user of sortedUsers) {
+            const fullName = `${user.firstname} ${user.lastname}`;
+            const mentionText = `@${fullName}`;
+            let searchFrom = 0;
+            let idx;
+
+            while ((idx = text.indexOf(mentionText, searchFrom)) !== -1) {
+                const afterIdx = idx + mentionText.length;
+                const isWordBoundary = afterIdx >= text.length || !/[a-zA-ZÀ-ÿ]/.test(text[afterIdx]);
+                const isStartBoundary = idx === 0 || !/[a-zA-ZÀ-ÿ]/.test(text[idx - 1]);
+                if (idx > lastIndex && isStartBoundary && isWordBoundary) {
+                    parts.push(text.slice(lastIndex, idx));
+                }
+                parts.push(
+                    <span
+                        key={`mention-${idx}`}
+                        className="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-semibold text-blue-700"
+                    >
+                        @{fullName}
+                    </span>
+                );
+                lastIndex = idx + mentionText.length;
+                searchFrom = idx + 1;
             }
-            const userId = Number(match[1]);
-            const mentionedUser = availableUsers.find(u => u.id === userId);
-            const name = mentionedUser
-                ? `${mentionedUser.firstname} ${mentionedUser.lastname}`
-                : `Utilisateur #${userId}`;
-            parts.push(
-                <span
-                    key={`mention-${match.index}`}
-                    className="inline-flex items-center gap-0.5 rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-semibold text-blue-700"
-                >
-                    @{name}
-                </span>
-            );
-            lastIndex = match.index + match[0].length;
+        }
+
+        if (lastIndex === 0) {
+            return text;
         }
 
         if (lastIndex < text.length) {
