@@ -528,28 +528,11 @@ const MessagePage = () => {
                         conversation={selectedConversation}
                         users={users}
                         currentUserId={currentUser?.id ?? 0}
-                        onSearch={() =>
-                            setShowSearch(
-                                true
-                            )
-                        }
-                        onAudioCall={() =>
-                            setCall("audio")
-                        }
-                        onVideoCall={() =>
-                            setCall("video")
-                        }
-                        onMembers={() =>
-                            setShowMembers(
-                                true
-                            )
-                        }
-                        onMenu={() =>
-                            setShowMenu(
-                                (value) =>
-                                    !value
-                            )
-                        }
+                        onSearch={() => setShowSearch(true)}
+                        onAudioCall={() => setCall("audio")}
+                        onVideoCall={() => setCall("video")}
+                        onMembers={() => setShowMembers(true)}
+                        onMenu={() => setShowMenu((value) => !value)}
                     />
 
                     <MessageList

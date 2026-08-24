@@ -8,6 +8,7 @@ import {
     TrendingUp,
     Clock3,
     ArrowRight,
+    ShieldAlert,
 } from "lucide-react";
 import Spinner from "@/components/common/Spinner";
 
@@ -15,6 +16,7 @@ import { userService } from "@/services/user/user.service";
 import { projectService } from "@/services/project/project.service";
 import { taskService } from "@/services/task/task.service";
 import { STATUSES } from "@/types/task";
+import usePermissions from "@/hooks/usePermissions";
 
 import type { UserResponse } from "@/types/user";
 import type { ProjectRes } from "@/types/project";
@@ -23,22 +25,28 @@ import type { TaskRes } from "@/types/task";
 export default function Dashboard() {
 
     const navigate = useNavigate();
+    const { hasPermission } = usePermissions();
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [projects, setProjects] = useState<ProjectRes[]>([]);
     const [tasks, setTasks] = useState<TaskRes[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!hasPermission("VIEW_REPORTS")) {
+            setLoading(false);
+            return;
+        }
+
         const load = async () => {
             try {
-                const [userList, projectList, taskList] = await Promise.all([
-                    userService.getAll(),
+                const results = await Promise.allSettled([
+                    userService.getAll({ silent: true }),
                     projectService.getAll(),
                     taskService.getAll(),
                 ]);
-                setUsers(userList);
-                setProjects(projectList);
-                setTasks(taskList);
+                if (results[0].status === "fulfilled") setUsers(results[0].value);
+                if (results[1].status === "fulfilled") setProjects(results[1].value);
+                if (results[2].status === "fulfilled") setTasks(results[2].value);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -53,6 +61,18 @@ export default function Dashboard() {
         return (
             <div className="flex h-64 items-center justify-center text-gray-400">
                 <Spinner size={28} />
+            </div>
+        );
+    }
+
+    if (!hasPermission("VIEW_REPORTS")) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+                <ShieldAlert size={48} className="mb-4 text-red-400" />
+                <h2 className="text-xl font-bold text-gray-800">Accès refusé</h2>
+                <p className="mt-2 text-sm text-gray-500">
+                    Vous n'avez pas la permission d'accéder au tableau de bord.
+                </p>
             </div>
         );
     }

@@ -188,8 +188,11 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                             disabled={submitting}
                             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            {submitting && <Spinner size={16} />}
-                            <Save size={16} />
+                            {submitting ? (
+                                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            ) : (
+                                <Save size={16} />
+                            )}
                             {isEdit ? "Enregistrer" : "Créer le projet"}
                         </button>
                     </div>

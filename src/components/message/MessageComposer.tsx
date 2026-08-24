@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+
 import {
     AtSign,
     Bold,
@@ -14,6 +15,7 @@ import {
 
 import EmojiPicker from "./EmojiPicker";
 import MentionPicker from "./MentionPicker";
+
 import type { ChatUser } from "@/types/message";
 
 interface Props {
@@ -135,7 +137,6 @@ const MessageComposer = ({
             (current) =>
                 `${current}${current ? " " : ""}@${user.firstname} ${user.lastname} `
         );
-
         setShowMention(false);
     };
 
@@ -151,7 +152,6 @@ const MessageComposer = ({
 
     return (
         <div className="shrink-0 border-t border-gray-200 bg-white p-4">
-
             {/* =========================
                 REPLY MESSAGE
             ========================== */}
@@ -225,12 +225,10 @@ const MessageComposer = ({
                 COMPOSER
             ========================== */}
             <div className="relative mx-auto max-w-5xl rounded-xl border border-gray-300 bg-white shadow-sm transition-colors focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-100">
-
                 {/* =========================
                     TOOLBAR
                 ========================== */}
                 <div className="flex items-center gap-1 border-b border-gray-100 px-3 py-2">
-
                     <button
                         type="button"
                         title="Gras"
@@ -284,10 +282,8 @@ const MessageComposer = ({
                     BOTTOM ACTIONS
                 ========================== */}
                 <div className="flex items-center justify-between px-3 pb-3">
-
                     {/* LEFT ACTIONS */}
                     <div className="relative flex items-center gap-1">
-
                         {/* FILE */}
                         <label
                             title="Ajouter un fichier"
@@ -379,9 +375,7 @@ const MessageComposer = ({
 /**
  * Formater la taille d'un fichier
  */
-const formatFileSize = (
-    bytes: number
-): string => {
+const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) {
         return `${bytes} B`;
     }

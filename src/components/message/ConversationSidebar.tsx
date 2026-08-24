@@ -21,7 +21,7 @@ const getUserImageUrl = (userId: number, avatar: string | null | undefined): str
     return `${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS.BASE}/${userId}/image`;
 };
 
-const ConversationSidebar = ({ conversations, users, messages, currentUserId, selectedId, onSelect, onNewConversation, onCreateGroup }: Props) => {
+const ConversationSidebar = ({ conversations, users, messages: _messages, currentUserId, selectedId, onSelect, onNewConversation, onCreateGroup }: Props) => {
     const [search, setSearch] = useState("");
     const [showArchived, setShowArchived] = useState(false);
 
