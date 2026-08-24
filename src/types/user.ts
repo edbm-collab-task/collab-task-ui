@@ -73,6 +73,8 @@ export interface UserTable {
     email: string;
 
     role: RoleType;
+
+    isActive: boolean;
 }
 
 export interface UserDetails {
