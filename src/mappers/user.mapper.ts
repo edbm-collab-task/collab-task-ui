@@ -6,6 +6,7 @@ export function toUserTable(user: UserResponse): UserTable {
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isActive: user.isActive
     };
 }
