@@ -2,17 +2,16 @@ import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
-    PointElement,
-    LineElement,
+    BarElement,
     Tooltip,
     Legend,
-    Filler,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
+import type { ChartOptions } from "chart.js";
+import { Bar } from "react-chartjs-2";
 import { TrendingUp } from "lucide-react";
 import type { DashboardEvolution } from "@/types/dashboard";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 interface Props {
     evolution: DashboardEvolution;
@@ -24,35 +23,36 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
 
     const labels = evolution.points.map(point => point.label);
 
+    const totalCreated = evolution.points.reduce((sum, p) => sum + p.created, 0);
+    const totalCompleted = evolution.points.reduce((sum, p) => sum + p.completed, 0);
+
     const data = {
         labels,
         datasets: [
             {
-                label: "Taches cree\u00E9es",
+                label: "T\u00E2ches cr\u00E9\u00E9es",
                 data: evolution.points.map(point => point.created),
-                borderColor: "#3b82f6",
-                backgroundColor: "rgba(59, 130, 246, 0.08)",
-                fill: true,
-                tension: 0.35,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                pointBackgroundColor: "#3b82f6",
+                backgroundColor: "rgba(59, 130, 246, 0.85)",
+                hoverBackgroundColor: "rgba(59, 130, 246, 1)",
+                borderRadius: 4,
+                borderSkipped: false,
+                barPercentage: 0.7,
+                categoryPercentage: 0.65,
             },
             {
-                label: "Taches termin\u00E9es",
+                label: "T\u00E2ches termin\u00E9es",
                 data: evolution.points.map(point => point.completed),
-                borderColor: "#10b981",
-                backgroundColor: "rgba(16, 185, 129, 0.08)",
-                fill: true,
-                tension: 0.35,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                pointBackgroundColor: "#10b981",
+                backgroundColor: "rgba(16, 185, 129, 0.85)",
+                hoverBackgroundColor: "rgba(16, 185, 129, 1)",
+                borderRadius: 4,
+                borderSkipped: false,
+                barPercentage: 0.7,
+                categoryPercentage: 0.65,
             },
         ],
     };
 
-    const options = {
+    const options: ChartOptions<"bar"> = {
         responsive: true,
         maintainAspectRatio: false,
         interaction: {
@@ -64,8 +64,8 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
                 position: "bottom" as const,
                 labels: {
                     usePointStyle: true,
-                    boxWidth: 8,
-                    boxHeight: 8,
+                    boxWidth: 10,
+                    boxHeight: 10,
                     padding: 20,
                     color: "#6b7280",
                     font: { family: fontFamily, size: 12 },
@@ -77,10 +77,18 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
                 cornerRadius: 8,
                 titleFont: { family: fontFamily },
                 bodyFont: { family: fontFamily },
+                bodySpacing: 6,
                 displayColors: true,
                 usePointStyle: true,
-                boxWidth: 8,
-                boxHeight: 8,
+                boxWidth: 10,
+                boxHeight: 10,
+                callbacks: {
+                    title: (items) => items[0]?.label ?? "",
+                    label: (context) => {
+                        const label = context.dataset.label ?? "";
+                        return `${label} : ${context.raw}`;
+                    },
+                },
             },
         },
         scales: {
@@ -109,17 +117,32 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
 
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex items-center justify-between">
-                <h3 className="font-bold text-gray-800">Evolution de l&apos;activit\u00E9</h3>
+            <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-bold text-gray-800">\u00C9volution de l&apos;activit\u00E9</h3>
                 <TrendingUp size={18} className="text-gray-400" />
             </div>
 
             {evolution.points.length === 0 ? (
                 <p className="py-16 text-center text-sm text-gray-400">Aucune donn\u00E9e sur la p\u00E9riode s\u00E9lectionn\u00E9e</p>
             ) : (
-                <div className="h-72 sm:h-80">
-                    <Line data={data} options={options} />
-                </div>
+                <>
+                    <div className="mb-5 flex items-center gap-6 text-sm">
+                        <span className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-sm bg-blue-500" />
+                            <span className="text-gray-600">Cr\u00E9\u00E9es</span>
+                            <span className="font-bold text-gray-800">{totalCreated}</span>
+                        </span>
+                        <span className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
+                            <span className="text-gray-600">Termin\u00E9es</span>
+                            <span className="font-bold text-gray-800">{totalCompleted}</span>
+                        </span>
+                    </div>
+
+                    <div className="h-72 sm:h-80">
+                        <Bar data={data} options={options} />
+                    </div>
+                </>
             )}
         </div>
     );
