@@ -6,6 +6,7 @@ export const DASHBOARD_PERIODS = {
     LAST_30_DAYS: "LAST_30_DAYS",
     LAST_3_MONTHS: "LAST_3_MONTHS",
     THIS_YEAR: "THIS_YEAR",
+    CUSTOM: "CUSTOM",
 } as const;
 
 export type DashboardPeriod = (typeof DASHBOARD_PERIODS)[keyof typeof DASHBOARD_PERIODS];
@@ -16,7 +17,16 @@ export const DASHBOARD_PERIOD_OPTIONS: { label: string; value: DashboardPeriod }
     { label: "30 derniers jours", value: DASHBOARD_PERIODS.LAST_30_DAYS },
     { label: "3 derniers mois", value: DASHBOARD_PERIODS.LAST_3_MONTHS },
     { label: "Cette année", value: DASHBOARD_PERIODS.THIS_YEAR },
+    { label: "Personnalisée", value: DASHBOARD_PERIODS.CUSTOM },
 ];
+
+// Paramètres envoyés au service dashboard.
+// Le backend recevra exactement cette structure.
+export interface DashboardPeriodParams {
+    period: DashboardPeriod;
+    startDate?: string;
+    endDate?: string;
+}
 
 export interface DashboardStats {
     projects: number;

@@ -3,7 +3,7 @@ import type {
     DashboardActivityItem,
     DashboardData,
     DashboardEvolutionPoint,
-    DashboardPeriod,
+    DashboardPeriodParams,
 } from "@/types/dashboard";
 
 const MONTHS_FR = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
@@ -34,44 +34,63 @@ function formatDayMonth(date: Date): string {
     return `${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}`;
 }
 
-function buildEvolutionPoints(period: DashboardPeriod, random: () => number): DashboardEvolutionPoint[] {
+// Résout les bornes temporelles selon la période sélectionnée.
+function resolveTimeRange(params: DashboardPeriodParams): { start: Date; end: Date } {
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    switch (params.period) {
+        case DASHBOARD_PERIODS.TODAY:
+            return { start: today, end: new Date(today.getTime() + 86400000 - 1) };
+
+        case DASHBOARD_PERIODS.LAST_7_DAYS:
+            return { start: new Date(today.getTime() - 6 * 86400000), end: now };
+
+        case DASHBOARD_PERIODS.LAST_30_DAYS:
+            return { start: new Date(today.getTime() - 29 * 86400000), end: now };
+
+        case DASHBOARD_PERIODS.LAST_3_MONTHS:
+            return { start: new Date(today.getTime() - 89 * 86400000), end: now };
+
+        case DASHBOARD_PERIODS.THIS_YEAR:
+            return { start: new Date(now.getFullYear(), 0, 1), end: now };
+
+        case DASHBOARD_PERIODS.CUSTOM: {
+            const start = params.startDate ? new Date(params.startDate) : new Date(today.getTime() - 29 * 86400000);
+            const end = params.endDate ? new Date(params.endDate + "T23:59:59") : now;
+            return { start, end };
+        }
+    }
+}
+
+function buildEvolutionPoints(params: DashboardPeriodParams, random: () => number): DashboardEvolutionPoint[] {
+    const { start, end } = resolveTimeRange(params);
+    const rangeMs = end.getTime() - start.getTime();
+    const rangeDays = Math.max(rangeMs / 86400000, 1);
+
     let pointCount: number;
     let labelFn: (index: number) => string;
 
-    switch (period) {
-        case DASHBOARD_PERIODS.TODAY:
-            pointCount = 6;
-            labelFn = (i) => `${pad2(6 + i * 3)}h`;
-            break;
-        case DASHBOARD_PERIODS.LAST_7_DAYS:
-            pointCount = 7;
-            labelFn = (i) => {
-                const d = new Date(now);
-                d.setDate(now.getDate() - (6 - i));
-                return DAYS_FR[d.getDay()];
-            };
-            break;
-        case DASHBOARD_PERIODS.LAST_30_DAYS:
-            pointCount = 30;
-            labelFn = (i) => {
-                const d = new Date(now);
-                d.setDate(now.getDate() - (29 - i));
-                return formatDayMonth(d);
-            };
-            break;
-        case DASHBOARD_PERIODS.LAST_3_MONTHS:
-            pointCount = 12;
-            labelFn = (i) => {
-                const d = new Date(now);
-                d.setDate(now.getDate() - (11 - i) * 7);
-                return formatDayMonth(d);
-            };
-            break;
-        case DASHBOARD_PERIODS.THIS_YEAR:
-            pointCount = 12;
-            labelFn = (i) => MONTHS_FR[i];
-            break;
+    if (params.period === DASHBOARD_PERIODS.TODAY) {
+        pointCount = 6;
+        labelFn = (i) => `${pad2(6 + i * 3)}h`;
+    } else if (params.period === DASHBOARD_PERIODS.THIS_YEAR) {
+        pointCount = 12;
+        labelFn = (i) => MONTHS_FR[(start.getMonth() + i) % 12];
+    } else if (rangeDays <= 7) {
+        pointCount = Math.min(Math.ceil(rangeDays), 7);
+        labelFn = (i) => {
+            const d = new Date(start.getTime() + i * 86400000);
+            return DAYS_FR[d.getDay()];
+        };
+    } else {
+        // Pour les plages plus longues : 1 point par semaine (max 14)
+        pointCount = Math.min(Math.ceil(rangeDays / 7), 14);
+        const stepMs = rangeMs / Math.max(pointCount - 1, 1);
+        labelFn = (i) => {
+            const d = new Date(start.getTime() + i * stepMs);
+            return formatDayMonth(d);
+        };
     }
 
     return Array.from({ length: pointCount }, (_, index) => ({
@@ -98,72 +117,53 @@ function minutesAgo(minutes: number): string {
 const ACTIVITY_CATALOG: Omit<DashboardActivityItem, "id">[] = [
     {
         type: "TASK_STATUS_CHANGED",
-        description: "Tache << Creer le formulaire >> marquee comme terminee",
+        description: "Tache \u00AB Creer le formulaire \u00BB marquee comme terminee",
         userName: "Tsiaro Rakotonirina",
         projectName: "CollaB Tasks",
         createdAt: minutesAgo(25),
     },
     {
         type: "PROJECT_CREATED",
-        description: "Projet << Portail EDBM >> cree",
+        description: "Projet \u00AB Portail EDBM \u00BB cree",
         userName: "Ambinintsoa R.",
         projectName: "Portail EDBM",
         createdAt: minutesAgo(120),
     },
     {
         type: "TASK_ASSIGNED",
-        description: "Tache << Revue de code >> assignee a Jean Rakoto",
+        description: "Tache \u00AB Revue de code \u00BB assignee a Jean Rakoto",
         userName: "Sarah Andria",
         projectName: "CollaB Tasks",
         createdAt: minutesAgo(300),
     },
     {
         type: "TASK_CREATED",
-        description: "Tache << Preparer la demo >> creee",
+        description: "Tache \u00AB Preparer la demo \u00BB creee",
         userName: "Hery Andrianina",
         projectName: "Refonte Intranet",
         createdAt: minutesAgo(60 * 26),
     },
     {
         type: "TASK_UPDATED",
-        description: "Description de la tache << Migration API >> modifiee",
+        description: "Description de la tache \u00AB Migration API \u00BB modifiee",
         userName: "Nicolas Randria",
         projectName: "Portail EDBM",
         createdAt: minutesAgo(60 * 49),
     },
     {
         type: "TASK_PRIORITY_CHANGED",
-        description: "Priorite de la tache << Audit securite >> passee a Urgente",
+        description: "Priorite de la tache \u00AB Audit securite \u00BB passee a Urgente",
         userName: "Mickael Rabe",
         projectName: "Application Mobile",
         createdAt: minutesAgo(60 * 96),
     },
 ];
 
-function buildRecentActivity(period: DashboardPeriod): DashboardActivityItem[] {
-    const now = new Date();
-    let windowStart: Date;
-
-    switch (period) {
-        case DASHBOARD_PERIODS.TODAY:
-            windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            break;
-        case DASHBOARD_PERIODS.LAST_7_DAYS:
-            windowStart = new Date(now.getTime() - 7 * 86400000);
-            break;
-        case DASHBOARD_PERIODS.LAST_30_DAYS:
-            windowStart = new Date(now.getTime() - 30 * 86400000);
-            break;
-        case DASHBOARD_PERIODS.LAST_3_MONTHS:
-            windowStart = new Date(now.getTime() - 90 * 86400000);
-            break;
-        case DASHBOARD_PERIODS.THIS_YEAR:
-            windowStart = new Date(now.getFullYear(), 0, 1);
-            break;
-    }
+function buildRecentActivity(params: DashboardPeriodParams): DashboardActivityItem[] {
+    const { start } = resolveTimeRange(params);
 
     return ACTIVITY_CATALOG
-        .filter(item => new Date(item.createdAt) >= windowStart)
+        .filter(item => new Date(item.createdAt) >= start)
         .map((item, index) => ({ ...item, id: index + 1 }));
 }
 
@@ -175,11 +175,11 @@ const RECENT_PROJECTS_MOCK: DashboardData["recentProjects"] = [
     { projectId: 5, title: "Migration Cloud", ownerName: "Hery Andrianina", progress: 100 },
 ];
 
-export function buildDashboardMockData(period: DashboardPeriod): DashboardData {
-    const random = createSeededRandom(hashString(period));
+export function buildDashboardMockData(params: DashboardPeriodParams): DashboardData {
+    const random = createSeededRandom(hashString(params.period + (params.startDate ?? "") + (params.endDate ?? "")));
 
     const stats = buildStats(random);
-    const evolution = { points: buildEvolutionPoints(period, random) };
+    const evolution = { points: buildEvolutionPoints(params, random) };
 
     const inProgress = Math.round(stats.tasks * 0.22);
     const overdue = Math.min(stats.overdueTasks, stats.tasks - stats.completedTasks);
@@ -196,11 +196,11 @@ export function buildDashboardMockData(period: DashboardPeriod): DashboardData {
     };
 
     return {
-        period,
+        period: params.period,
         stats,
         evolution,
         distribution,
-        recentActivity: buildRecentActivity(period),
+        recentActivity: buildRecentActivity(params),
         recentProjects: RECENT_PROJECTS_MOCK,
     };
 }

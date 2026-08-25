@@ -28,7 +28,7 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
         labels,
         datasets: [
             {
-                label: "Taches creees",
+                label: "Taches cree\u00E9es",
                 data: evolution.points.map(point => point.created),
                 borderColor: "#3b82f6",
                 backgroundColor: "rgba(59, 130, 246, 0.08)",
@@ -39,7 +39,7 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
                 pointBackgroundColor: "#3b82f6",
             },
             {
-                label: "Taches terminees",
+                label: "Taches termin\u00E9es",
                 data: evolution.points.map(point => point.completed),
                 borderColor: "#10b981",
                 backgroundColor: "rgba(16, 185, 129, 0.08)",
@@ -110,12 +110,12 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
-                <h3 className="font-bold text-gray-800">Evolution de l&apos;activite</h3>
+                <h3 className="font-bold text-gray-800">Evolution de l&apos;activit\u00E9</h3>
                 <TrendingUp size={18} className="text-gray-400" />
             </div>
 
             {evolution.points.length === 0 ? (
-                <p className="py-16 text-center text-sm text-gray-400">Aucune donnee sur la periode selectionnee</p>
+                <p className="py-16 text-center text-sm text-gray-400">Aucune donn\u00E9e sur la p\u00E9riode s\u00E9lectionn\u00E9e</p>
             ) : (
                 <div className="h-72 sm:h-80">
                     <Line data={data} options={options} />
