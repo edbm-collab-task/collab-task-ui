@@ -1,14 +1,16 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FolderKanban } from "lucide-react";
 import type { DashboardRecentProject } from "@/types/dashboard";
+import EmptyState from "@/components/common/EmptyState";
 
 interface Props {
-    projects: DashboardRecentProject[];
+    projects: DashboardRecentProject[] | null;
 }
 
 export default function RecentProjects({ projects }: Props) {
 
     const navigate = useNavigate();
+    const list = projects ?? [];
 
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -23,11 +25,15 @@ export default function RecentProjects({ projects }: Props) {
                 </button>
             </div>
 
-            {projects.length === 0 ? (
-                <p className="py-8 text-center text-sm text-gray-400">Aucun projet</p>
+            {list.length === 0 ? (
+                <EmptyState
+                    icon={FolderKanban}
+                    title="Aucun projet disponible"
+                    description="Les projets récents apparaîtront ici lorsque les données seront disponibles."
+                />
             ) : (
                 <ul className="divide-y divide-gray-100">
-                    {projects.map(project => (
+                    {list.map(project => (
                         <li
                             key={project.projectId}
                             onClick={() => navigate(`/admin/projects/${project.projectId}`)}

@@ -30,9 +30,9 @@ export default function DashboardHeader({
         <div>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Tableau de bord</h2>
                     <p className="mt-1 text-sm text-gray-500">
-                        Statistiques et performances de votre activite
+                        Statistiques et performances de votre activité
                     </p>
                 </div>
 
@@ -40,7 +40,7 @@ export default function DashboardHeader({
                     value={period}
                     options={DASHBOARD_PERIOD_OPTIONS}
                     onChange={onPeriodChange}
-                    placeholder="Periode"
+                    placeholder="Période"
                 />
             </div>
 
@@ -50,7 +50,7 @@ export default function DashboardHeader({
                         <label className={labelClass}>
                             <span className="inline-flex items-center gap-1">
                                 <CalendarDays size={12} />
-                                Date de debut
+                                Date de début
                             </span>
                         </label>
                         <input

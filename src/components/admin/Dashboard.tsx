@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 
 import Spinner from "@/components/common/Spinner";
 import { dashboardService } from "@/services/dashboard/dashboard.service";
+import { StatsNotAvailableError } from "@/services/dashboard/errors";
 import { DASHBOARD_PERIODS } from "@/types/dashboard";
 import type { DashboardData, DashboardPeriod, DashboardPeriodParams } from "@/types/dashboard";
 
@@ -20,6 +22,8 @@ export default function Dashboard() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [statsUnavailable, setStatsUnavailable] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -30,6 +34,7 @@ export default function Dashboard() {
         if (!shouldFetch) return;
 
         setRefreshing(true);
+        setError(null);
 
         const params: DashboardPeriodParams = {
             period,
@@ -37,22 +42,61 @@ export default function Dashboard() {
         };
 
         dashboardService.get(params)
-            .then(result => { if (!cancelled) setData(result); })
-            .catch(() => {})
-            .finally(() => { if (!cancelled) { setLoading(false); setRefreshing(false); } });
+            .then(result => {
+                if (cancelled) return;
+                setData(result);
+                setStatsUnavailable(false);
+            })
+            .catch((err: unknown) => {
+                if (cancelled) return;
+                if (err instanceof StatsNotAvailableError) {
+                    setStatsUnavailable(true);
+                    setData(null);
+                } else {
+                    setError("Impossible de charger les données du tableau de bord.");
+                }
+            })
+            .finally(() => {
+                if (!cancelled) { setLoading(false); setRefreshing(false); }
+            });
 
         return () => { cancelled = true; };
     }, [period, startDate, endDate]);
 
     if (loading) {
         return (
-            <div className="flex h-64 items-center justify-center text-gray-400">
+            <div className="flex h-64 items-center justify-center">
                 <Spinner size={28} />
             </div>
         );
     }
 
-    if (!data) return null;
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <DashboardHeader
+                    period={period}
+                    onPeriodChange={setPeriod}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onStartDateChange={setStartDate}
+                    onEndDateChange={setEndDate}
+                />
+                <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <AlertTriangle size={24} className="text-red-400" />
+                    <p className="text-sm text-gray-500">{error}</p>
+                    <button
+                        onClick={() => { setError(null); setLoading(true); setPeriod(p => p); }}
+                        className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
+                    >
+                        Réessayer
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const empty = statsUnavailable || !data;
 
     return (
         <div className={`space-y-6 transition-opacity duration-150 ${refreshing ? "opacity-50" : ""}`}>
@@ -66,16 +110,26 @@ export default function Dashboard() {
                 onEndDateChange={setEndDate}
             />
 
-            <DashboardStatsCards stats={data.stats} />
+            <DashboardStatsCards
+                stats={empty ? null : data.stats}
+            />
 
-            <ActivityEvolutionChart evolution={data.evolution} />
+            <ActivityEvolutionChart
+                evolution={empty ? null : data.evolution}
+            />
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <TaskDistribution distribution={data.distribution} />
-                <RecentActivity activities={data.recentActivity} />
+                <TaskDistribution
+                    distribution={empty ? null : data.distribution}
+                />
+                <RecentActivity
+                    activities={empty ? null : data.recentActivity}
+                />
             </div>
 
-            <RecentProjects projects={data.recentProjects} />
+            <RecentProjects
+                projects={empty ? null : data.recentProjects}
+            />
 
         </div>
     );

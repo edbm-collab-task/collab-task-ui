@@ -8,30 +8,32 @@ import {
 } from "chart.js";
 import type { ChartOptions } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, BarChart3 } from "lucide-react";
 import type { DashboardEvolution } from "@/types/dashboard";
+import EmptyState from "@/components/common/EmptyState";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 interface Props {
-    evolution: DashboardEvolution;
+    evolution: DashboardEvolution | null;
 }
 
 export default function ActivityEvolutionChart({ evolution }: Props) {
 
     const fontFamily = window.getComputedStyle(document.body).fontFamily;
 
-    const labels = evolution.points.map(point => point.label);
+    const points = evolution?.points ?? [];
+    const labels = points.map(point => point.label);
 
-    const totalCreated = evolution.points.reduce((sum, p) => sum + p.created, 0);
-    const totalCompleted = evolution.points.reduce((sum, p) => sum + p.completed, 0);
+    const totalCreated = points.reduce((sum, p) => sum + p.created, 0);
+    const totalCompleted = points.reduce((sum, p) => sum + p.completed, 0);
 
     const data = {
         labels,
         datasets: [
             {
-                label: "T\u00E2ches cr\u00E9\u00E9es",
-                data: evolution.points.map(point => point.created),
+                label: "Tâches créées",
+                data: points.map(point => point.created),
                 backgroundColor: "rgba(59, 130, 246, 0.85)",
                 hoverBackgroundColor: "rgba(59, 130, 246, 1)",
                 borderRadius: 4,
@@ -40,8 +42,8 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
                 categoryPercentage: 0.65,
             },
             {
-                label: "T\u00E2ches termin\u00E9es",
-                data: evolution.points.map(point => point.completed),
+                label: "Tâches terminées",
+                data: points.map(point => point.completed),
                 backgroundColor: "rgba(16, 185, 129, 0.85)",
                 hoverBackgroundColor: "rgba(16, 185, 129, 1)",
                 borderRadius: 4,
@@ -118,23 +120,27 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-bold text-gray-800">\u00C9volution de l&apos;activit\u00E9</h3>
+                <h3 className="font-bold text-gray-800">Évolution de l&apos;activité</h3>
                 <TrendingUp size={18} className="text-gray-400" />
             </div>
 
-            {evolution.points.length === 0 ? (
-                <p className="py-16 text-center text-sm text-gray-400">Aucune donn\u00E9e sur la p\u00E9riode s\u00E9lectionn\u00E9e</p>
+            {points.length === 0 ? (
+                <EmptyState
+                    icon={BarChart3}
+                    title="Aucune donnée disponible"
+                    description="L'évolution de l'activité apparaîtra ici lorsque les données seront disponibles."
+                />
             ) : (
                 <>
                     <div className="mb-5 flex items-center gap-6 text-sm">
                         <span className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-sm bg-blue-500" />
-                            <span className="text-gray-600">Cr\u00E9\u00E9es</span>
+                            <span className="text-gray-600">Créées</span>
                             <span className="font-bold text-gray-800">{totalCreated}</span>
                         </span>
                         <span className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
-                            <span className="text-gray-600">Termin\u00E9es</span>
+                            <span className="text-gray-600">Terminées</span>
                             <span className="font-bold text-gray-800">{totalCompleted}</span>
                         </span>
                     </div>
