@@ -141,4 +141,8 @@ export const API_ENDPOINTS = {
             `/conversations/messages/${messageId}`,
     },
 
+    DASHBOARD: {
+        STATS: "/dashboard/stats",
+    },
+
 } as const;
