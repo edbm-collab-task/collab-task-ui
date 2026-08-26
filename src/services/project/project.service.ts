@@ -57,6 +57,23 @@ export const projectService = {
 
     },
 
+    unarchive: async (id: number): Promise<ProjectRes> => {
+
+        return apiClient.patch<ProjectRes, Record<string, never>>(
+            `${API_ENDPOINTS.PROJECTS.UPDATE}/${id}/unarchive`,
+            {}
+        );
+
+    },
+
+    getAllIncludingArchived: async (): Promise<ProjectRes[]> => {
+
+        return apiClient.get<ProjectRes[]>(
+            `${API_ENDPOINTS.PROJECTS.ALL}/all`
+        );
+
+    },
+
     getStatuses: async (): Promise<Status[]> => {
         return statusService.getAll();
     }
