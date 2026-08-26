@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ShieldAlert } from "lucide-react";
 
 import Spinner from "@/components/common/Spinner";
 import { dashboardService } from "@/services/dashboard/dashboard.service";
 import { StatsNotAvailableError } from "@/services/dashboard/errors";
 import { DASHBOARD_PERIODS } from "@/types/dashboard";
 import type { DashboardData, DashboardPeriod, DashboardPeriodParams } from "@/types/dashboard";
+import usePermissions from "@/hooks/usePermissions";
 
 import DashboardHeader from "./dashboard/DashboardHeader";
 import DashboardStatsCards from "./dashboard/DashboardStatsCards";
@@ -15,6 +16,18 @@ import RecentActivity from "./dashboard/RecentActivity";
 import RecentProjects from "./dashboard/RecentProjects";
 
 export default function Dashboard() {
+
+    const { hasPermission } = usePermissions();
+
+    if (!hasPermission("VIEW_REPORTS")) {
+        return (
+            <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <ShieldAlert size={32} className="text-gray-400" />
+                <p className="text-sm font-medium text-gray-600">Accès refusé</p>
+                <p className="text-xs text-gray-400">Vous n'avez pas la permission d'accéder au tableau de bord.</p>
+            </div>
+        );
+    }
 
     const [period, setPeriod] = useState<DashboardPeriod>(DASHBOARD_PERIODS.LAST_30_DAYS);
     const [startDate, setStartDate] = useState("");
