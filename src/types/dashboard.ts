@@ -33,6 +33,7 @@ export interface DashboardStats {
     tasks: number;
     completedTasks: number;
     overdueTasks: number;
+    totalUsers: number;
 }
 
 export interface DashboardEvolutionPoint {
