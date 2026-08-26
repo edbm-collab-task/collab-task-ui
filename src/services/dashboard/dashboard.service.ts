@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/api-client";
+import { API_ENDPOINTS } from "@/api/constants";
 import type { DashboardData, DashboardPeriodParams } from "@/types/dashboard";
 import { StatsNotAvailableError } from "./errors";
 
@@ -6,8 +7,6 @@ export const dashboardService = {
 
     /**
      * Récupère les données du tableau de bord pour une période donnée.
-     *
-     * TODO backend : brancher sur GET /dashboard/stats?period={period}&startDate={...}&endDate={...}
      *
      * Stratégie d'erreur :
      * - Pas de réponse réseau (backend absent, CORS, etc.) → StatsNotAvailableError
@@ -18,7 +17,7 @@ export const dashboardService = {
     get: async (params: DashboardPeriodParams): Promise<DashboardData> => {
         try {
             return await apiClient.get<DashboardData>(
-                "/dashboard/stats",
+                API_ENDPOINTS.DASHBOARD.STATS,
                 params as unknown as Record<string, unknown>,
                 { silent: true },
             );
