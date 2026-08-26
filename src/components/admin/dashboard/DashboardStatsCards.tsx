@@ -1,21 +1,28 @@
-import { FolderKanban, ListTodo, CircleCheck, Clock3 } from "lucide-react";
+import { FolderKanban, ListTodo, CircleCheck, Clock3, Users } from "lucide-react";
 import type { DashboardStats } from "@/types/dashboard";
+import useAuth from "@/hooks/useAuth";
 
 interface Props {
     stats: DashboardStats | null;
 }
 
 export default function DashboardStatsCards({ stats }: Props) {
+    const { user } = useAuth();
+
+    const showTotalUsers = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN";
 
     const cards = [
         { label: "Projets", value: stats?.projects, icon: FolderKanban, iconClass: "bg-indigo-100 text-indigo-600" },
         { label: "Tâches", value: stats?.tasks, icon: ListTodo, iconClass: "bg-amber-100 text-amber-600" },
         { label: "Terminées", value: stats?.completedTasks, icon: CircleCheck, iconClass: "bg-emerald-100 text-emerald-600" },
         { label: "En retard", value: stats?.overdueTasks, icon: Clock3, iconClass: "bg-red-100 text-red-600" },
+        ...(showTotalUsers
+            ? [{ label: "Utilisateurs inscrits", value: stats?.totalUsers, icon: Users, iconClass: "bg-purple-100 text-purple-600" }]
+            : []),
     ];
 
     return (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className={`grid gap-5 sm:grid-cols-2 ${cards.length > 4 ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
             {cards.map(card => {
                 const Icon = card.icon;
 
