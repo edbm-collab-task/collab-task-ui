@@ -201,7 +201,9 @@ export default function ProjectListPage() {
                                 </div>
                                 <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-500">
                                     <CalendarDays size={13} />
-                                    <span>{formatDate(project.startDate)} → {formatDate(project.endDate)}</span>
+                                    <span>
+                                        {formatDate(project.startDate)} → {formatDate(project.endDate)}
+                                    </span>
                                 </div>
 
                                 <div className="mt-4">
