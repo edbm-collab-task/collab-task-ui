@@ -1,7 +1,10 @@
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Download } from "lucide-react";
 import { DASHBOARD_PERIODS, DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
 import type { DashboardPeriod } from "@/types/dashboard";
 import TableFilter from "@/components/table/TableFilter";
+import useAuth from "@/hooks/useAuth";
+import { API_ENDPOINTS } from "@/api/constants";
+import { api } from "@/api/axios";
 
 interface Props {
     period: DashboardPeriod;
@@ -24,7 +27,35 @@ export default function DashboardHeader({
     onEndDateChange,
 }: Props) {
 
+    const { user } = useAuth();
     const isCustom = period === DASHBOARD_PERIODS.CUSTOM;
+    const canExportPdf = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN";
+
+    const handleExportPdf = async () => {
+        try {
+            const params: Record<string, string> = { period };
+            if (isCustom && startDate && endDate) {
+                params.startDate = startDate;
+                params.endDate = endDate;
+            }
+            const response = await api.get(API_ENDPOINTS.DASHBOARD.REPORT_PDF, {
+                params,
+                responseType: "blob",
+                silent: true,
+            } as any);
+            const blob = new Blob([response.data as BlobPart], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `rapport-statistiques-${new Date().toISOString().slice(0, 10)}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch {
+            // silent error
+        }
+    };
 
     return (
         <div>
@@ -36,12 +67,23 @@ export default function DashboardHeader({
                     </p>
                 </div>
 
-                <TableFilter<DashboardPeriod>
-                    value={period}
-                    options={DASHBOARD_PERIOD_OPTIONS}
-                    onChange={onPeriodChange}
-                    placeholder="Période"
-                />
+                <div className="flex items-center gap-3">
+                    {canExportPdf && (
+                        <button
+                            onClick={handleExportPdf}
+                            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 hover:shadow-md"
+                        >
+                            <Download size={16} />
+                            Exporter en PDF
+                        </button>
+                    )}
+                    <TableFilter<DashboardPeriod>
+                        value={period}
+                        options={DASHBOARD_PERIOD_OPTIONS}
+                        onChange={onPeriodChange}
+                        placeholder="Période"
+                    />
+                </div>
             </div>
 
             {isCustom && (
