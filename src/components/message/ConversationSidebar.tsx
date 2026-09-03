@@ -118,7 +118,7 @@ const ConversationSidebar = ({
      * Même logique que MessageItem :
      * on autorise uniquement les balises nécessaires au formatage.
      */
-    const renderLastMessage = (message: Message | undefined) => {
+    const renderLastMessage = (message: Message | null | undefined) => {
         if (!message) {
             return (
                 <span className="text-xs text-gray-400">
