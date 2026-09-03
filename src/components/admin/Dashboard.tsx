@@ -3,10 +3,12 @@ import { AlertTriangle, ShieldAlert } from "lucide-react";
 
 import Spinner from "@/components/common/Spinner";
 import { dashboardService } from "@/services/dashboard/dashboard.service";
+import { projectService } from "@/services/project/project.service";
 import { StatsNotAvailableError } from "@/services/dashboard/errors";
 import { DASHBOARD_PERIODS } from "@/types/dashboard";
 import type { DashboardData, DashboardPeriod, DashboardPeriodParams } from "@/types/dashboard";
 import usePermissions from "@/hooks/usePermissions";
+import type { ProjectRes } from "@/types/project";
 
 import DashboardHeader from "./dashboard/DashboardHeader";
 import DashboardStatsCards from "./dashboard/DashboardStatsCards";
@@ -14,6 +16,7 @@ import ActivityEvolutionChart from "./dashboard/ActivityEvolutionChart";
 import TaskDistribution from "./dashboard/TaskDistribution";
 import RecentActivity from "./dashboard/RecentActivity";
 import RecentProjects from "./dashboard/RecentProjects";
+import OverdueTasksModal from "./dashboard/OverdueTasksModal";
 
 export default function Dashboard() {
 
@@ -38,6 +41,21 @@ export default function Dashboard() {
     const [statsUnavailable, setStatsUnavailable] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Project filter
+    const [projects, setProjects] = useState<ProjectRes[]>([]);
+    const [selectedProjectId, setSelectedProjectId] = useState<number | "all">("all");
+    const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+
+    // Overdue tasks modal
+    const [showOverdueModal, setShowOverdueModal] = useState(false);
+
+    // Load projects for filter
+    useEffect(() => {
+        projectService.getAllIncludingArchived()
+            .then(setProjects)
+            .catch(console.error);
+    }, []);
+
     useEffect(() => {
         let cancelled = false;
 
@@ -53,6 +71,11 @@ export default function Dashboard() {
             period,
             ...(isCustomReady ? { startDate, endDate } : {}),
         };
+
+        // Add project filter to params
+        if (selectedProjectId !== "all") {
+            params.projectId = selectedProjectId;
+        }
 
         dashboardService.get(params)
             .then(result => {
@@ -74,7 +97,7 @@ export default function Dashboard() {
             });
 
         return () => { cancelled = true; };
-    }, [period, startDate, endDate]);
+    }, [period, startDate, endDate, selectedProjectId]);
 
     if (loading) {
         return (
@@ -94,6 +117,13 @@ export default function Dashboard() {
                     endDate={endDate}
                     onStartDateChange={setStartDate}
                     onEndDateChange={setEndDate}
+                    projects={projects}
+                    selectedProjectId={selectedProjectId}
+                    onProjectChange={setSelectedProjectId}
+                    showProjectDropdown={showProjectDropdown}
+                    setShowProjectDropdown={setShowProjectDropdown}
+overdueCount={0}
+                    onOverdueClick={() => setShowOverdueModal(true)}
                 />
                 <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
                     <AlertTriangle size={24} className="text-red-400" />
@@ -110,6 +140,7 @@ export default function Dashboard() {
     }
 
     const empty = statsUnavailable || !data;
+    const overdueCount = data?.stats?.overdueTasks ?? 0;
 
     return (
         <div className={`space-y-6 transition-opacity duration-150 ${refreshing ? "opacity-50" : ""}`}>
@@ -121,10 +152,18 @@ export default function Dashboard() {
                 endDate={endDate}
                 onStartDateChange={setStartDate}
                 onEndDateChange={setEndDate}
+                projects={projects}
+                selectedProjectId={selectedProjectId}
+                onProjectChange={setSelectedProjectId}
+                showProjectDropdown={showProjectDropdown}
+                setShowProjectDropdown={setShowProjectDropdown}
+                overdueCount={overdueCount}
+                onOverdueClick={() => setShowOverdueModal(true)}
             />
 
             <DashboardStatsCards
                 stats={empty ? null : data.stats}
+                evolution={empty ? null : data.evolution}
             />
 
             <ActivityEvolutionChart
@@ -144,6 +183,12 @@ export default function Dashboard() {
                 projects={empty ? null : data.recentProjects}
             />
 
+            {showOverdueModal && (
+                <OverdueTasksModal
+                    projectId={selectedProjectId === "all" ? undefined : selectedProjectId}
+                    onClose={() => setShowOverdueModal(false)}
+                />
+            )}
         </div>
     );
 }

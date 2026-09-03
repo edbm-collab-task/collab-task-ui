@@ -14,7 +14,7 @@ export const dashboardService = {
      * - Erreur serveur réelle (5xx) → erreur propagée (état ERROR)
      * - Succès → DashboardData
      */
-    get: async (params: DashboardPeriodParams): Promise<DashboardData> => {
+    get: async (params: DashboardPeriodParams & { projectId?: number }): Promise<DashboardData> => {
         try {
             return await apiClient.get<DashboardData>(
                 API_ENDPOINTS.DASHBOARD.STATS,
