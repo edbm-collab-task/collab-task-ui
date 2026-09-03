@@ -8,7 +8,9 @@ import AuthProvider from "@/contexts/AuthProvider";
 import RecoveryAuthProvider from "@/contexts/RecoveryAuthProvider";
 
 
-createRoot(document.getElementById("root")!).render(
+const root = createRoot(document.getElementById("root")!);
+
+root.render(
 
     <StrictMode>
 
@@ -17,7 +19,6 @@ createRoot(document.getElementById("root")!).render(
              <AuthProvider>
 
                 <RecoveryAuthProvider>
-                     <Toaster position="top-right" />
 
                     <App />
 
@@ -30,3 +31,7 @@ createRoot(document.getElementById("root")!).render(
     </StrictMode>
 
 );
+
+const toastContainer = document.createElement("div");
+document.body.appendChild(toastContainer);
+createRoot(toastContainer).render(<Toaster position="top-right" />);
