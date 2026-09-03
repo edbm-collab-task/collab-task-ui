@@ -1,7 +1,3 @@
-<<<<<<< Updated upstream
-import { FolderKanban, ListTodo, CircleCheck, Clock3 } from "lucide-react";
-import type { DashboardStats } from "@/types/dashboard";
-=======
 import { FolderKanban, ListTodo, CircleCheck, Clock3, Users } from "lucide-react";
 import type { DashboardStats, DashboardEvolution } from "@/types/dashboard";
 import Sparkline from "./Sparkline";
@@ -11,16 +7,13 @@ function generateIncreasingSparkline(baseValue: number, points: number = 7): num
     if (target === 0) return Array(points).fill(0);
     const start = Math.max(1, Math.floor(target * 0.45));
     const step = (target - start) / (points - 1);
-    // léger aléa positif mais garantit croissance monotone
     const res: number[] = [];
     let seed = Math.abs(target) * 1664525 + 1013904223;
     const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x100000000; };
     for (let i = 0; i < points; i++) {
         const ideal = Math.round(start + step * i);
-        // jitter borné à 8% du step pour ne pas casser la monotonie
         const jitter = Math.round((rand() - 0.5) * step * 0.16);
         let v = ideal + jitter;
-        // force croissance stricte
         if (i > 0) v = Math.max(v, res[i - 1] + 1);
         v = Math.min(v, target);
         if (i === points - 1) v = target;
@@ -34,13 +27,10 @@ function getSparklineFromEvolution(evolution: DashboardEvolution | null, metric:
         return generateIncreasingSparkline(fallbackValue, 7);
     }
     const pts = evolution.points.slice(-7);
-    // cumul pour obtenir une courbe toujours croissante (total cumulé)
     if (metric === "tasks") {
         let cum = 0;
         const cumVals = pts.map(p => cum += p.created);
-        // normalise pour finir à fallbackValue si échelle différente
         const maxCum = cumVals[cumVals.length - 1] || 1;
-        // si fallbackValue beaucoup plus grand, on étire proportionnellement pour rester cohérent visuellement
         if (fallbackValue > maxCum && maxCum > 0) {
             const ratio = fallbackValue / maxCum;
             return cumVals.map(v => Math.round(v * ratio));
@@ -59,22 +49,12 @@ function getSparklineFromEvolution(evolution: DashboardEvolution | null, metric:
     }
     return generateIncreasingSparkline(fallbackValue, 7);
 }
->>>>>>> Stashed changes
 
 interface Props {
     stats: DashboardStats | null;
     evolution?: DashboardEvolution | null;
 }
 
-<<<<<<< Updated upstream
-export default function DashboardStatsCards({ stats }: Props) {
-
-    const cards = [
-        { label: "Projets", value: stats?.projects, icon: FolderKanban, iconClass: "bg-indigo-100 text-indigo-600" },
-        { label: "Tâches", value: stats?.tasks, icon: ListTodo, iconClass: "bg-amber-100 text-amber-600" },
-        { label: "Terminées", value: stats?.completedTasks, icon: CircleCheck, iconClass: "bg-emerald-100 text-emerald-600" },
-        { label: "En retard", value: stats?.overdueTasks, icon: Clock3, iconClass: "bg-red-100 text-red-600" },
-=======
 export default function DashboardStatsCards({ stats, evolution = null }: Props) {
 
     const cards = [
@@ -83,11 +63,10 @@ export default function DashboardStatsCards({ stats, evolution = null }: Props) 
         { label: "Terminées", value: stats?.completedTasks, icon: CircleCheck, iconClass: "bg-emerald-100 text-emerald-600", color: "#10b981", sparkline: getSparklineFromEvolution(evolution, "completed", stats?.completedTasks ?? 0) },
         { label: "En retard", value: stats?.overdueTasks, icon: Clock3, iconClass: "bg-red-100 text-red-600", color: "#ef4444", sparkline: generateIncreasingSparkline(stats?.overdueTasks ?? 0, 7) },
         { label: "Contributeurs", value: stats?.totalContributors, icon: Users, iconClass: "bg-purple-100 text-purple-600", color: "#a855f7", sparkline: generateIncreasingSparkline(stats?.totalContributors ?? 0, 7) },
->>>>>>> Stashed changes
     ];
 
     return (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className={`grid gap-5 sm:grid-cols-2 ${cards.length > 4 ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
             {cards.map(card => {
                 const Icon = card.icon;
 

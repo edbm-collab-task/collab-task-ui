@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-import { CalendarDays } from "lucide-react";
-import { DASHBOARD_PERIODS, DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
-import type { DashboardPeriod } from "@/types/dashboard";
-import TableFilter from "@/components/table/TableFilter";
-=======
 import { CalendarDays, Download, Filter, Clock, ChevronDown } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { DASHBOARD_PERIODS, DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
@@ -11,7 +5,6 @@ import type { DashboardPeriod } from "@/types/dashboard";
 import TableFilter from "@/components/table/TableFilter";
 import { projectService } from "@/services/project/project.service";
 import type { ProjectRes } from "@/types/project";
->>>>>>> Stashed changes
 
 interface Props {
     period: DashboardPeriod;
@@ -64,8 +57,6 @@ export default function DashboardHeader({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [showProjectDropdown]);
 
-<<<<<<< Updated upstream
-=======
     const handleExportPdf = async () => {
         try {
             if (selectedProjectId === "all") {
@@ -104,7 +95,6 @@ export default function DashboardHeader({
 
     const selectedProject = projects.find(p => p.projectId === selectedProjectId);
 
->>>>>>> Stashed changes
     return (
         <div>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -115,14 +105,6 @@ export default function DashboardHeader({
                     </p>
                 </div>
 
-<<<<<<< Updated upstream
-                <TableFilter<DashboardPeriod>
-                    value={period}
-                    options={DASHBOARD_PERIOD_OPTIONS}
-                    onChange={onPeriodChange}
-                    placeholder="Période"
-                />
-=======
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         onClick={handleExportPdf}
@@ -209,7 +191,6 @@ export default function DashboardHeader({
                         <span>En retard : {overdueCount}</span>
                     </button>
                 </div>
->>>>>>> Stashed changes
             </div>
 
             {isCustom && (

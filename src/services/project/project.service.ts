@@ -13,14 +13,11 @@ export const projectService = {
         );
     },
 
-<<<<<<< Updated upstream
-=======
     getAllIncludingArchived: async (): Promise<ProjectRes[]> => {
         return apiClient.get<ProjectRes[]>(
             `${API_ENDPOINTS.PROJECTS.ALL}/all`
         );
     },
->>>>>>> Stashed changes
 
     getById: async (id: number): Promise<ProjectRes> => {
         return apiClient.get<ProjectRes>(
@@ -48,8 +45,6 @@ export const projectService = {
         );
     },
 
-<<<<<<< Updated upstream
-=======
     unarchive: async (id: number): Promise<ProjectRes> => {
         return apiClient.patch<ProjectRes, Record<string, never>>(
             `${API_ENDPOINTS.PROJECTS.UPDATE}/${id}/unarchive`,
@@ -57,7 +52,6 @@ export const projectService = {
         );
     },
 
->>>>>>> Stashed changes
     getStatuses: async (): Promise<Status[]> => {
         return statusService.getAll();
     },

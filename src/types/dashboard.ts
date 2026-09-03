@@ -34,11 +34,8 @@ export interface DashboardStats {
     tasks: number;
     completedTasks: number;
     overdueTasks: number;
-<<<<<<< Updated upstream
-=======
     totalUsers: number;
     totalContributors: number;
->>>>>>> Stashed changes
 }
 
 export interface DashboardEvolutionPoint {
