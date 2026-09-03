@@ -83,12 +83,6 @@ export default function AdminMenu() {
                                     }
                                 `}
                             >
-                                {isActive && (
-                                    <span
-                                        className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-gradient-to-b from-orange-500 via-yellow-400 to-blue-500"
-                                    />
-                                )}
-
                                 <Icon
                                     size={22}
                                     className={`
