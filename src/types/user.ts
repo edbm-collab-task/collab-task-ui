@@ -126,6 +126,8 @@ export interface UserLoginRes {
   lastname: string;
   email: string;
   permissions: string[];
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export interface RegisterForm extends UserRequest {
