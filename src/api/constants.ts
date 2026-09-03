@@ -145,4 +145,9 @@ export const API_ENDPOINTS = {
         STATS: "/dashboard/stats",
     },
 
+    ADMIN_DASHBOARD: {
+        STATS: "/admin/dashboard/stats",
+        REPORT_PDF: "/admin/dashboard/reports/pdf",
+    },
+
 } as const;

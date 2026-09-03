@@ -9,11 +9,12 @@ export const apiClient = {
     get: async <T>(
         url: string,
         params?: Record<string, unknown>,
-        options?: RequestOptions
+        options?: { responseType?: string; silent?: boolean }
     ): Promise<T> => {
 
         const response = await api.get<T>(url, {
             params,
+            responseType: options?.responseType,
             silent: options?.silent,
         } as any);
 
@@ -80,5 +81,4 @@ export const apiClient = {
 
         return response.data;
     }
-
 };

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Users, Building2, FolderKanban, MessageCircle, Bell, Shield, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Building2, FolderKanban, MessageCircle, Bell, Shield, Settings, BarChart2 } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
 import usePermissions from "@/hooks/usePermissions";
 
@@ -47,6 +47,11 @@ const menus: MenuItem[] = [
 ];
 
 const superAdminMenus: MenuItem[] = [
+    {
+        name: "Dashboard Admin",
+        path: "/admin/dashboard-admin",
+        icon: BarChart2,
+    },
     {
         name: "Administrateurs",
         path: "/admin/admins",

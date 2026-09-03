@@ -11,6 +11,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import CreateUserPage from "@/pages/admin/user/CreateUserPage";
 import UserListPage from "@/pages/admin/user/UserListPage";
 import Dashboard from "@/components/admin/Dashboard";
+import AdminDashboard from "@/components/admin/AdminDashboard";
 import CreateDirection from "@/pages/admin/direction/CreateDirectionPage"
 import DirectionsListPage from "@/pages/admin/direction/DirectionListPage";
 import ProjectListPage from "@/pages/admin/project/ProjectListPage";
@@ -92,6 +93,7 @@ export default function Router() {
 
                 <Route path="notifications" element={<NotificationsPage />} />
 
+                <Route path="dashboard-admin" element={<SuperAdminRoute><AdminDashboard /></SuperAdminRoute>} />
                 <Route path="admins" element={<SuperAdminRoute><AdminListPage /></SuperAdminRoute>} />
                 <Route path="roles" element={<SuperAdminRoute><RoleListPage /></SuperAdminRoute>} />
 

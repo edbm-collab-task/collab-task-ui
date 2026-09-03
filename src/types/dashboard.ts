@@ -26,6 +26,7 @@ export interface DashboardPeriodParams {
     period: DashboardPeriod;
     startDate?: string;
     endDate?: string;
+    projectId?: number;
 }
 
 export interface DashboardStats {
@@ -33,6 +34,11 @@ export interface DashboardStats {
     tasks: number;
     completedTasks: number;
     overdueTasks: number;
+<<<<<<< Updated upstream
+=======
+    totalUsers: number;
+    totalContributors: number;
+>>>>>>> Stashed changes
 }
 
 export interface DashboardEvolutionPoint {
