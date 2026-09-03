@@ -1,4 +1,5 @@
 import { Copy, Download, File, FileImage, FileText, MoreHorizontal, Reply, Trash2 } from "lucide-react";
+import DOMPurify from "dompurify";
 import type { Message, ChatUser } from "@/types/message";
 import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
 import useAuth from "@/hooks/useAuth";
@@ -25,12 +26,7 @@ const getAttachmentUrl = (url: string): string => {
         return "";
     }
 
-    if (
-        url.startsWith("http://") ||
-        url.startsWith("https://") ||
-        url.startsWith("blob:") ||
-        url.startsWith("data:")
-    ) {
+    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:") || url.startsWith("data:")) {
         return url;
     }
 
@@ -138,12 +134,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
         <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full">
             {imageUrl ? (
                 <>
-                    <img
-                        src={imageUrl}
-                        alt={fullName || "Utilisateur"}
-                        className="h-full w-full object-cover"
-                        onError={handleImageError}
-                    />
+                    <img src={imageUrl} alt={fullName || "Utilisateur"} className="h-full w-full object-cover" onError={handleImageError} />
 
                     <div className="hidden h-full w-full items-center justify-center bg-gray-200 text-xs font-semibold text-gray-700">
                         {initials || "U"}
@@ -171,16 +162,8 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
 
                     if (isImageAttachment(attachment)) {
                         return (
-                            <div
-                                key={attachment.id ?? `${attachment.name}-${attachment.url}`}
-                                className="overflow-hidden rounded-xl border border-black/10 bg-white"
-                            >
-                                <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title={attachment.name}
-                                >
+                            <div key={attachment.id ?? `${attachment.name}-${attachment.url}`} className="overflow-hidden rounded-xl border border-black/10 bg-white">
+                                <a href={url} target="_blank" rel="noopener noreferrer" title={attachment.name}>
                                     <img
                                         src={url}
                                         alt={attachment.name}
@@ -218,31 +201,18 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                     return (
                         <div
                             key={attachment.id ?? `${attachment.name}-${attachment.url}`}
-                            className={`flex w-[280px] max-w-full items-center gap-3 rounded-xl border px-3 py-3 ${
-                                mine
-                                    ? "border-blue-400/40 bg-blue-400/40"
-                                    : "border-gray-200 bg-white"
-                            }`}
+                            className={`flex w-[280px] max-w-full items-center gap-3 rounded-xl border px-3 py-3 ${mine ? "border-blue-400/40 bg-blue-400/40" : "border-gray-200 bg-white"}`}
                         >
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
                                 {getFileIcon(attachment.type)}
                             </div>
 
                             <div className="min-w-0 flex-1">
-                                <p
-                                    className={`truncate text-sm font-medium ${
-                                        mine ? "text-white" : "text-gray-800"
-                                    }`}
-                                    title={attachment.name}
-                                >
+                                <p className={`truncate text-sm font-medium ${mine ? "text-white" : "text-gray-800"}`} title={attachment.name}>
                                     {attachment.name}
                                 </p>
 
-                                <p
-                                    className={`mt-0.5 text-[11px] ${
-                                        mine ? "text-blue-100" : "text-gray-400"
-                                    }`}
-                                >
+                                <p className={`mt-0.5 text-[11px] ${mine ? "text-blue-100" : "text-gray-400"}`}>
                                     {formatFileSize(attachment.size)}
                                 </p>
                             </div>
@@ -250,11 +220,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                             <button
                                 type="button"
                                 onClick={() => handleDownload(attachment)}
-                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition ${
-                                    mine
-                                        ? "text-white hover:bg-white/10"
-                                        : "text-gray-500 hover:bg-gray-100 hover:text-blue-600"
-                                }`}
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition ${mine ? "text-white hover:bg-white/10" : "text-gray-500 hover:bg-gray-100 hover:text-blue-600"}`}
                                 title="Télécharger"
                             >
                                 <Download size={17} />
@@ -275,12 +241,18 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
             );
         }
 
+        const sanitizedContent = DOMPurify.sanitize(message.content || "", {
+            ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "ul", "ol", "li", "a", "br"],
+            ALLOWED_ATTR: ["href", "target", "rel"],
+        });
+
         return (
             <>
                 {message.content && (
-                    <p className="whitespace-pre-wrap break-words text-sm">
-                        {message.content}
-                    </p>
+                    <div
+                        className="break-words text-sm [&_a]:text-blue-600 [&_a]:underline [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc"
+                        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+                    />
                 )}
 
                 {renderAttachments(mine)}
@@ -379,11 +351,7 @@ interface MessageActionsProps {
 
 const MessageActions = ({ message, isMine, onReply, onDelete, onCopy }: MessageActionsProps) => {
     return (
-        <div
-            className={`mt-1 flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 ${
-                isMine ? "justify-end" : "justify-start"
-            }`}
-        >
+        <div className={`mt-1 flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 ${isMine ? "justify-end" : "justify-start"}`}>
             <button
                 type="button"
                 onClick={() => onReply(message)}
