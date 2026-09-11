@@ -5,9 +5,9 @@ import Spinner from "@/components/common/Spinner";
 import { dashboardService } from "@/services/dashboard/dashboard.service";
 import { projectService } from "@/services/project/project.service";
 import { StatsNotAvailableError } from "@/services/dashboard/errors";
-import { DASHBOARD_PERIODS } from "@/types/dashboard";
-import type { DashboardData, DashboardPeriod, DashboardPeriodParams } from "@/types/dashboard";
+import type { DashboardData, DashboardPeriodParams } from "@/types/dashboard";
 import usePermissions from "@/hooks/usePermissions";
+import { useDashboardPeriod } from "@/hooks/useDashboardPeriod";
 import type { ProjectRes } from "@/types/project";
 
 import DashboardHeader from "./dashboard/DashboardHeader";
@@ -32,9 +32,7 @@ export default function Dashboard() {
         );
     }
 
-    const [period, setPeriod] = useState<DashboardPeriod>(DASHBOARD_PERIODS.LAST_30_DAYS);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const { period, setPeriod, startDate, setStartDate, endDate, setEndDate, shouldFetch, periodParams } = useDashboardPeriod();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -59,23 +57,15 @@ export default function Dashboard() {
     useEffect(() => {
         let cancelled = false;
 
-        const isCustomReady = period === DASHBOARD_PERIODS.CUSTOM && startDate && endDate;
-        const shouldFetch = period !== DASHBOARD_PERIODS.CUSTOM || isCustomReady;
-
         if (!shouldFetch) return;
 
         setRefreshing(true);
         setError(null);
 
         const params: DashboardPeriodParams = {
-            period,
-            ...(isCustomReady ? { startDate, endDate } : {}),
+            ...periodParams,
+            ...(selectedProjectId !== "all" ? { projectId: selectedProjectId as number } : {}),
         };
-
-        // Add project filter to params
-        if (selectedProjectId !== "all") {
-            params.projectId = selectedProjectId;
-        }
 
         dashboardService.get(params)
             .then(result => {

@@ -143,4 +143,10 @@ export const userService = {
         return apiClient.get<UserResponse[]>(API_ENDPOINTS.ADMINS.ALL);
     },
 
+    getPotentialContributors: async (projectId: number): Promise<UserResponse[]> => {
+        return apiClient.get<UserResponse[]>(
+            API_ENDPOINTS.USERS.POTENTIAL_CONTRIBUTORS(projectId)
+        );
+    },
+
 };

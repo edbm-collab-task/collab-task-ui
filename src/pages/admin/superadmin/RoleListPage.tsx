@@ -44,7 +44,8 @@ export default function RoleListPage() {
                 roleService.getAllPermissions()
             ]);
 
-            const tableData: RoleTable[] = rolesData.map(r => ({
+            const filtered = rolesData.filter(r => r.name !== "SUPER_ADMIN");
+            const tableData: RoleTable[] = filtered.map(r => ({
                 id: r.id,
                 name: r.name,
                 permissions: r.permissions.length > 0
@@ -166,7 +167,7 @@ export default function RoleListPage() {
         }
     ];
 
-    const filteredRoles = roles.filter(item => {
+    const filteredRoles = roles.filter(r => r.name !== "SUPER_ADMIN").filter(item => {
         const value = search.toLowerCase();
         return Object.values(item)
             .some(field =>

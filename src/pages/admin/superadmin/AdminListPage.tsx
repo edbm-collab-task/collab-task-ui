@@ -16,6 +16,7 @@ import { userDetailFields } from "@/components/details/userDetails";
 
 import { userService } from "@/services/user/user.service";
 import { useNavigate } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
 
 const adminTr = {
     firstname: "Prénom",
@@ -34,16 +35,19 @@ export default function AdminListPage() {
     const [page, setPage] = useState(1);
 
     type StatusFilter = "all" | "active" | "disable";
+    type RoleFilter = "all" | "USER" | "ADMIN" | "SUPER_ADMIN";
 
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
+    const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
 
     const pageSize = 5;
 
     const navigate = useNavigate();
+    const { user: currentUser } = useAuth();
 
 
     /**
-     * Charge tous les administrateurs.
+     * Charge tous les utilisateurs pour le SUPER_ADMIN (users, admins, super_admins).
      */
     const loadAdmins = async () => {
 
@@ -52,7 +56,7 @@ export default function AdminListPage() {
             setLoading(true);
 
             const response =
-                await userService.getAdmins();
+                await userService.getAllActive();
 
             setAdmins(response);
 
@@ -195,7 +199,7 @@ export default function AdminListPage() {
                     await confirmDelete(
                         newStatus
                             ? "activer ce compte"
-                            : "désactiver ce compte"
+                            : "desactiver ce compte"
                     );
 
 
@@ -234,7 +238,7 @@ export default function AdminListPage() {
     const headerActions: HeaderAction[] = [
 
         {
-            label: "Ajouter un admin",
+            label: "Ajouter un utilisateur",
 
             icon: <Plus size={18} />,
 
@@ -260,6 +264,8 @@ export default function AdminListPage() {
      */
     const filteredAdmins = admins
 
+        .filter(admin => admin.email !== currentUser?.email)
+
         .filter(admin => {
 
             if (statusFilter === "active") {
@@ -271,6 +277,11 @@ export default function AdminListPage() {
             }
 
             return true;
+        })
+
+        .filter(admin => {
+            if (roleFilter === "all") return true;
+            return admin.role === roleFilter;
         })
 
         .filter(admin => {
@@ -332,7 +343,7 @@ export default function AdminListPage() {
 
             <TableHeader
 
-                title="Gestion des administrateurs"
+                title="Gestion des administrateurs et utilisateurs"
 
                 search={search}
 
@@ -342,32 +353,65 @@ export default function AdminListPage() {
             />
 
 
-            <TableFilter<StatusFilter>
+            <div className="flex flex-wrap gap-3">
+                <TableFilter<StatusFilter>
 
-                value={statusFilter}
+                    value={statusFilter}
 
-                options={[
-                    {
-                        label: "Tous",
-                        value: "all"
-                    },
-                    {
-                        label: "Actifs",
-                        value: "active"
-                    },
-                    {
-                        label: "Désactivés",
-                        value: "disable"
-                    }
-                ]}
+                    options={[
+                        {
+                            label: "Tous",
+                            value: "all"
+                        },
+                        {
+                            label: "Actifs",
+                            value: "active"
+                        },
+                        {
+                            label: "Désactivés",
+                            value: "disable"
+                        }
+                    ]}
 
-                onChange={(value) => {
+                    onChange={(value) => {
 
-                    setStatusFilter(value);
+                        setStatusFilter(value);
 
-                    setPage(1);
-                }}
-            />
+                        setPage(1);
+                    }}
+                />
+
+                <TableFilter<RoleFilter>
+
+                    value={roleFilter}
+
+                    options={[
+                        {
+                            label: "Tous les rôles",
+                            value: "all"
+                        },
+                        {
+                            label: "USER",
+                            value: "USER"
+                        },
+                        {
+                            label: "ADMIN",
+                            value: "ADMIN"
+                        },
+                        {
+                            label: "SUPER_ADMIN",
+                            value: "SUPER_ADMIN"
+                        }
+                    ]}
+
+                    onChange={(value) => {
+
+                        setRoleFilter(value);
+
+                        setPage(1);
+                    }}
+                />
+            </div>
 
 
             <GlobalTable<UserTable>

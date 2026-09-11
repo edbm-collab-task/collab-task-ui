@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, Pencil, Plus } from "lucide-react";
+import { Eye, Plus } from "lucide-react";
 
 import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
@@ -36,6 +36,16 @@ export default function UserListPage() {
     const navigate = useNavigate();
 
     const { user: currentUser } = useAuth();
+
+    useEffect(() => {
+        if (currentUser?.role === "SUPER_ADMIN") {
+            navigate("/admin/admins", { replace: true });
+        }
+    }, [currentUser, navigate]);
+
+    if (currentUser?.role === "SUPER_ADMIN") {
+        return null;
+    }
 
 
     /**
@@ -109,8 +119,8 @@ export default function UserListPage() {
     const actions: TableAction<UserTable>[] = [
 
         /**
-         * Voir les détails.
-         */
+          * Voir les détails.
+          */
         {
             label: "Voir plus",
 
@@ -139,37 +149,6 @@ export default function UserListPage() {
                     );
                 }
             },
-        },
-
-
-        /**
-         * Modifier.
-         */
-        {
-            label: "Modifier",
-
-            type: "edit",
-
-            icon: (
-                <Pencil
-                    size={18}
-                    className="text-red-400"
-                />
-            ),
-
-            roles: ["ADMIN"],
-
-            onClick: (user) => {
-
-                navigate(
-                    "/admin/users/edit-role",
-                    {
-                        state: {
-                            email: user.email
-                        }
-                    }
-                );
-            }
         },
 
 
@@ -209,7 +188,7 @@ export default function UserListPage() {
                 const confirmed = await confirmDelete(
                     newStatus
                         ? "activer ce compte"
-                        : "désactiver ce compte"
+                        : "desactiver ce compte"
                 );
 
 
@@ -274,9 +253,11 @@ export default function UserListPage() {
 
 
     /**
-     * Filtrage local.
+     * Filtrage local - n'afficher que les USER normaux.
      */
     const filteredUsers = users
+
+        .filter(item => item.role === "USER")
 
         .filter(
             item =>

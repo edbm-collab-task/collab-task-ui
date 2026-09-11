@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
         ALL_DISABLE: "/users/disable",
         UPDATE_ROLE: "/users/role",
         IMAGE: (id: number) => `/users/${id}/image`,
+        POTENTIAL_CONTRIBUTORS: (projectId: number) => `/users/project/${projectId}/contributors`,
     },
 
     DIRECTION: {
@@ -51,7 +52,9 @@ export const API_ENDPOINTS = {
 
         UPDATE: "/projects",
 
-        DELETE: "/projects"
+        DELETE: "/projects",
+
+        TRANSFER_OWNERSHIP: (id: number) => `/projects/${id}/transfer-ownership`
 
     },
 

@@ -45,7 +45,6 @@ export default function ProjectDetailPage() {
     const [statuses, setStatuses] = useState<Status[]>(convertSTATUSES);
     const [contributors, setContributors] = useState<Contributor[]>([]);
     const [allUsers, setAllUsers] = useState<UserResponse[]>([]);
-    const [usersLoaded, setUsersLoaded] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -83,15 +82,13 @@ export default function ProjectDetailPage() {
     }, [projectId]);
 
     const loadUsers = useCallback(async () => {
-        if (usersLoaded) return;
         try {
-            const data = await userService.getAll({ silent: true });
+            const data = await userService.getPotentialContributors(projectId);
             setAllUsers(data);
-            setUsersLoaded(true);
         } catch (error) {
-            console.error("Erreur lors du chargement des utilisateurs", error);
+            console.error("Erreur lors du chargement des utilisateurs potentiels", error);
         }
-    }, [usersLoaded]);
+    }, [projectId]);
     useEffect(() => {
         const load = async () => {
             try {
@@ -100,6 +97,9 @@ export default function ProjectDetailPage() {
                     projectService.getById(projectId),
                 ]);
                 setProject(projectData);
+                if (projectData.isOwner) {
+                    await loadUsers();
+                }
                 await Promise.all([loadTasks(), loadStatuses(), loadContributors()]);
             } catch (error) {
                 console.error(error);
@@ -110,7 +110,7 @@ export default function ProjectDetailPage() {
             }
         };
         load();
-    }, [projectId, loadTasks, loadStatuses, loadContributors, navigate]);
+    }, [projectId, loadTasks, loadStatuses, loadContributors, loadUsers, navigate]);
 
     // Reset au changement de projet
     useEffect(() => {
@@ -119,10 +119,6 @@ export default function ProjectDetailPage() {
         setShowNewStatus(false);
         setNewStatusName("");
     }, [projectId]);
-
-    useEffect(() => {
-        loadUsers();
-    }, [loadUsers]);
 
     const openCreate = (statusId: number) => {
         setEditingTask(null);
@@ -168,6 +164,9 @@ export default function ProjectDetailPage() {
 
     const [addingContributor, setAddingContributor] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+    const [transferMode, setTransferMode] = useState(false);
+    const [transferTargetId, setTransferTargetId] = useState<number | null>(null);
+    const [transferring, setTransferring] = useState(false);
 
     const handleAddContributor = async () => {
         if (!selectedUserId) return;
@@ -175,7 +174,7 @@ export default function ProjectDetailPage() {
             setAddingContributor(true);
             await contributorService.add(projectId, selectedUserId);
             setSelectedUserId(null);
-            await loadContributors();
+            await Promise.all([loadContributors(), loadUsers()]);
             setTimeout(() => toast.success("Contributeur ajouté"));
         } catch (error) {
             console.error(error);
@@ -189,11 +188,32 @@ export default function ProjectDetailPage() {
         if (!window.confirm(`Retirer ${userName} des contributeurs de ce projet ?`)) return;
         try {
             await contributorService.remove(projectId, userId);
-            await loadContributors();
+            await Promise.all([loadContributors(), loadUsers()]);
             setTimeout(() => toast.success("Contributeur retiré"), 0);
         } catch (error) {
             console.error(error);
             setTimeout(() => toast.error("Impossible de retirer le contributeur"), 0);
+        }
+    };
+
+    const handleTransferOwnership = async () => {
+        if (!transferTargetId) return;
+        const target = contributors.find(c => c.userId === transferTargetId);
+        if (!window.confirm(`Transférer la propriété du projet à ${target?.userName ?? "cet utilisateur"} ? Vous perdrez vos droits de gestion.`)) return;
+        try {
+            setTransferring(true);
+            await projectService.transferOwnership(projectId, transferTargetId);
+            toast.success("Propriété transférée avec succès");
+            setTransferMode(false);
+            setTransferTargetId(null);
+            const updated = await projectService.getById(projectId);
+            setProject(updated);
+            await loadContributors();
+        } catch (error) {
+            console.error(error);
+            toast.error("Impossible de transférer la propriété");
+        } finally {
+            setTransferring(false);
         }
     };
 
@@ -444,6 +464,46 @@ export default function ProjectDetailPage() {
                         )}
                     </button>
                 </div>
+
+                {/* Transfert de propriété */}
+                {!transferMode ? (
+                    <button
+                        onClick={() => setTransferMode(true)}
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:border-orange-300 hover:bg-orange-100"
+                    >
+                        Transférer la propriété
+                    </button>
+                ) : (
+                    <div className="mt-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3">
+                        <select
+                            value={transferTargetId ?? ""}
+                            onChange={(e) => setTransferTargetId(e.target.value ? Number(e.target.value) : null)}
+                            className="flex-1 rounded-xl border border-orange-300 px-3 py-2 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                        >
+                            <option value="">Choisir le nouveau propriétaire…</option>
+                            {allUsers
+                                .filter(u => u.id !== project.ownerId)
+                                .map(u => (
+                                    <option key={u.id} value={u.id}>
+                                        {u.firstname} {u.lastname} ({u.email})
+                                    </option>
+                                ))}
+                        </select>
+                        <button
+                            onClick={handleTransferOwnership}
+                            disabled={!transferTargetId || transferring}
+                            className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
+                        >
+                            {transferring ? "Transfert..." : "Confirmer"}
+                        </button>
+                        <button
+                            onClick={() => { setTransferMode(false); setTransferTargetId(null); }}
+                            className="rounded-xl px-3 py-2 text-sm font-medium text-gray-500 transition hover:bg-gray-100"
+                        >
+                            Annuler
+                        </button>
+                    </div>
+                )}
             </div>
             )}
 

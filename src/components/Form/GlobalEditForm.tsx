@@ -31,14 +31,12 @@ export default function GlobalEditForm<T extends FieldValues>({
     const {
         register,
         handleSubmit,
-        watch,
+        getValues,
         reset,
         formState: { errors },
     } = useForm<T>({
         defaultValues: initialValues as DefaultValues<T>,
     });
-
-    const values = watch();
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -66,13 +64,11 @@ export default function GlobalEditForm<T extends FieldValues>({
         return {
             ...(field.validation ?? {}),
             validate: (value) => {
-
-                const matchValue =
-                    values[field.matchField as Path<T>];
+                const matchValue = getValues(field.matchField as Path<T>);
 
                 return value === matchValue
                     ? true
-                    : `${field.label} ne correspond pas`;
+                    : `${String(field.label)} ne correspond pas`;
             },
         };
     };
@@ -126,8 +122,16 @@ export default function GlobalEditForm<T extends FieldValues>({
                         }`}
                     >
 
-                        {fields.map((field) => (
+                        {fields.map((field) => {
 
+                            const fieldProps = register(
+                                field.name,
+                                getRegisterOptions(field)
+                            );
+
+                            const isEmail = field.type === "email";
+
+                            return (
                             <div
                                 key={String(field.name)}
                                 className="space-y-2"
@@ -140,10 +144,7 @@ export default function GlobalEditForm<T extends FieldValues>({
                                 {field.type === "select" && (
 
                                     <select
-                                        {...register(
-                                            field.name,
-                                            getRegisterOptions(field)
-                                        )}
+                                        {...fieldProps}
                                         disabled={
                                             field.disabled ||
                                             loading
@@ -174,10 +175,7 @@ export default function GlobalEditForm<T extends FieldValues>({
 
                                     <textarea
                                         rows={5}
-                                        {...register(
-                                            field.name,
-                                            getRegisterOptions(field)
-                                        )}
+                                        {...fieldProps}
                                         placeholder={field.placeholder}
                                         disabled={
                                             field.disabled ||
@@ -194,10 +192,7 @@ export default function GlobalEditForm<T extends FieldValues>({
 
                                         <input
                                             type="checkbox"
-                                            {...register(
-                                                field.name,
-                                                getRegisterOptions(field)
-                                            )}
+                                            {...fieldProps}
                                             disabled={
                                                 field.disabled ||
                                                 loading
@@ -230,10 +225,13 @@ export default function GlobalEditForm<T extends FieldValues>({
                                                     ? "text"
                                                     : field.type
                                             }
-                                            {...register(
-                                                field.name,
-                                                getRegisterOptions(field)
-                                            )}
+                                            {...fieldProps}
+                                            onChange={(e) => {
+                                                if (isEmail) {
+                                                    e.target.value = e.target.value.toLowerCase();
+                                                }
+                                                fieldProps.onChange(e);
+                                            }}
                                             placeholder={field.placeholder}
                                             disabled={
                                                 field.disabled ||
@@ -294,8 +292,8 @@ export default function GlobalEditForm<T extends FieldValues>({
                                 )}
 
                             </div>
-
-                        ))}
+                            );
+                        })}
 
                         <div
                             className={`flex items-end justify-center ${

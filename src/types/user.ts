@@ -29,6 +29,8 @@ export interface CreateUser{
     email: string;
 
     directionId : number ;
+
+    role: string;
 }
 
 

@@ -28,6 +28,7 @@ import AdminListPage from "@/pages/admin/superadmin/AdminListPage";
 import RoleListPage from "@/pages/admin/superadmin/RoleListPage";
 import SuperAdminRoute from "@/router/SuperAdminRoute";
 import PermissionRoute from "@/router/PermissionRoute";
+import SelfOrPermissionRoute from "@/router/SelfOrPermissionRoute";
 
 export default function Router() {
 
@@ -62,7 +63,7 @@ export default function Router() {
                 } />
                 <Route path="users/profile" element={<UserProfile />} />
                 <Route path="users/:id/edit" element={
-                    <PermissionRoute permission="MANAGE_USERS"><EditUserPage /></PermissionRoute>
+                    <SelfOrPermissionRoute permission="MANAGE_USERS"><EditUserPage /></SelfOrPermissionRoute>
                 } />
                 <Route path="users/change-pwd" element={<ChangePwdPage />} />
 

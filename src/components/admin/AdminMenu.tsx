@@ -69,7 +69,10 @@ export default function AdminMenu() {
     const { hasPermission } = usePermissions();
     const isSuperAdmin = user?.role === "SUPER_ADMIN";
 
-    const visibleMenus = menus.filter(m => !m.permission || hasPermission(m.permission));
+    const visibleMenus = menus.filter(m => {
+        if (m.path === "/admin/users" && isSuperAdmin) return false;
+        return !m.permission || hasPermission(m.permission);
+    });
 
     return (
         <nav className="mt-8 px-4">

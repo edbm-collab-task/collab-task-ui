@@ -1,54 +1,7 @@
 import { FolderKanban, ListTodo, CircleCheck, Clock3, Users } from "lucide-react";
 import type { DashboardStats, DashboardEvolution } from "@/types/dashboard";
 import Sparkline from "./Sparkline";
-
-function generateIncreasingSparkline(baseValue: number, points: number = 7): number[] {
-    const target = Math.max(0, baseValue ?? 0);
-    if (target === 0) return Array(points).fill(0);
-    const start = Math.max(1, Math.floor(target * 0.45));
-    const step = (target - start) / (points - 1);
-    const res: number[] = [];
-    let seed = Math.abs(target) * 1664525 + 1013904223;
-    const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x100000000; };
-    for (let i = 0; i < points; i++) {
-        const ideal = Math.round(start + step * i);
-        const jitter = Math.round((rand() - 0.5) * step * 0.16);
-        let v = ideal + jitter;
-        if (i > 0) v = Math.max(v, res[i - 1] + 1);
-        v = Math.min(v, target);
-        if (i === points - 1) v = target;
-        res.push(Math.max(0, v));
-    }
-    return res;
-}
-
-function getSparklineFromEvolution(evolution: DashboardEvolution | null, metric: "tasks" | "completed", fallbackValue: number): number[] {
-    if (!evolution || !evolution.points || evolution.points.length === 0) {
-        return generateIncreasingSparkline(fallbackValue, 7);
-    }
-    const pts = evolution.points.slice(-7);
-    if (metric === "tasks") {
-        let cum = 0;
-        const cumVals = pts.map(p => cum += p.created);
-        const maxCum = cumVals[cumVals.length - 1] || 1;
-        if (fallbackValue > maxCum && maxCum > 0) {
-            const ratio = fallbackValue / maxCum;
-            return cumVals.map(v => Math.round(v * ratio));
-        }
-        return cumVals.length === 7 ? cumVals : generateIncreasingSparkline(fallbackValue, 7);
-    }
-    if (metric === "completed") {
-        let cum = 0;
-        const cumVals = pts.map(p => cum += p.completed);
-        const maxCum = cumVals[cumVals.length - 1] || 1;
-        if (fallbackValue > maxCum && maxCum > 0) {
-            const ratio = fallbackValue / maxCum;
-            return cumVals.map(v => Math.round(v * ratio));
-        }
-        return cumVals.length === 7 ? cumVals : generateIncreasingSparkline(fallbackValue, 7);
-    }
-    return generateIncreasingSparkline(fallbackValue, 7);
-}
+import { generateIncreasingSparkline, getSparklineFromEvolution } from "@/utils/sparkline";
 
 interface Props {
     stats: DashboardStats | null;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Archive,
@@ -31,6 +31,15 @@ export default function ProjectListPage() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [showArchived, setShowArchived] = useState(false);
+
+    const loadData = useCallback(async () => {
+        const [projectList, taskList] = await Promise.all([
+            projectService.getAllIncludingArchived(),
+            taskService.getAll(),
+        ]);
+        setProjects(projectList);
+        setTasks(taskList);
+    }, []);
 
     useEffect(() => {
         let active = true;
@@ -76,9 +85,7 @@ export default function ProjectListPage() {
         if (!window.confirm(`Archiver le projet « ${project.title} » ?`)) return;
         try {
             await projectService.archive(project.projectId);
-            setProjects(prev =>
-                prev.map(p => (p.projectId === project.projectId ? { ...p, isActive: false } : p))
-            );
+            await loadData();
         } catch {
             console.error("Erreur archivage");
         }
@@ -87,9 +94,7 @@ export default function ProjectListPage() {
     const handleUnarchive = async (project: ProjectRes) => {
         try {
             await projectService.unarchive(project.projectId);
-            setProjects(prev =>
-                prev.map(p => (p.projectId === project.projectId ? { ...p, isActive: true } : p))
-            );
+            await loadData();
         } catch {
             console.error("Erreur désarchivage");
         }

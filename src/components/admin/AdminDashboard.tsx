@@ -4,44 +4,12 @@ import Spinner from "@/components/common/Spinner";
 import { adminDashboardService } from "@/services/dashboard/adminDashboard.service";
 import type { AdminDashboardStatsResDto } from "@/types/adminDashboard";
 import type { DashboardPeriod } from "@/types/dashboard";
-import { DASHBOARD_PERIODS, DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
+import { DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
 import TableFilter from "@/components/table/TableFilter";
 import Sparkline from "./dashboard/Sparkline";
 import AdminEvolutionChart from "./dashboard/AdminEvolutionChart";
-
-function generateIncreasingSparkline(baseValue: number, points: number = 7): number[] {
-    const target = Math.max(0, baseValue ?? 0);
-    if (target === 0) return Array(points).fill(0);
-    const start = Math.max(1, Math.floor(target * 0.45));
-    const step = (target - start) / (points - 1);
-    let seed = Math.abs(target) * 1664525 + 1013904223;
-    const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x100000000; };
-    const res: number[] = [];
-    for (let i = 0; i < points; i++) {
-        const ideal = Math.round(start + step * i);
-        const jitter = Math.round((rand() - 0.5) * step * 0.16);
-        let v = ideal + jitter;
-        if (i > 0) v = Math.max(v, res[i - 1] + 1);
-        v = Math.min(v, target);
-        if (i === points - 1) v = target;
-        res.push(Math.max(0, v));
-    }
-    return res;
-}
-
-function getAdminSparkline(evolution: { label: string; created: number; completed: number }[] | null | undefined, metric: "created" | "completed", fallback: number): number[] {
-    if (!evolution || evolution.length === 0) return generateIncreasingSparkline(fallback, 7);
-    const pts = evolution.slice(-7);
-    let cum = 0;
-    const vals = pts.map(p => cum += metric === "created" ? p.created : p.completed);
-    if (vals.length !== 7) return generateIncreasingSparkline(fallback, 7);
-    const maxCum = vals[vals.length - 1] || 1;
-    if (fallback > maxCum && maxCum > 0) {
-        const ratio = fallback / maxCum;
-        return vals.map(v => Math.round(v * ratio));
-    }
-    return vals;
-}
+import { generateIncreasingSparkline, getAdminSparkline } from "@/utils/sparkline";
+import { useDashboardPeriod } from "@/hooks/useDashboardPeriod";
 
 interface StatCardProps {
     title: string;
@@ -84,30 +52,20 @@ function StatCard({ title, value, icon, color, sparklineData, trend }: StatCardP
 
 export default function AdminDashboard() {
 
-    const [period, setPeriod] = useState<DashboardPeriod>(DASHBOARD_PERIODS.LAST_30_DAYS);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const { period, setPeriod, startDate, setStartDate, endDate, setEndDate, isCustom, shouldFetch, periodParams } = useDashboardPeriod();
     const [data, setData] = useState<AdminDashboardStatsResDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const isCustom = period === DASHBOARD_PERIODS.CUSTOM;
-
     useEffect(() => {
         let cancelled = false;
-
-        const isCustomReady = period === DASHBOARD_PERIODS.CUSTOM && startDate && endDate;
-        const shouldFetch = period !== DASHBOARD_PERIODS.CUSTOM || isCustomReady;
 
         if (!shouldFetch) return;
 
         setLoading(true);
         setError(null);
 
-        const params = {
-            period,
-            ...(isCustomReady ? { startDate, endDate } : {}),
-        };
+        const params = periodParams;
 
         adminDashboardService.getStats(params)
             .then(result => {
@@ -128,11 +86,7 @@ export default function AdminDashboard() {
     // ===== EXPORT PDF GLOBAL PAR PÉRIODE =====
     const handleExportPdf = async () => {
         try {
-            const params: { period: string; startDate?: string; endDate?: string } = { period };
-            if (isCustom && startDate && endDate) {
-                params.startDate = startDate;
-                params.endDate = endDate;
-            }
+            const params = periodParams;
             const response = await adminDashboardService.exportPdf(params);
             let blob: Blob;
             if (response && typeof response === 'object' && 'data' in response) {
@@ -217,7 +171,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Date range for custom period */}
-            {period === DASHBOARD_PERIODS.CUSTOM && (
+            {isCustom && (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div>
                         <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">

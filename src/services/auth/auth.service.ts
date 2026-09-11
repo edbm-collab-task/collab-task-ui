@@ -76,11 +76,10 @@ export const authService = {
 
         var dataToSave = toRecoverPasswordRequest(email,data);
 
-        console.log(dataToSave);
-
         await apiClient.put(
             API_ENDPOINTS.USERS.RECOVERY,
-            dataToSave
+            dataToSave,
+            { silent: true }
         );
     },
 

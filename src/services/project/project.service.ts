@@ -52,6 +52,13 @@ export const projectService = {
         );
     },
 
+    transferOwnership: async (id: number, newOwnerId: number): Promise<{ message: string }> => {
+        return apiClient.post<{ message: string }, { newOwnerId: number }>(
+            API_ENDPOINTS.PROJECTS.TRANSFER_OWNERSHIP(id),
+            { newOwnerId }
+        );
+    },
+
     getStatuses: async (): Promise<Status[]> => {
         return statusService.getAll();
     },
