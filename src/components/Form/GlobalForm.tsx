@@ -30,9 +30,9 @@ export default function GlobalForms<T extends FieldValues>({
     const [loading, setLoading] = useState(false);
 
 
-    const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100";
+    const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/20 disabled:bg-gray-100";
 
-    const textareaClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none resize-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100";
+    const textareaClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none resize-none transition focus:border-primary focus:ring-4 focus:ring-primary/20 disabled:bg-gray-100";
 
 
     const isTwoColumns = fields.length > 4;
@@ -179,7 +179,7 @@ export default function GlobalForms<T extends FieldValues>({
                                                 type="button"
                                                 disabled={loading}
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-blue-600"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-primary"
                                             >
 
                                                 {showPassword
@@ -219,7 +219,7 @@ export default function GlobalForms<T extends FieldValues>({
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="min-w-44 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white shadow-lg transition duration-300 hover:scale-105 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+                                className="min-w-44 rounded-xl bg-primary px-8 py-3 font-semibold text-white shadow-lg transition duration-300 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                             >
 
                                 {loading ? `${submitLabel}...` : submitLabel}
