@@ -7,7 +7,6 @@ import { authService } from "@/services/auth/auth.service";
 import useAuth from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Check, LockKeyhole, ShieldCheck } from "lucide-react";
-import toast from "react-hot-toast";
 
 export default function ChangePwdPage() {
     const { user } = useAuth();
@@ -26,19 +25,11 @@ export default function ChangePwdPage() {
     const handleChangePassword = async (data: RecoverPasswordFormUI) => {
         if (!email) return;
 
-        if (data.password !== data.confirmPassword) {
-            toast.error("Les deux mots de passe ne correspondent pas");
-            return;
-        }
-
         try {
             await authService.recovery(email, data);
             navigate("/admin/users/profile");
-            setTimeout(() => toast.success("Mot de passe modifié avec succès"));
         } catch (error) {
             console.error(error);
-            const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            toast.error(message || "Impossible de modifier le mot de passe");
         }
     };
 

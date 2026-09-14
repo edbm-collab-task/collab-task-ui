@@ -22,11 +22,6 @@ export const userFormFields: FormField<RegisterForm>[] = [
             maxLength: {
                 value: 50,
                 message: "Nom doit contenir au maximum 50 caractères"
-            },
-
-            pattern: {
-                value: /^\D+$/,
-                message: "Le nom ne doit pas contenir de chiffres"
             }
         }
     },
@@ -49,11 +44,6 @@ export const userFormFields: FormField<RegisterForm>[] = [
             maxLength: {
                 value: 50,
                 message: "Prénom doit contenir au maximum 50 caractères"
-            },
-
-            pattern: {
-                value: /^\D+$/,
-                message: "Le prénom ne doit pas contenir de chiffres"
             }
         }
     },

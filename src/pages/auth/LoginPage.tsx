@@ -11,7 +11,8 @@ export default function LoginPage() {
 
     const handleLogin = async (data: UserLoginReq) => {
         try {
-            await authService.login(data);
+            const user = await authService.login(data);
+            console.log("User logged :", user);
             window.location.replace("/admin");
         } catch (error) {
             console.error("Login failed :", error);

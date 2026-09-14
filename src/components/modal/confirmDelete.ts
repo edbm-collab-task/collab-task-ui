@@ -5,12 +5,13 @@ export async function confirmDelete(
 ): Promise<boolean> {
 
     const confirmation = await Swal.fire({
+        title: "Supprimer ?",
 
         html: `
             <div class="text-sm text-gray-500 -mt-2">
-                Voulez-vous
+                Voulez-vous supprimer
                 <span class="font-semibold text-gray-800">
-                    ${element}
+                    cet ${element}
                 </span> ?
             </div>
         `,
@@ -21,6 +22,9 @@ export async function confirmDelete(
 
         confirmButtonText: "Oui",
         cancelButtonText: "Non",
+
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#6b7280",
 
         reverseButtons: true,
 
@@ -37,26 +41,20 @@ export async function confirmDelete(
             actions: "!mt-2 !gap-2",
 
             confirmButton:
-                "!m-0 !rounded-lg !bg-red-400 !px-4 !py-2 !text-sm !font-medium !text-white !border-0 !outline-none focus:!outline-none focus:!ring-0",
+                "!m-0 rounded-lg px-4 py-2 text-sm font-medium",
 
             cancelButton:
-                "!m-0 !rounded-lg !bg-white !px-4 !py-2 !text-sm !font-medium !text-blue-600 !border !border-blue-500 !outline-none focus:!outline-none focus:!ring-0",
+                "!m-0 rounded-lg px-4 py-2 text-sm font-medium",
         },
     });
-
 
     if (!confirmation.isConfirmed) {
         return false;
     }
 
-
-    // Première lettre en majuscule
-    const confirmationText =
-        element.charAt(0).toUpperCase() + element.slice(1);
-
+    const confirmationText = `SUPPRIMER ${element}`;
 
     const result = await Swal.fire({
-
         title: "Confirmation finale",
 
         html: `
@@ -81,8 +79,11 @@ export async function confirmDelete(
 
         showCancelButton: true,
 
-        confirmButtonText: "Confirmer",
+        confirmButtonText: "Supprimer",
         cancelButtonText: "Annuler",
+
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#6b7280",
 
         reverseButtons: true,
 
@@ -97,15 +98,15 @@ export async function confirmDelete(
             htmlContainer: "!mt-0 !mb-2 !px-2",
 
             input:
-                "!mt-1 !mb-2 !h-10 !rounded-lg !border-gray-300 !text-sm focus:!border-blue-500 focus:!ring-blue-500",
+                "!mt-1 !mb-2 !h-10 !rounded-lg !border-gray-300 text-sm",
 
             actions: "!mt-2 !gap-2",
 
             confirmButton:
-                "!m-0 !rounded-lg !bg-red-500 !px-4 !py-2 !text-sm !font-medium !text-white !border-0 !outline-none focus:!outline-none focus:!ring-0",
+                "!m-0 rounded-lg px-4 py-2 text-sm font-medium",
 
             cancelButton:
-                "!m-0 !rounded-lg !bg-white !px-4 !py-2 !text-sm !font-medium !text-blue-600 !border !border-blue-500 !outline-none focus:!outline-none focus:!ring-0",
+                "!m-0 rounded-lg px-4 py-2 text-sm font-medium",
         },
 
         inputAttributes: {
@@ -127,7 +128,6 @@ export async function confirmDelete(
             return true;
         },
     });
-
 
     return result.isConfirmed && result.value === true;
 }

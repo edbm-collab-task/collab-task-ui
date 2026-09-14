@@ -5,24 +5,23 @@ import { useNavigate } from "react-router";
 import type { DirectionRes } from "@/types/direction";
 import { useState, useEffect } from "react";
 import { directionService } from "@/services/direction/direction.service";
-import { roleService } from "@/services/role/role.service";
 import { createUserFormFields } from "@/components/user/createUserForm"
-import useAuth from "@/hooks/useAuth";
 
 export default function CreateUserPage() {
 
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const isSuperAdmin = user?.role === "SUPER_ADMIN";
     const [directions, setDirections] = useState<DirectionRes[]>([]);
-    const [roles, setRoles] = useState<{ label: string; value: string }[]>([]);
 
     const handleRegister = async (data: CreateUser) => {
 
         try {
-            await authService.create(data);
+            const createdUser = await authService.create(data);
 
-            navigate(isSuperAdmin ? "/admin/admins" : "/admin/users");
+            console.log("User created :", createdUser);
+
+            navigate("/admin/users");
+
+            console.log("Navigation exécutée");
 
         } catch (error) {
 
@@ -44,28 +43,13 @@ export default function CreateUserPage() {
         loadDirections();
     }, []);
 
-    useEffect(() => {
-        const loadRoles = async () => {
-            try {
-                const allRoles = await roleService.getAll();
-                const filtered = isSuperAdmin
-                    ? allRoles
-                    : allRoles.filter(r => r.name === "USER");
-                setRoles(filtered.map(r => ({ label: r.name, value: r.name })));
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        loadRoles();
-    }, [isSuperAdmin]);
-
     return (
         <div className="mx-auto  mt-10">
 
             <GlobalForms<CreateUser>
                 title="Créer un utilisateur"
                 subtitle="Veuiller definir"
-                fields={createUserFormFields(directions, roles)}
+                fields={createUserFormFields(directions)}
                 onSubmit={handleRegister}
                 submitLabel="Créer"
             />

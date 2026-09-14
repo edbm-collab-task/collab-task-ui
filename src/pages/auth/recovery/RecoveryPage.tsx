@@ -5,7 +5,6 @@ import Logo from "@/assets/logo.png";
 
 import type { RecoverPasswordFormUI } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
-import toast from "react-hot-toast";
 
 
 export default function RecoveryPage() {
@@ -22,19 +21,11 @@ export default function RecoveryPage() {
 
         if (!email) return;
 
-        if (data.password !== data.confirmPassword) {
-            toast.error("Les deux mots de passe ne correspondent pas");
-            return;
-        }
-
         try {
             await authService.recovery(email, data);
             window.location.replace("/");
-            setTimeout(() => toast.success("Mot de passe réinitialisé avec succès"));
         } catch (error) {
             console.error(error);
-            const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            toast.error(message || "Impossible de modifier le mot de passe");
         }
 
     };

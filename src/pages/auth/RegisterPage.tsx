@@ -11,7 +11,9 @@ export default function RegisterPage() {
 
             const { confirmPassword, ...user } = data;
 
-            await authService.register(user);
+            const createdUser = await authService.register(user);
+
+            console.log("User created :", createdUser);
 
             window.location.replace("/");
 

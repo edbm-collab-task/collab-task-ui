@@ -12,10 +12,12 @@ export default function EditUserRolePage() {
 
     const handleEdit = async (data: AttacheRole) => {
         try {
-            await userService.updateRole({
+            const userToUpdateRole = await userService.updateRole({
                 ...data,
                 email
             });
+
+            console.log("Role attached with :", userToUpdateRole);
 
             navigate("/admin/users");
 

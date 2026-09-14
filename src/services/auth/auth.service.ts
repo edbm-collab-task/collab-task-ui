@@ -32,13 +32,10 @@ export const authService = {
         data: UserLoginReq
     ): Promise<UserLoginRes> => {
 
-        const res = await apiClient.post<UserLoginRes,UserLoginReq>(
+        return apiClient.post<UserLoginRes,UserLoginReq>(
             API_ENDPOINTS.AUTH.LOGIN,
             data
         );
-        if (res.accessToken) localStorage.setItem("accessToken", res.accessToken);
-        if (res.refreshToken) localStorage.setItem("refreshToken", res.refreshToken);
-        return res;
     },
 
      me: async (): Promise<UserLoginRes> => {
@@ -49,15 +46,12 @@ export const authService = {
 
     },
 
-     refresh: async (): Promise<UserLoginRes | null> => {
+    refresh: async (): Promise<UserLoginRes | null> => {
 
-    const res = await apiClient.post<UserLoginRes, {}>(
+    return apiClient.post<UserLoginRes, {}>(
         API_ENDPOINTS.AUTH.REFRESH,
         {}
     );
-    if (res?.accessToken) localStorage.setItem("accessToken", res.accessToken);
-    if (res?.refreshToken) localStorage.setItem("refreshToken", res.refreshToken);
-    return res;
 
    },
 
@@ -68,18 +62,17 @@ export const authService = {
             API_ENDPOINTS.AUTH.LOGOUT,
             {}
         );
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
     },
 
     recovery: async (email: string ,data: RecoverPasswordFormUI): Promise<void> => {
 
         var dataToSave = toRecoverPasswordRequest(email,data);
 
+        console.log(dataToSave);
+
         await apiClient.put(
             API_ENDPOINTS.USERS.RECOVERY,
-            dataToSave,
-            { silent: true }
+            dataToSave
         );
     },
 

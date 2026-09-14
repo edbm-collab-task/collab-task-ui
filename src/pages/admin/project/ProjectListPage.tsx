@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
     Archive,
-    ArchiveRestore,
     CalendarDays,
     FolderKanban,
     Pencil,
@@ -25,54 +25,43 @@ function formatDate(date: string | null) {
 }
 
 export default function ProjectListPage() {
+
     const navigate = useNavigate();
     const [projects, setProjects] = useState<ProjectRes[]>([]);
     const [tasks, setTasks] = useState<TaskRes[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
-    const [showArchived, setShowArchived] = useState(false);
 
-    const loadData = useCallback(async () => {
-        const [projectList, taskList] = await Promise.all([
-            projectService.getAllIncludingArchived(),
-            taskService.getAll(),
-        ]);
-        setProjects(projectList);
-        setTasks(taskList);
-    }, []);
+    const load = async () => {
+        try {
+            setLoading(true);
+            const [projectList, taskList] = await Promise.all([
+                projectService.getAll(),
+                taskService.getAll(),
+            ]);
+            setProjects(projectList);
+            setTasks(taskList);
+        } catch (error) {
+            console.error(error);
+            toast.error("Impossible de charger les projets");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        let active = true;
-        (async () => {
-            try {
-                const [projectList, taskList] = await Promise.all([
-                    projectService.getAllIncludingArchived(),
-                    taskService.getAll(),
-                ]);
-                if (active) {
-                    setProjects(projectList);
-                    setTasks(taskList);
-                }
-            } catch {
-                if (active) console.error("Erreur chargement projets");
-            } finally {
-                if (active) setLoading(false);
-            }
-        })();
-        return () => { active = false; };
+        load();
     }, []);
 
     const filteredProjects = useMemo(() => {
         const value = search.toLowerCase();
-        return projects
-            .filter(p => (showArchived ? !p.isActive : p.isActive))
-            .filter(p =>
-                !value ||
-                p.title.toLowerCase().includes(value) ||
-                (p.description ?? "").toLowerCase().includes(value) ||
-                p.ownerName.toLowerCase().includes(value)
-            );
-    }, [projects, search, showArchived]);
+        return projects.filter(p =>
+            !value ||
+            p.title.toLowerCase().includes(value) ||
+            (p.description ?? "").toLowerCase().includes(value) ||
+            p.ownerName.toLowerCase().includes(value)
+        );
+    }, [projects, search]);
 
     const progressOf = (projectId: number) => {
         const projectTasks = tasks.filter(t => t.projectId === projectId);
@@ -85,18 +74,11 @@ export default function ProjectListPage() {
         if (!window.confirm(`Archiver le projet « ${project.title} » ?`)) return;
         try {
             await projectService.archive(project.projectId);
-            await loadData();
-        } catch {
-            console.error("Erreur archivage");
-        }
-    };
-
-    const handleUnarchive = async (project: ProjectRes) => {
-        try {
-            await projectService.unarchive(project.projectId);
-            await loadData();
-        } catch {
-            console.error("Erreur désarchivage");
+            setProjects(prev => prev.filter(p => p.projectId !== project.projectId));
+            setTimeout(() => toast.success("Projet archivé"));
+        } catch (error) {
+            console.error(error);
+            setTimeout(() => toast.error("Impossible d'archiver le projet"));
         }
     };
 
@@ -109,14 +91,12 @@ export default function ProjectListPage() {
     }
 
     return (
-        <div className="space-y-6" key={showArchived ? "archived" : "active"}>
+        <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Projets</h2>
                     <p className="mt-1 text-sm text-gray-500">
-                        {filteredProjects.length} projet{filteredProjects.length > 1 ? "s" : ""}{" "}
-                        {showArchived ? "archivé" : "actif"}
-                        {filteredProjects.length > 1 ? "s" : ""}
+                        {projects.length} projet{projects.length > 1 ? "s" : ""} · organisez et suivez vos tâches
                     </p>
                 </div>
 
@@ -132,18 +112,6 @@ export default function ProjectListPage() {
                     </div>
 
                     <button
-                        onClick={() => setShowArchived(v => !v)}
-                        className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                            showArchived
-                                ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100"
-                                : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
-                        }`}
-                    >
-                        <Archive size={16} />
-                        {showArchived ? "Archivés" : "Actifs"}
-                    </button>
-
-                    <button
                         onClick={() => navigate("/admin/projects/create")}
                         className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700"
                     >
@@ -157,13 +125,9 @@ export default function ProjectListPage() {
                 <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-white py-20 text-center">
                     <FolderKanban size={40} className="mx-auto text-gray-300" />
                     <p className="mt-3 text-sm font-medium text-gray-500">
-                        {search
-                            ? "Aucun projet ne correspond à votre recherche"
-                            : showArchived
-                                ? "Aucun projet archivé"
-                                : "Aucun projet pour le moment"}
+                        {search ? "Aucun projet ne correspond à votre recherche" : "Aucun projet pour le moment"}
                     </p>
-                    {!search && !showArchived && (
+                    {!search && (
                         <button
                             onClick={() => navigate("/admin/projects/create")}
                             className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
@@ -195,7 +159,9 @@ export default function ProjectListPage() {
                                     </span>
                                 </div>
 
-                                <h3 className="mt-4 text-base font-bold text-gray-800">{project.title}</h3>
+                                <h3 className="mt-4 text-base font-bold text-gray-800">
+                                    {project.title}
+                                </h3>
                                 <p className="mt-1 line-clamp-2 text-sm text-gray-500">
                                     {project.description || "Aucune description"}
                                 </p>
@@ -206,9 +172,7 @@ export default function ProjectListPage() {
                                 </div>
                                 <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-500">
                                     <CalendarDays size={13} />
-                                    <span>
-                                        {formatDate(project.startDate)} → {formatDate(project.endDate)}
-                                    </span>
+                                    <span>{formatDate(project.startDate)} → {formatDate(project.endDate)}</span>
                                 </div>
 
                                 <div className="mt-4">
@@ -219,9 +183,7 @@ export default function ProjectListPage() {
                                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                                         <div
                                             className={`h-full rounded-full transition-all ${
-                                                pct === 100
-                                                    ? "bg-emerald-500"
-                                                    : "bg-gradient-to-r from-blue-500 to-indigo-500"
+                                                pct === 100 ? "bg-emerald-500" : "bg-gradient-to-r from-blue-500 to-indigo-500"
                                             }`}
                                             style={{ width: `${pct}%` }}
                                         />
@@ -245,23 +207,13 @@ export default function ProjectListPage() {
                                     >
                                         <Pencil size={16} />
                                     </button>
-                                    {showArchived ? (
-                                        <button
-                                            onClick={() => handleUnarchive(project)}
-                                            title="Désarchiver"
-                                            className="rounded-lg p-2 text-gray-400 transition hover:bg-emerald-50 hover:text-emerald-600"
-                                        >
-                                            <ArchiveRestore size={16} />
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleArchive(project)}
-                                            title="Archiver"
-                                            className="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-500"
-                                        >
-                                            <Archive size={16} />
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={() => handleArchive(project)}
+                                        title="Archiver"
+                                        className="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-500"
+                                    >
+                                        <Archive size={16} />
+                                    </button>
                                 </div>
                             </div>
                         );

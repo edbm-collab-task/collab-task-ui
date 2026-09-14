@@ -16,10 +16,6 @@ export const userAttachedRole: FormField<AttacheRole>[] = [
             {
                 label: "Administrateur",
                 value: RoleType.ADMIN
-            },
-            {
-                label: "Super Administrateur",
-                value: RoleType.SUPER_ADMIN
             }
         ],
 

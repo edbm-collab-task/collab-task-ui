@@ -6,7 +6,6 @@ import {
     Plus,
     GitBranch,
     Users,
-    MessageSquare,
 } from "lucide-react";
 
 import {
@@ -15,19 +14,15 @@ import {
     type TaskRes,
 } from "@/types/task";
 import type { Status } from "@/types/status";
-import type { UserResponse } from "@/types/user";
-import CommentPanel from "./CommentPanel";
 
 interface Props {
     projectId: number;
     tasks: TaskRes[];
     statuses?: Status[];
-    allUsers?: UserResponse[];
     onEditTask: (task: TaskRes) => void;
     onCreateTask: (statusId: number) => void;
     onDeleteTask: (task: TaskRes) => void;
     onMoveTask: (task: TaskRes, statusId: number) => void;
-    currentUserId: number;
 }
 
 function priorityBadge(priorityId: number) {
@@ -72,19 +67,13 @@ export default function KanbanBoard({
     projectId,
     tasks,
     statuses,
-    allUsers = [],
     onEditTask,
     onCreateTask,
     onDeleteTask,
     onMoveTask,
-    currentUserId,
 }: Props) {
     const [draggedTask, setDraggedTask] = useState<TaskRes | null>(null);
     const [overColumn, setOverColumn] = useState<number | null>(null);
-    const [commentTaskId, setCommentTaskId] = useState<number | null>(null);
-    const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
-
-    const getCount = (taskId: number) => commentCounts[taskId] ?? 0;
 
     const fallbackStatuses: Status[] = STATUSES.map(s => ({
         statusId: s.id,
@@ -224,17 +213,6 @@ export default function KanbanBoard({
                                                     Sous-tâche
                                                 </span>
                                             )}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setCommentTaskId(task.taskId);
-                                                }}
-                                                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-blue-600"
-                                                title="Commentaires"
-                                            >
-                                                <MessageSquare size={11} />
-                                                {getCount(task.taskId) || ""}
-                                            </button>
                                         </div>
                                     </div>
                                 );
@@ -243,19 +221,6 @@ export default function KanbanBoard({
                     </div>
                 );
             })}
-
-            <CommentPanel
-                open={commentTaskId !== null}
-                taskId={commentTaskId}
-                currentUserId={currentUserId}
-                availableUsers={allUsers}
-                onClose={() => setCommentTaskId(null)}
-                onCountChange={(count) => {
-                    if (commentTaskId) {
-                        setCommentCounts(prev => ({ ...prev, [commentTaskId]: count }));
-                    }
-                }}
-            />
         </div>
     );
 }

@@ -31,7 +31,6 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
     const [form, setForm] = useState<ProjectForm>(emptyForm);
     const [loading, setLoading] = useState(isEdit);
     const [submitting, setSubmitting] = useState(false);
-    const [originalStartDate, setOriginalStartDate] = useState<string | null>(null);
 
     useEffect(() => {
 
@@ -40,12 +39,10 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                 const project = isEdit ? await projectService.getById(Number(id)) : null;
 
                 if (project) {
-                    const startDate = project.startDate?.slice(0, 10) ?? "";
-                    setOriginalStartDate(startDate || null);
                     setForm({
                         title: project.title,
                         description: project.description ?? "",
-                        startDate,
+                        startDate: project.startDate?.slice(0, 10) ?? "",
                         endDate: project.endDate?.slice(0, 10) ?? "",
                     });
                 }
@@ -65,24 +62,6 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
 
         if (!form.title.trim()) {
             toast.error("Le titre du projet est obligatoire");
-            return;
-        }
-
-        if (!form.startDate) {
-            toast.error("La date de début est obligatoire");
-            return;
-        }
-
-        const today = new Date().toISOString().slice(0, 10);
-
-        if (form.startDate && form.endDate && form.startDate > form.endDate) {
-            toast.error("La date de début doit être antérieure ou égale à la date de fin");
-            return;
-        }
-
-        const startDateChanged = form.startDate !== originalStartDate;
-        if (form.startDate && startDateChanged && form.startDate < today) {
-            toast.error("La date de début ne peut pas être dans le passé");
             return;
         }
 
@@ -106,8 +85,7 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
             setTimeout(() => toast.success(isEdit ? "Projet modifié avec succès" : "Projet créé avec succès"));
         } catch (error) {
             console.error(error);
-            const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            setTimeout(() => toast.error(message || "Une erreur est survenue"));
+            setTimeout(() => toast.error("Une erreur est survenue"));
         } finally {
             setSubmitting(false);
         }
@@ -115,9 +93,6 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
 
     const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
     const labelClass = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500";
-
-    const today = new Date().toISOString().slice(0, 10);
-    const startMin = originalStartDate && originalStartDate < today ? originalStartDate : today;
 
     if (loading) {
         return (
@@ -180,8 +155,6 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                                 type="date"
                                 className={inputClass}
                                 value={form.startDate}
-                                min={startMin}
-                                required
                                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
                             />
                         </div>
@@ -197,7 +170,6 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                                 type="date"
                                 className={inputClass}
                                 value={form.endDate}
-                                min={form.startDate || undefined}
                                 onChange={(e) => setForm({ ...form, endDate: e.target.value })}
                             />
                         </div>
@@ -216,14 +188,9 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                             disabled={submitting}
                             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            {submitting ? (
-                                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            ) : (
-                                <Save size={16} />
-                            )}
-                            <span className="hidden sm:inline">
-                                {isEdit ? "Enregistrer" : "Créer le projet"}
-                            </span>
+                            {submitting && <Spinner size={16} />}
+                            <Save size={16} />
+                            {isEdit ? "Enregistrer" : "Créer le projet"}
                         </button>
                     </div>
                 </form>

@@ -1,4 +1,4 @@
-import { apiClient, type RequestOptions } from "@/api/api-client";
+import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
 import type { AttacheRole } from "@/types/role";
 import type { EditUser } from "@/types/user";
@@ -11,12 +11,10 @@ import type {
 
 export const userService = {
 
-    getAll: async (options?: RequestOptions): Promise<UserResponse[]> => {
+    getAll: async (): Promise<UserResponse[]> => {
 
         return apiClient.get<UserResponse[]>(
-            API_ENDPOINTS.USERS.ALL,
-            undefined,
-            options
+            API_ENDPOINTS.USERS.ALL
         );
 
     },
@@ -136,16 +134,6 @@ export const userService = {
         return apiClient.post<UserResponse, FormData>(
             API_ENDPOINTS.USERS.IMAGE(id),
             formData
-        );
-    },
-
-    getAdmins: async (): Promise<UserResponse[]> => {
-        return apiClient.get<UserResponse[]>(API_ENDPOINTS.ADMINS.ALL);
-    },
-
-    getPotentialContributors: async (projectId: number): Promise<UserResponse[]> => {
-        return apiClient.get<UserResponse[]>(
-            API_ENDPOINTS.USERS.POTENTIAL_CONTRIBUTORS(projectId)
         );
     },
 

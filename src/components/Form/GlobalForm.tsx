@@ -1,4 +1,4 @@
-import { useForm, type FieldValues, type Path } from "react-hook-form";
+import { useForm, type FieldValues } from "react-hook-form";
 import type { FormField } from "@/components/form/Forms";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
@@ -22,9 +22,11 @@ export default function GlobalForms<T extends FieldValues>({
     const {
         register,
         handleSubmit,
-        getValues,
+        watch,
         formState: { errors }
     } = useForm<T>();
+
+    const values = watch();
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -41,11 +43,9 @@ export default function GlobalForms<T extends FieldValues>({
     const getRegisterOptions = (field: FormField<T>) => ({
         ...field.validation,
         ...(field.matchField && {
-            validate: (value: unknown) => {
-                const matchValue = getValues(field.matchField as Path<T>);
-                return value === matchValue ||
-                    `${String(field.label)} ne correspond pas`;
-            }
+            validate: (value: unknown) =>
+                value === values[field.matchField as keyof T] ||
+                `${field.label} does not match`
         })
     });
 
@@ -94,16 +94,8 @@ export default function GlobalForms<T extends FieldValues>({
 
                     <div className={`grid gap-6 ${isTwoColumns ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
 
-                        {fields.map((field) => {
+                        {fields.map((field) => (
 
-                            const fieldProps = register(
-                                field.name,
-                                getRegisterOptions(field)
-                            );
-
-                            const isEmail = field.type === "email";
-
-                            return (
                             <div
                                 key={String(field.name)}
                                 className="space-y-2"
@@ -117,7 +109,7 @@ export default function GlobalForms<T extends FieldValues>({
                                 {field.type === "select" ? (
 
                                     <select
-                                        {...fieldProps}
+                                        {...register(field.name, getRegisterOptions(field))}
                                         disabled={field.disabled || loading}
                                         className={inputClass}
                                     >
@@ -143,7 +135,7 @@ export default function GlobalForms<T extends FieldValues>({
 
                                     <textarea
                                         rows={5}
-                                        {...fieldProps}
+                                        {...register(field.name, getRegisterOptions(field))}
                                         placeholder={field.placeholder}
                                         disabled={field.disabled || loading}
                                         className={textareaClass}
@@ -160,13 +152,7 @@ export default function GlobalForms<T extends FieldValues>({
                                                     ? "text"
                                                     : field.type
                                             }
-                                            {...fieldProps}
-                                            onChange={(e) => {
-                                                if (isEmail) {
-                                                    e.target.value = e.target.value.toLowerCase();
-                                                }
-                                                fieldProps.onChange(e);
-                                            }}
+                                            {...register(field.name, getRegisterOptions(field))}
                                             placeholder={field.placeholder}
                                             disabled={field.disabled || loading}
                                             className={`${inputClass} ${field.type === "password" ? "pr-12" : ""}`}
@@ -210,8 +196,8 @@ export default function GlobalForms<T extends FieldValues>({
                                 )}
 
                             </div>
-                            );
-                        })}
+
+                        ))}
 
 
                         <div className={`flex items-end justify-center ${isTwoColumns && fields.length % 2 === 0 ? "md:col-span-2" : ""}`}>
