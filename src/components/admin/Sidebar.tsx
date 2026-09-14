@@ -1,5 +1,8 @@
+import { NavLink } from "react-router-dom";
 import AdminMenu from "./AdminMenu";
 import { X } from "lucide-react";
+import {menus} from "./AdminNavigation.config.ts"
+
 
 interface Props {
     open: boolean;
@@ -24,10 +27,12 @@ export default function Sidebar({ open, close }: Props) {
             >
 
                 <div className="flex h-20  items-center justify-between border-b border-secondary px-8">
-
-                    <h1 className="text-white bg-clip-text text-3xl font-extrabold ">
-                        CollaB Tasks
-                    </h1>
+                    
+                    <NavLink  to={menus[0].path} end={menus[0].path === "/admin"}>
+                        <h1 className="text-white bg-clip-text text-3xl font-extrabold ">
+                            CollaB Tasks
+                        </h1>
+                    </NavLink>
 
                     <button
                         onClick={close}
