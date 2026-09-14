@@ -8,13 +8,13 @@ interface Props {
 
 export default function Navbar({ toggleSidebar }: Props) {
     return (
-        <header className="flex  h-16 w-full items-center justify-between border-none bg-white px-6 shadow-sm">
+        <header className="flex  h-20 w-full items-center justify-between border-none bg-primary px-6 shadow-sm">
 
             {/* Left */}
             <div className="flex items-center">
                 <button
                     onClick={toggleSidebar}
-                    className="rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 lg:hidden"
+                    className="rounded-lg p-2 text-secondary transition hover:bg-secondary hover:text-primary lg:hidden"
                 >
                     <Menu size={25} />
                 </button>
@@ -22,8 +22,8 @@ export default function Navbar({ toggleSidebar }: Props) {
 
 
             {/* Right */}
-            <div className="ml-auto flex items-center gap-2">
-                <NotificationBell />
+            <div className="ml-auto text-secondary flex items-center gap-2">
+                <NotificationBell/>
                 <UserDropdown />
             </div>
 

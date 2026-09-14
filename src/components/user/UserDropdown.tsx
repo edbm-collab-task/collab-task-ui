@@ -85,7 +85,7 @@ export default function UserDropdown() {
             <button
                 type="button"
                 onClick={() => setOpen(!open)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-gray-100"
+                className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-secondary/30"
             >
     
                 <div className="relative">
@@ -107,18 +107,18 @@ export default function UserDropdown() {
                     )}
 
                     {/* Statut en ligne */}
-                    <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" />
+                    {/* <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" /> */}
                 </div>
 
                 {/* Informations utilisateur */}
                 <div className="hidden text-left md:block">
-                    <p className="text-sm font-semibold text-gray-800">
+                    <p className="text-sm font-semibold text-white/90">
                         {currentUser.firstname} {currentUser.lastname}
                     </p>
 
-                    <p className="text-xs text-green-600">
+                    {/* <p className="text-xs text-green-600">
                         En ligne
-                    </p>
+                    </p> */}
                 </div>
 
                 {/* Chevron */}

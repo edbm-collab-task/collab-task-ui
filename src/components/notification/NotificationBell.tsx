@@ -97,7 +97,7 @@ export default function NotificationBell() {
             <button
                 type="button"
                 onClick={() => setOpen(!open)}
-                className="relative rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                className="relative rounded-lg p-2 text-secondary transition hover:bg-secondary hover:text-gray-700"
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
@@ -132,7 +132,7 @@ export default function NotificationBell() {
                                 <button
                                     key={notif.notificationId}
                                     onClick={() => handleNotificationClick(notif)}
-                                    className={`w-full text-left px-4 py-3 transition hover:bg-gray-50 ${!notif.isRead ? "bg-blue-50/50" : ""}`}
+                                    className={`w-full text-left px-4 py-3 transition hover:bg-secondary ${!notif.isRead ? "bg-blue-50/50" : ""}`}
                                 >
                                     <div className="flex items-start gap-3">
                                         <span className="mt-0.5 text-lg">{getIcon(notif.type)}</span>
