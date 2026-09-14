@@ -86,8 +86,8 @@ export default function AdminMenu() {
                                 className={`group relative mb-3 flex items-center gap-4 overflow-hidden rounded-xl px-5 py-4 transition-all duration-300
                                     ${
                                         isActive
-                                            ? "bg-slate-800 text-white shadow-lg"
-                                            : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                                            ? "bg-accent text-white shadow-lg"
+                                            : "text-white/90 hover:bg-accent/80 hover:text-white"
                                     }
                                 `}
                             >
@@ -97,8 +97,8 @@ export default function AdminMenu() {
                                         transition-all duration-300
                                         ${
                                             isActive
-                                                ? "text-orange-400 scale-110"
-                                                : "group-hover:text-orange-300 group-hover:scale-110"
+                                                ? "text-secondary scale-110"
+                                                : "group-hover:text-secondary group-hover:scale-110"
                                         }
                                     `}
                                 />
@@ -115,7 +115,7 @@ export default function AdminMenu() {
             {isSuperAdmin && (
                 <>
                     <div className="my-4 border-t border-slate-700" />
-                    <p className="mb-2 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <p className="mb-2 px-5 font-semibold uppercase tracking-wider text-white">
                         Super Admin
                     </p>
                     {superAdminMenus.map((menu) => {
