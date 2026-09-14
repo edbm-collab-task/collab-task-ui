@@ -55,7 +55,7 @@ export default function AdminMenu() {
             {isSuperAdmin && (
                 <>
                     <div className="my-4 border-t border-secondary" />
-                    <p className="mb-2 px-5 font-semibold uppercase tracking-wider text-white">
+                    <p className="ml-5 mt-5 italic text-sm font-semibold uppercase tracking-wider text-secondary">
                         Super Admin
                     </p>
                     {superAdminMenus.map((menu) => {
