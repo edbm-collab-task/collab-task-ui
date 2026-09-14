@@ -75,7 +75,7 @@ export default function AdminMenu() {
     });
 
     return (
-        <nav className="mt-8 px-4">
+        <nav className="mt-4 px-4">
             {visibleMenus.map((menu) => {
                 const Icon = menu.icon;
 
@@ -114,7 +114,7 @@ export default function AdminMenu() {
 
             {isSuperAdmin && (
                 <>
-                    <div className="my-4 border-t border-slate-700" />
+                    <div className="my-4 border-t border-secondary" />
                     <p className="mb-2 px-5 font-semibold uppercase tracking-wider text-white">
                         Super Admin
                     </p>
@@ -128,25 +128,19 @@ export default function AdminMenu() {
                                         className={`group relative mb-3 flex items-center gap-4 overflow-hidden rounded-xl px-5 py-4 transition-all duration-300
                                             ${
                                                 isActive
-                                                    ? "bg-slate-800 text-white shadow-lg"
-                                                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                                                    ? "bg-accent text-white shadow-lg"
+                                                    : "text-white hover:bg-accent/80 hover:text-secondary"
                                             }
                                         `}
                                     >
-                                        {isActive && (
-                                            <span
-                                                className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-gradient-to-b from-purple-500 via-pink-400 to-red-500"
-                                            />
-                                        )}
-
                                         <Icon
                                             size={22}
                                             className={`
                                                 transition-all duration-300
                                                 ${
                                                     isActive
-                                                        ? "text-purple-400 scale-110"
-                                                        : "group-hover:text-purple-300 group-hover:scale-110"
+                                                        ? "text-white scale-110"
+                                                        : "group-hover:text-secondary group-hover:scale-110"
                                                 }
                                             `}
                                         />

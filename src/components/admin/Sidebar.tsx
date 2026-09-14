@@ -31,7 +31,7 @@ export default function Sidebar({ open, close }: Props) {
 
                     <button
                         onClick={close}
-                        className="text-gray-300 lg:hidden"
+                        className="text-white/50 lg:hidden"
                     >
                         <X size={24} />
                     </button>
