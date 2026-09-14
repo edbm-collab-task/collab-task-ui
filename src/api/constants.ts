@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
         ALL_DISABLE: "/users/disable",
         UPDATE_ROLE: "/users/role",
         IMAGE: (id: number) => `/users/${id}/image`,
+        POTENTIAL_CONTRIBUTORS: (projectId: number) => `/users/project/${projectId}/contributors`,
     },
 
     DIRECTION: {
@@ -51,7 +52,9 @@ export const API_ENDPOINTS = {
 
         UPDATE: "/projects",
 
-        DELETE: "/projects"
+        DELETE: "/projects",
+
+        TRANSFER_OWNERSHIP: (id: number) => `/projects/${id}/transfer-ownership`
 
     },
 
@@ -77,6 +80,19 @@ export const API_ENDPOINTS = {
 
         ALL: "/statuses"
 
+    },
+
+    ROLES: {
+        ALL: "/roles",
+        BY_ID: "/roles",
+        CREATE: "/roles",
+        UPDATE: "/roles",
+        DELETE: "/roles",
+        PERMISSIONS: "/roles/permissions",
+    },
+
+    ADMINS: {
+        ALL: "/users/admins",
     },
 
     MESSAGES: {
@@ -126,6 +142,16 @@ export const API_ENDPOINTS = {
 
         DELETE_MESSAGE: (messageId: number) =>
             `/conversations/messages/${messageId}`,
+    },
+
+    DASHBOARD: {
+        STATS: "/dashboard/stats",
+        REPORT_PDF: "/dashboard/reports/pdf",
+    },
+
+    ADMIN_DASHBOARD: {
+        STATS: "/admin/dashboard/stats",
+        REPORT_PDF: "/admin/dashboard/reports/pdf",
     },
 
 } as const;

@@ -62,11 +62,7 @@ export default function DirectionsListPage() {
             icon: <Pencil size={18} />,
             roles: ["ADMIN"],
 
-            onClick: (user) => {
-
-                console.log("Modifier :", user);
-
-            }
+            onClick: (_user) => {}
 
         },
 

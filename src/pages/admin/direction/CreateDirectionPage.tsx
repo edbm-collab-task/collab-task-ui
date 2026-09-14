@@ -13,13 +13,9 @@ export default function CreateDirectionPage(){
 
         try {
 
-            const createdDirection = await directionService.create(data);
-
-            console.log("Direction created :", createdDirection);
+            await directionService.create(data);
 
             navigate("/admin/directions");
-
-            console.log("Navigation exécutée");
 
         } catch (error) {
 

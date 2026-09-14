@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { X, Paperclip, Trash2, Download, Users } from "lucide-react";
+import toast from "react-hot-toast";
 
 import {
     PRIORITIES,
@@ -147,11 +148,28 @@ export default function TaskModal({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.title.trim()) return;
+
+        if (!form.dueDate) {
+            toast.error("La date d'échéance est obligatoire");
+            return;
+        }
+
+        const today = new Date().toISOString().slice(0, 10);
+        const dueDateChanged = form.dueDate !== (task?.dueDate ?? null);
+        if (dueDateChanged && form.dueDate < today) {
+            toast.error("La date d'échéance ne peut pas être dans le passé");
+            return;
+        }
+
         void onSubmit(form);
     };
 
     const inputClass = "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
     const labelClass = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500";
+
+    const today = new Date().toISOString().slice(0, 10);
+    const originalDueDate = task?.dueDate ?? null;
+    const dueMin = originalDueDate && originalDueDate < today ? originalDueDate : today;
 
     const formatSize = (bytes: number) => {
         if (bytes < 1024) return bytes + " o";
@@ -230,11 +248,13 @@ export default function TaskModal({
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className={labelClass}>Échéance</label>
+                            <label className={labelClass}>Échéance *</label>
                             <input
                                 type="date"
                                 className={inputClass}
                                 value={form.dueDate ?? ""}
+                                min={dueMin}
+                                required
                                 onChange={(e) => setForm({ ...form, dueDate: e.target.value || null })}
                             />
                         </div>
@@ -315,62 +335,59 @@ export default function TaskModal({
                     </div>
                 </form>
 
-                {/* Pièces jointes — hors du form pour éviter les conflits */}
-                <div className="mt-4 border-t border-gray-200 pt-4">
-                    <label className={labelClass}>
-                        <Paperclip size={13} className="mr-1 inline" />
-                        Pièces jointes ({attachments.length})
-                    </label>
-                    <div className="rounded-xl border border-gray-200 p-3 space-y-2">
-                        {attachments.length > 0 && (
-                            <div className="space-y-1">
-                                {attachments.map(att => (
-                                    <div key={att.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium text-gray-700">{att.originalName}</p>
-                                            <p className="text-xs text-gray-400">{formatSize(att.size)}</p>
+                {task && (
+                    <div className="mt-4 border-t border-gray-200 pt-4">
+                        <label className={labelClass}>
+                            <Paperclip size={13} className="mr-1 inline" />
+                            Pièces jointes ({attachments.length})
+                        </label>
+                        <div className="rounded-xl border border-gray-200 p-3 space-y-2">
+                            {attachments.length > 0 && (
+                                <div className="space-y-1">
+                                    {attachments.map(att => (
+                                        <div key={att.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium text-gray-700">{att.originalName}</p>
+                                                <p className="text-xs text-gray-400">{formatSize(att.size)}</p>
+                                            </div>
+                                            <div className="flex items-center gap-1 ml-2">
+                                                <a
+                                                    href={attachmentService.downloadUrl(att.id)}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-blue-600"
+                                                    title="Télécharger"
+                                                >
+                                                    <Download size={14} />
+                                                </a>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteAttachment(att.id)}
+                                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-red-500"
+                                                    title="Supprimer"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-1 ml-2">
-                                            <a
-                                                href={attachmentService.downloadUrl(att.id)}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-blue-600"
-                                                title="Télécharger"
-                                            >
-                                                <Download size={14} />
-                                            </a>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDeleteAttachment(att.id)}
-                                                className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-red-500"
-                                                title="Supprimer"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        <div>
-                            <button
-                                type="button"
-                                onClick={openFilePicker}
-                                disabled={uploading || !task}
-                                className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
-                                title={!task ? "Créez la tâche puis réessayez" : ""}
-                            >
-                                <Paperclip size={13} />
-                                {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
-                            </button>
-                            {!task && (
-                                <p className="mt-1 text-xs text-gray-400">Créez la tâche pour pouvoir ajouter des fichiers</p>
+                                    ))}
+                                </div>
                             )}
+
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={openFilePicker}
+                                    disabled={uploading}
+                                    className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
+                                >
+                                    <Paperclip size={13} />
+                                    {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

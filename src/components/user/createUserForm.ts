@@ -3,7 +3,8 @@ import type { DirectionRes } from "@/types/direction";
 import type { CreateUser } from "@/types/user";
 
 export const createUserFormFields = (
-    directions: DirectionRes[]
+    directions: DirectionRes[],
+    roles: { label: string; value: string }[] = []
 ): FormField<CreateUser>[] => [
     {
         name: "firstname",
@@ -12,6 +13,10 @@ export const createUserFormFields = (
         placeholder: "Entrer votre nom...",
         validation: {
             required: "Nom est requis",
+            pattern: {
+                value: /^\D+$/,
+                message: "Le nom ne doit pas contenir de chiffres"
+            }
         },
     },
 
@@ -22,6 +27,10 @@ export const createUserFormFields = (
         placeholder: "Entrer votre prénom...",
         validation: {
             required: "Prénom est requis",
+            pattern: {
+                value: /^\D+$/,
+                message: "Le prénom ne doit pas contenir de chiffres"
+            }
         },
     },
 
@@ -48,4 +57,19 @@ export const createUserFormFields = (
             required: "La direction est requise",
         },
     },
+
+    ...(roles.length > 0
+        ? [
+              {
+                  name: "role" as const,
+                  label: "Rôle",
+                  type: "select" as const,
+                  placeholder: "Choisir le rôle...",
+                  options: roles,
+                  validation: {
+                      required: "Le rôle est requis",
+                  },
+              },
+          ]
+        : []),
 ];

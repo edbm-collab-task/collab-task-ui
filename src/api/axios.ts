@@ -8,7 +8,6 @@ export const api = axios.create({
     withCredentials: true,
 });
 
-// Intercepteur de requête : ajoute le token JWT
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("accessToken");
@@ -39,7 +38,7 @@ const processQueue = (error: unknown) => {
 
 const shouldRefresh = (status: number, url: string): boolean => {
     if (url.includes("/auth/")) return false;
-    return status === 401 || status === 403;
+    return status === 401;
 };
 
 api.interceptors.response.use(
@@ -81,28 +80,30 @@ api.interceptors.response.use(
             }
         }
 
-        const message = error.response.data?.message || "Une erreur est survenue.";
+        if (!originalRequest.silent) {
+            const message = error.response.data?.message || "Une erreur est survenue.";
 
-        switch (status) {
-            case 400:
-                toast.error(message);
-                break;
-            case 401:
-                break;
-            case 403:
-                toast.error("Accès refusé.");
-                break;
-            case 404:
-                toast.error("Ressource introuvable.");
-                break;
-            case 409:
-                toast.error(message);
-                break;
-            case 500:
-                toast.error("Erreur interne du serveur.");
-                break;
-            default:
-                toast.error(message);
+            switch (status) {
+                case 400:
+                    toast.error(message);
+                    break;
+                case 401:
+                    break;
+                case 403:
+                    toast.error("Accès refusé.");
+                    break;
+                case 404:
+                    toast.error("Ressource introuvable.");
+                    break;
+                case 409:
+                    toast.error(message);
+                    break;
+                case 500:
+                    toast.error("Erreur interne du serveur.");
+                    break;
+                default:
+                    toast.error(message);
+            }
         }
 
         return Promise.reject(error);

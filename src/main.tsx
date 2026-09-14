@@ -1,32 +1,23 @@
-import {StrictMode} from "react";
-import {createRoot} from "react-dom/client";
-import {BrowserRouter} from "react-router-dom";
-import {Toaster} from "react-hot-toast";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import "./index.css";
 import App from "./App";
 import AuthProvider from "@/contexts/AuthProvider";
 import RecoveryAuthProvider from "@/contexts/RecoveryAuthProvider";
 
+const root = createRoot(document.getElementById("root")!);
 
-createRoot(document.getElementById("root")!).render(
-
+root.render(
     <StrictMode>
-
         <BrowserRouter>
-
-             <AuthProvider>
-
+            <AuthProvider>
                 <RecoveryAuthProvider>
-                     <Toaster position="top-right" />
-
                     <App />
-
+                    <Toaster position="top-right" />
                 </RecoveryAuthProvider>
-
             </AuthProvider>
-
         </BrowserRouter>
-
     </StrictMode>
-
 );

@@ -9,7 +9,11 @@ export const recoveryFormFields: FormField<RecoverPasswordFormUI>[] = [
         type: "password",
         placeholder: "********",
         validation: {
-            required: "Nouveau mot de passe est requis"
+            required: "Nouveau mot de passe est requis",
+            minLength: {
+                value: 8,
+                message: "Le mot de passe doit contenir au moins 8 caractères"
+            }
         }
     },
     {

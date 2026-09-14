@@ -23,20 +23,15 @@ export interface Column<T>{
 
 
 
-export interface TableAction<T>{
+export type TableActionIcon<T> = ReactNode | ((row: T) => ReactNode);
 
-    label:string;
-
-    type:ActionType;
-
-    icon:ReactNode;
-
-    roles?:string[];
-
-    onClick:(row:T)=>void;
-
+export interface TableAction<T> {
+    label: string;
+    type: string;
+    icon: TableActionIcon<T>;
+    roles?: string[];
+    onClick: (row: T) => void | Promise<void>;
 }
-
 
 
 export interface HeaderAction{

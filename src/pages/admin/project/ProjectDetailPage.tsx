@@ -12,6 +12,7 @@ import { taskService } from "@/services/task/task.service";
 import { statusService } from "@/services/status/status.service";
 import { contributorService } from "@/services/contributor/contributor.service";
 import { userService } from "@/services/user/user.service";
+import useAuth from "@/hooks/useAuth";
 import type { ProjectRes } from "@/types/project";
 import type { TaskReq, TaskRes } from "@/types/task";
 import type { Status } from "@/types/status";
@@ -37,6 +38,7 @@ export default function ProjectDetailPage() {
     const { id } = useParams();
     const projectId = Number(id);
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [project, setProject] = useState<ProjectRes | null>(null);
     const [tasks, setTasks] = useState<TaskRes[]>([]);
@@ -81,12 +83,12 @@ export default function ProjectDetailPage() {
 
     const loadUsers = useCallback(async () => {
         try {
-            const data = await userService.getAll();
+            const data = await userService.getPotentialContributors(projectId);
             setAllUsers(data);
         } catch (error) {
-            console.error("Erreur lors du chargement des utilisateurs", error);
+            console.error("Erreur lors du chargement des utilisateurs potentiels", error);
         }
-    }, []);
+    }, [projectId]);
     useEffect(() => {
         const load = async () => {
             try {
@@ -95,7 +97,10 @@ export default function ProjectDetailPage() {
                     projectService.getById(projectId),
                 ]);
                 setProject(projectData);
-                await Promise.all([loadTasks(), loadStatuses(), loadContributors(), loadUsers()]);
+                if (projectData.isOwner) {
+                    await loadUsers();
+                }
+                await Promise.all([loadTasks(), loadStatuses(), loadContributors()]);
             } catch (error) {
                 console.error(error);
                 toast.error("Projet introuvable");
@@ -159,6 +164,9 @@ export default function ProjectDetailPage() {
 
     const [addingContributor, setAddingContributor] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+    const [transferMode, setTransferMode] = useState(false);
+    const [transferTargetId, setTransferTargetId] = useState<number | null>(null);
+    const [transferring, setTransferring] = useState(false);
 
     const handleAddContributor = async () => {
         if (!selectedUserId) return;
@@ -166,7 +174,7 @@ export default function ProjectDetailPage() {
             setAddingContributor(true);
             await contributorService.add(projectId, selectedUserId);
             setSelectedUserId(null);
-            await loadContributors();
+            await Promise.all([loadContributors(), loadUsers()]);
             setTimeout(() => toast.success("Contributeur ajouté"));
         } catch (error) {
             console.error(error);
@@ -180,11 +188,32 @@ export default function ProjectDetailPage() {
         if (!window.confirm(`Retirer ${userName} des contributeurs de ce projet ?`)) return;
         try {
             await contributorService.remove(projectId, userId);
-            await loadContributors();
+            await Promise.all([loadContributors(), loadUsers()]);
             setTimeout(() => toast.success("Contributeur retiré"), 0);
         } catch (error) {
             console.error(error);
             setTimeout(() => toast.error("Impossible de retirer le contributeur"), 0);
+        }
+    };
+
+    const handleTransferOwnership = async () => {
+        if (!transferTargetId) return;
+        const target = contributors.find(c => c.userId === transferTargetId);
+        if (!window.confirm(`Transférer la propriété du projet à ${target?.userName ?? "cet utilisateur"} ? Vous perdrez vos droits de gestion.`)) return;
+        try {
+            setTransferring(true);
+            await projectService.transferOwnership(projectId, transferTargetId);
+            toast.success("Propriété transférée avec succès");
+            setTransferMode(false);
+            setTransferTargetId(null);
+            const updated = await projectService.getById(projectId);
+            setProject(updated);
+            await loadContributors();
+        } catch (error) {
+            console.error(error);
+            toast.error("Impossible de transférer la propriété");
+        } finally {
+            setTransferring(false);
         }
     };
 
@@ -245,7 +274,13 @@ export default function ProjectDetailPage() {
         );
     }
 
-    if (!project) return null;
+    if (!project) {
+        return (
+            <div className="flex h-64 items-center justify-center text-gray-400">
+                <Spinner size={28} />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -416,10 +451,59 @@ export default function ProjectDetailPage() {
                         disabled={!selectedUserId || addingContributor}
                         className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {addingContributor ? <Spinner size={14} /> : <Plus size={14} />}
-                        Ajouter
+                        {addingContributor ? (
+                            <span className="flex items-center gap-1.5">
+                                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                Ajout...
+                            </span>
+                        ) : (
+                            <>
+                                <Plus size={14} />
+                                Ajouter
+                            </>
+                        )}
                     </button>
                 </div>
+
+                {/* Transfert de propriété */}
+                {!transferMode ? (
+                    <button
+                        onClick={() => setTransferMode(true)}
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:border-orange-300 hover:bg-orange-100"
+                    >
+                        Transférer la propriété
+                    </button>
+                ) : (
+                    <div className="mt-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3">
+                        <select
+                            value={transferTargetId ?? ""}
+                            onChange={(e) => setTransferTargetId(e.target.value ? Number(e.target.value) : null)}
+                            className="flex-1 rounded-xl border border-orange-300 px-3 py-2 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                        >
+                            <option value="">Choisir le nouveau propriétaire…</option>
+                            {allUsers
+                                .filter(u => u.id !== project.ownerId)
+                                .map(u => (
+                                    <option key={u.id} value={u.id}>
+                                        {u.firstname} {u.lastname} ({u.email})
+                                    </option>
+                                ))}
+                        </select>
+                        <button
+                            onClick={handleTransferOwnership}
+                            disabled={!transferTargetId || transferring}
+                            className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
+                        >
+                            {transferring ? "Transfert..." : "Confirmer"}
+                        </button>
+                        <button
+                            onClick={() => { setTransferMode(false); setTransferTargetId(null); }}
+                            className="rounded-xl px-3 py-2 text-sm font-medium text-gray-500 transition hover:bg-gray-100"
+                        >
+                            Annuler
+                        </button>
+                    </div>
+                )}
             </div>
             )}
 
@@ -427,11 +511,13 @@ export default function ProjectDetailPage() {
             <KanbanBoard
                 projectId={projectId}
                 tasks={tasks}
-                statuses={statuses}        // ✅ on passe les statuts au bon type
+                statuses={statuses}
+                allUsers={allUsers}
                 onEditTask={openEdit}
                 onCreateTask={openCreate}
                 onDeleteTask={handleDeleteTask}
                 onMoveTask={handleMoveTask}
+                currentUserId={user?.userId ?? 0}
             />
 
             {/* Modal */}

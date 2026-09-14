@@ -29,6 +29,8 @@ export interface CreateUser{
     email: string;
 
     directionId : number ;
+
+    role: string;
 }
 
 
@@ -73,6 +75,8 @@ export interface UserTable {
     email: string;
 
     role: RoleType;
+
+    isActive: boolean;
 }
 
 export interface UserDetails {
@@ -118,10 +122,14 @@ export interface UserLoginReq{
 }
 
 export interface UserLoginRes {
+  userId: number;
   role: string;
   firstname: string;
   lastname: string;
   email: string;
+  permissions: string[];
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export interface RegisterForm extends UserRequest {
