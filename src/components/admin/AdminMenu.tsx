@@ -1,68 +1,8 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Users, Building2, FolderKanban, MessageCircle, Bell, Shield, Settings, BarChart2 } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
 import usePermissions from "@/hooks/usePermissions";
+import {menus, superAdminMenus} from "./AdminNavigation.config.ts"
 
-interface MenuItem {
-    name: string;
-    path: string;
-    icon: typeof LayoutDashboard;
-    permission?: string;
-}
-
-const menus: MenuItem[] = [
-    {
-        name: "Dashboard",
-        path: "/admin",
-        icon: LayoutDashboard,
-    },
-    {
-        name: "Projets",
-        path: "/admin/projects",
-        icon: FolderKanban,
-        permission: "MANAGE_PROJECTS",
-    },
-    {
-        name: "Utilisateurs",
-        path: "/admin/users",
-        icon: Users,
-        permission: "VIEW_USERS",
-    },
-    {
-        name: "Directions",
-        path: "/admin/directions",
-        icon: Building2,
-        permission: "MANAGE_DIRECTIONS",
-    },
-    {
-        name: "Message",
-        path: "/admin/messages",
-        icon: MessageCircle
-    },
-    {
-        name: "Notifications",
-        path: "/admin/notifications",
-        icon: Bell
-    }
-];
-
-const superAdminMenus: MenuItem[] = [
-    {
-        name: "Dashboard Admin",
-        path: "/admin/dashboard-admin",
-        icon: BarChart2,
-    },
-    {
-        name: "Administrateurs",
-        path: "/admin/admins",
-        icon: Shield,
-    },
-    {
-        name: "Rôles & Permissions",
-        path: "/admin/roles",
-        icon: Settings,
-    },
-];
 
 export default function AdminMenu() {
     const { user } = useAuth();
@@ -75,7 +15,7 @@ export default function AdminMenu() {
     });
 
     return (
-        <nav className="mt-8 px-4">
+        <nav className="mt-4 px-4">
             {visibleMenus.map((menu) => {
                 const Icon = menu.icon;
 
@@ -86,8 +26,8 @@ export default function AdminMenu() {
                                 className={`group relative mb-3 flex items-center gap-4 overflow-hidden rounded-xl px-5 py-4 transition-all duration-300
                                     ${
                                         isActive
-                                            ? "bg-slate-800 text-white shadow-lg"
-                                            : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                                            ? "bg-accent text-white shadow-lg"
+                                            : "text-white/90 hover:bg-accent/80 hover:text-white"
                                     }
                                 `}
                             >
@@ -97,8 +37,8 @@ export default function AdminMenu() {
                                         transition-all duration-300
                                         ${
                                             isActive
-                                                ? "text-orange-400 scale-110"
-                                                : "group-hover:text-orange-300 group-hover:scale-110"
+                                                ? "text-secondary scale-110"
+                                                : "group-hover:text-secondary group-hover:scale-110"
                                         }
                                     `}
                                 />
@@ -114,8 +54,8 @@ export default function AdminMenu() {
 
             {isSuperAdmin && (
                 <>
-                    <div className="my-4 border-t border-slate-700" />
-                    <p className="mb-2 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <div className="my-4 border-t border-secondary" />
+                    <p className="ml-5 mt-5 italic text-sm font-semibold uppercase tracking-wider text-secondary">
                         Super Admin
                     </p>
                     {superAdminMenus.map((menu) => {
@@ -128,25 +68,19 @@ export default function AdminMenu() {
                                         className={`group relative mb-3 flex items-center gap-4 overflow-hidden rounded-xl px-5 py-4 transition-all duration-300
                                             ${
                                                 isActive
-                                                    ? "bg-slate-800 text-white shadow-lg"
-                                                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                                                    ? "bg-accent text-white shadow-lg"
+                                                    : "text-white hover:bg-accent/80 hover:text-secondary"
                                             }
                                         `}
                                     >
-                                        {isActive && (
-                                            <span
-                                                className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-gradient-to-b from-purple-500 via-pink-400 to-red-500"
-                                            />
-                                        )}
-
                                         <Icon
                                             size={22}
                                             className={`
                                                 transition-all duration-300
                                                 ${
                                                     isActive
-                                                        ? "text-purple-400 scale-110"
-                                                        : "group-hover:text-purple-300 group-hover:scale-110"
+                                                        ? "text-white scale-110"
+                                                        : "group-hover:text-secondary group-hover:scale-110"
                                                 }
                                             `}
                                         />
