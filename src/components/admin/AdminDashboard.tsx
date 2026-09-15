@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download, Users, FolderKanban, AlertCircle, Clock, TrendingUp } from "lucide-react";
+import { Download, Users, FolderKanban, AlertCircle, Clock, TrendingUp, CalendarDays } from "lucide-react";
 import Spinner from "@/components/common/Spinner";
 import { adminDashboardService } from "@/services/dashboard/adminDashboard.service";
 import type { AdminDashboardStatsResDto } from "@/types/adminDashboard";
@@ -19,19 +19,22 @@ interface StatCardProps {
     sparklineData?: number[];
     sparklineColor?: string;
     trend?: { value: number; label: string };
+    highlighted?: boolean;
 }
 
-function StatCard({ title, value, icon, color, sparklineData, trend }: StatCardProps) {
+function StatCard({ title, value, icon, color, sparklineData, trend, highlighted = false }: StatCardProps) {
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className={`rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md ${
+            highlighted ? "border-accent hover:bg-accent/5" : "border-secondary/60"
+        }`}>
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-500">{title}</p>
                     <div className="mt-2 flex items-end gap-3">
-                        <p className="text-3xl font-bold text-gray-900">{value}</p>
+                        <p className={`text-3xl font-bold ${highlighted ? "text-accent" : "text-primary"}`}>{value}</p>
                         {sparklineData && sparklineData.length > 0 && (
                             <div className="h-10 w-28 flex-shrink-0">
-                                <Sparkline data={sparklineData} color="#3b82f6" height={30} width={100} />
+                                <Sparkline data={sparklineData} color="#d07694" height={30} width={100} />
                             </div>
                         )}
                     </div>
@@ -42,7 +45,7 @@ function StatCard({ title, value, icon, color, sparklineData, trend }: StatCardP
                         </p>
                     )}
                 </div>
-                <div className={`rounded-xl p-3 ${color} flex-shrink-0`}>
+                <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${color}`}>
                     {icon}
                 </div>
             </div>
@@ -147,7 +150,7 @@ export default function AdminDashboard() {
             {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Dashboard Admin</h2>
+                    <h2 className="text-2xl font-bold text-primary">Dashboard Admin</h2>
                     <p className="mt-1 text-sm text-gray-500">
                         Vue globale utilisateurs, projets et tâches
                     </p>
@@ -156,7 +159,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         onClick={handleExportPdf}
-                        className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 hover:shadow-md"
+                        className="inline-flex items-center gap-2 rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition hover:bg-secondary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <Download size={16} />
                         Exporter PDF
@@ -174,23 +177,25 @@ export default function AdminDashboard() {
             {isCustom && (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            <CalendarDays size={14} className="text-primary/60" />
                             Date de début
                         </label>
                         <input
                             type="date"
-                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            className="w-full rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm text-primary outline-none transition focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                         />
                     </div>
                     <div>
-                        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            <CalendarDays size={14} className="text-primary/60" />
                             Date de fin
                         </label>
                         <input
                             type="date"
-                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            className="w-full rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm text-primary outline-none transition focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                         />
@@ -203,29 +208,30 @@ export default function AdminDashboard() {
                 <StatCard
                     title="Utilisateurs totaux"
                     value={data.totalUsers}
-                    icon={<Users size={24} className="text-blue-600" />}
-                    color="bg-blue-50"
+                    icon={<Users size={22} className="text-primary" />}
+                    color="bg-secondary/40 ring-1 ring-secondary"
                     sparklineData={generateIncreasingSparkline(data.totalUsers, 7)}
                 />
                 <StatCard
                     title="Projets actifs"
                     value={data.activeProjects}
-                    icon={<FolderKanban size={24} className="text-emerald-600" />}
-                    color="bg-emerald-50"
+                    icon={<FolderKanban size={22} className="text-primary" />}
+                    color="bg-secondary/40 ring-1 ring-secondary"
                     sparklineData={generateIncreasingSparkline(data.activeProjects, 7)}
                 />
                 <StatCard
                     title="Tâches en retard"
                     value={data.overdueTasks}
-                    icon={<AlertCircle size={24} className="text-red-600" />}
-                    color="bg-red-50"
+                    icon={<AlertCircle size={22} className="text-accent" />}
+                    color="bg-accent/15 ring-1 ring-accent/40"
+                    highlighted
                     sparklineData={generateIncreasingSparkline(data.overdueTasks, 7)}
                 />
                 <StatCard
                     title="Tâches terminées"
                     value={data.completedTasks}
-                    icon={<Clock size={24} className="text-amber-600" />}
-                    color="bg-amber-50"
+                    icon={<Clock size={22} className="text-primary" />}
+                    color="bg-secondary/40 ring-1 ring-secondary"
                     sparklineData={getAdminSparkline(data.evolution, "completed", data.completedTasks)}
                 />
             </div>
