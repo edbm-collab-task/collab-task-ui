@@ -23,14 +23,15 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-bg p-6">
 
-            <div className="grid w-full max-w-4xl gap-6 md:grid-cols-2 md:gap-10 items-center">
+            <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl md:grid-cols-2">
 
-                <div className="hidden md:flex flex-col items-center justify-center rounded-3xl bg-primary p-10 text-center shadow-lg md:min-h-[520px]">
+                <div className="hidden md:flex flex-col items-center justify-center bg-primary text-white p-12">
+
                     <img src={Logo} alt="Logo" className="w-36 h-36 object-contain mb-6" />
 
                     <span className="mb-5 h-1 w-16 rounded-full bg-accent" />
 
-                    <h1 className="text-3xl font-bold text-white">
+                    <h1 className="text-3xl font-bold text-center">
                         Bienvenue
                     </h1>
 
@@ -40,7 +41,7 @@ export default function LoginPage() {
                 </div>
 
 
-                <div className="flex items-center justify-center p-2">
+                <div className="flex items-center justify-center p-10">
 
                     <div className="w-full max-w-md">
 
