@@ -153,7 +153,7 @@ export default function DashboardHeader({
                                     }}
                                     className={`w-full px-4 py-2 text-sm text-left transition ${
                                         selectedProjectId === "all"
-                                            ? "bg-blue-50 text-blue-700"
+                                            ? "bg-primary/10 text-accent"
                                             : "text-gray-700 hover:bg-gray-50"
                                     }`}
                                 >
@@ -170,7 +170,7 @@ export default function DashboardHeader({
                                             }}
                                             className={`w-full px-4 py-2 text-sm text-left transition ${
                                                 selectedProjectId === p.projectId
-                                                    ? "bg-blue-50 text-blue-700"
+                                                    ? "bg-primary/10 text-accent"
                                                     : "text-gray-700 hover:bg-gray-50"
                                             }`}
                                         >
@@ -182,14 +182,6 @@ export default function DashboardHeader({
                         )}
                     </div>
 
-                    {/* Overdue Tasks Counter */}
-                    <button
-                        onClick={onOverdueClick}
-                        className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800 shadow-sm transition hover:bg-amber-100"
-                    >
-                        <Clock size={16} />
-                        <span>En retard : {overdueCount}</span>
-                    </button>
                 </div>
             </div>
 
