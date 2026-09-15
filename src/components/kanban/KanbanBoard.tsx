@@ -194,7 +194,7 @@ export default function KanbanBoard({
                                                         <span
                                                             key={a.userId}
                                                             title={`${a.firstname} ${a.lastname}`}
-                                                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[9px] font-bold text-blue-700 ring-1 ring-white"
+                                                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white ring-1 ring-white"
                                                         >
                                                             {a.firstname?.[0]}{a.lastname?.[0]}
                                                         </span>
