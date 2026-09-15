@@ -21,24 +21,26 @@ export default function LoginPage() {
 
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 via-white to-gray-200 p-6">
+        <div className="min-h-screen flex items-center justify-center bg-bg p-6">
 
-            <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+            <div className="grid w-full max-w-4xl gap-6 md:grid-cols-2 md:gap-10 items-center">
 
-                <div className="hidden md:flex flex-col items-center justify-center bg-gradient-to-br from-blue-700 to-indigo-900 text-white p-10">
-                    <img src={Logo} alt="Logo" className="w-40 h-40 object-contain mb-6 drop-shadow-xl" />
+                <div className="hidden md:flex flex-col items-center justify-center rounded-3xl bg-primary p-10 text-center shadow-lg md:min-h-[520px]">
+                    <img src={Logo} alt="Logo" className="w-36 h-36 object-contain mb-6" />
 
-                    <h1 className="text-3xl font-bold text-center">
+                    <span className="mb-5 h-1 w-16 rounded-full bg-accent" />
+
+                    <h1 className="text-3xl font-bold text-white">
                         Bienvenue
                     </h1>
 
-                    <p className="mt-4 text-center text-blue-100 max-w-xs">
+                    <p className="mt-4 text-secondary max-w-xs leading-relaxed">
                         Connectez-vous à votre espace sécurisé.
                     </p>
                 </div>
 
 
-                <div className="flex items-center justify-center p-8 md:p-12">
+                <div className="flex items-center justify-center p-2">
 
                     <div className="w-full max-w-md">
 
@@ -51,7 +53,7 @@ export default function LoginPage() {
                         />
 
                         <div className="mt-4 text-right">
-                            <Link to="/reccuperation-comptes" className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition">
+                            <Link to="/reccuperation-comptes" className="text-sm font-medium text-accent transition hover:text-primary hover:underline">
                                 Mot de passe oublié ?
                             </Link>
                         </div>

@@ -25,7 +25,7 @@ export default function CreateDirectionPage(){
     };
 
     return (
-            <div className="mx-auto mt-10">
+            <div className="mx-auto w-full max-w-7xl space-y-6 p-6">
     
                 <GlobalForms<DirectionReq>
                     title="Créer une direction"

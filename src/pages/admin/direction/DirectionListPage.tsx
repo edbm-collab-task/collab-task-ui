@@ -116,10 +116,10 @@ export default function DirectionsListPage() {
 
     return (
 
-        <div className="space-y-6">
+        <div className="mx-auto w-full max-w-7xl space-y-6">
 
             <TableHeader
-                title="Liste des utilisateurs"
+                title="Liste des directions"
                 search={search}
                 onSearch={setSearch}
                 actions={headerActions}

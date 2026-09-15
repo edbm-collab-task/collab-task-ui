@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { MessageCircle } from "lucide-react";
+
 import CallModal from "@/components/message/CallModal";
 import ChatHeader from "@/components/message/ChatHeader";
 import ConversationMenu from "@/components/message/ConversationMenu";
@@ -255,7 +257,8 @@ const MessagePage = () => {
     }
 
     return (
-        <div className="flex h-full min-h-0 overflow-hidden bg-white">
+        <div className="h-full overflow-hidden bg-bg p-3 sm:p-4">
+            <div className="flex h-full min-h-0 overflow-hidden rounded-xl bg-white shadow-sm sm:rounded-2xl">
             <ConversationSidebar
                 conversations={conversations}
                 users={users}
@@ -299,24 +302,24 @@ const MessagePage = () => {
                     />
                 </main>
             ) : (
-                <main className="flex flex-1 items-center justify-center bg-gray-50">
+                <main className="flex flex-1 items-center justify-center bg-bg">
                     <div className="text-center">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-2xl text-blue-600">
-                            💬
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-primary">
+                            <MessageCircle size={28} />
                         </div>
 
-                        <h2 className="mt-4 font-semibold text-gray-800">
+                        <h2 className="mt-5 font-semibold text-primary">
                             Vos messages
                         </h2>
 
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1.5 text-sm text-gray-500">
                             Commencez une nouvelle conversation.
                         </p>
 
                         <button
                             type="button"
                             onClick={() => setShowNewConversation(true)}
-                            className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                            className="mt-5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                         >
                             Nouvelle conversation
                         </button>
@@ -380,29 +383,31 @@ const MessagePage = () => {
             )}
 
             {actionLoading && (
-                <div className="pointer-events-none fixed bottom-5 right-5 z-[100] rounded-lg bg-gray-900 px-4 py-2 text-sm text-white shadow-lg">
+                <div className="pointer-events-none fixed bottom-5 right-5 z-[100] rounded-lg bg-primary px-4 py-2 text-sm text-white shadow-lg">
                     envoyer...
                 </div>
             )}
+            </div>
         </div>
     );
 };
 
 const MessagePageSkeleton = () => {
     return (
-        <div className="flex h-full min-h-0 overflow-hidden bg-white">
-            <aside className="flex w-[320px] shrink-0 flex-col border-r border-gray-200 bg-white">
+        <div className="h-full overflow-hidden bg-bg p-3 sm:p-4">
+            <div className="flex h-full min-h-0 overflow-hidden rounded-xl bg-white shadow-sm sm:rounded-2xl">
+            <aside className="flex w-[300px] shrink-0 flex-col border-r border-gray-200 bg-white sm:w-[320px]">
                 <div className="flex h-[72px] items-center justify-between border-b border-gray-200 px-4">
-                    <div className="h-6 w-32 animate-pulse rounded-md bg-gray-200" />
+                    <div className="h-6 w-32 animate-pulse rounded-md bg-secondary" />
 
                     <div className="flex gap-2">
-                        <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
-                        <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
+                        <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
+                        <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
                     </div>
                 </div>
 
                 <div className="border-b border-gray-200 p-3">
-                    <div className="h-10 w-full animate-pulse rounded-lg bg-gray-100" />
+                    <div className="h-10 w-full animate-pulse rounded-lg bg-secondary/50" />
                 </div>
 
                 <div className="flex-1 space-y-2 overflow-hidden p-3">
@@ -419,65 +424,66 @@ const MessagePageSkeleton = () => {
             <main className="flex min-w-0 flex-1 flex-col">
                 <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-gray-200 px-5">
                     <div className="flex items-center gap-3">
-                        <div className="h-11 w-11 animate-pulse rounded-full bg-gray-200" />
+                        <div className="h-11 w-11 animate-pulse rounded-full bg-secondary" />
 
                         <div className="space-y-2">
-                            <div className="h-4 w-32 animate-pulse rounded bg-gray-200" />
-                            <div className="h-3 w-20 animate-pulse rounded bg-gray-100" />
+                            <div className="h-4 w-32 animate-pulse rounded bg-secondary" />
+                            <div className="h-3 w-20 animate-pulse rounded bg-secondary/50" />
                         </div>
                     </div>
 
                     <div className="flex gap-2">
-                        <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
-                        <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
-                        <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
-                        <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
+                        <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
+                        <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
+                        <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
+                        <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-hidden bg-gray-50 px-6 py-6">
+                <div className="flex-1 overflow-hidden bg-bg px-6 py-6">
                     <div className="flex justify-start">
                         <div className="flex items-end gap-2">
-                            <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
+                            <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
 
                             <div className="space-y-2">
-                                <div className="h-3 w-20 animate-pulse rounded bg-gray-200" />
-                                <div className="h-12 w-64 animate-pulse rounded-2xl bg-gray-200" />
+                                <div className="h-3 w-20 animate-pulse rounded bg-secondary" />
+                                <div className="h-12 w-64 animate-pulse rounded-2xl bg-secondary" />
                             </div>
                         </div>
                     </div>
 
                     <div className="mt-6 flex justify-end">
-                        <div className="h-14 w-64 animate-pulse rounded-2xl bg-blue-200" />
+                        <div className="h-14 w-64 animate-pulse rounded-2xl bg-accent/40" />
                     </div>
 
                     <div className="mt-6 flex justify-start">
                         <div className="flex items-end gap-2">
-                            <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
-                            <div className="h-16 w-72 animate-pulse rounded-2xl bg-gray-200" />
+                            <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
+                            <div className="h-16 w-72 animate-pulse rounded-2xl bg-secondary" />
                         </div>
                     </div>
 
                     <div className="mt-6 flex justify-end">
-                        <div className="h-12 w-48 animate-pulse rounded-2xl bg-blue-200" />
+                        <div className="h-12 w-48 animate-pulse rounded-2xl bg-accent/40" />
                     </div>
 
                     <div className="mt-6 flex justify-start">
                         <div className="flex items-end gap-2">
-                            <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
-                            <div className="h-10 w-56 animate-pulse rounded-2xl bg-gray-200" />
+                            <div className="h-9 w-9 animate-pulse rounded-full bg-secondary" />
+                            <div className="h-10 w-56 animate-pulse rounded-2xl bg-secondary" />
                         </div>
                     </div>
                 </div>
 
                 <div className="border-t border-gray-200 bg-white p-4">
                     <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
-                        <div className="h-11 flex-1 animate-pulse rounded-xl bg-gray-100" />
-                        <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
+                        <div className="h-10 w-10 animate-pulse rounded-full bg-secondary" />
+                        <div className="h-11 flex-1 animate-pulse rounded-xl bg-secondary/50" />
+                        <div className="h-10 w-10 animate-pulse rounded-full bg-secondary" />
                     </div>
                 </div>
             </main>
+            </div>
         </div>
     );
 };
@@ -485,15 +491,15 @@ const MessagePageSkeleton = () => {
 const ConversationSkeleton = () => {
     return (
         <div className="flex items-center gap-3 rounded-xl p-3">
-            <div className="h-12 w-12 shrink-0 animate-pulse rounded-full bg-gray-200" />
+            <div className="h-12 w-12 shrink-0 animate-pulse rounded-full bg-secondary" />
 
             <div className="min-w-0 flex-1 space-y-2">
                 <div className="flex items-center justify-between gap-3">
-                    <div className="h-4 w-28 animate-pulse rounded bg-gray-200" />
-                    <div className="h-3 w-10 animate-pulse rounded bg-gray-100" />
+                    <div className="h-4 w-28 animate-pulse rounded bg-secondary" />
+                    <div className="h-3 w-10 animate-pulse rounded bg-secondary/50" />
                 </div>
 
-                <div className="h-3 w-40 animate-pulse rounded bg-gray-100" />
+                <div className="h-3 w-40 animate-pulse rounded bg-secondary/50" />
             </div>
         </div>
     );

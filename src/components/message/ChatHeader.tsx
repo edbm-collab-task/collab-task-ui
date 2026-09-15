@@ -38,24 +38,24 @@ const ChatHeader = ({ conversation, users, currentUserId, onSearch, onAudioCall,
     const isOnline = conversation.type === "private" && user?.online === true;
 
     return (
-        <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-gray-200 bg-white px-5">
+        <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-secondary/60 bg-white px-4 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
                 <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
                     {imageUrl ? <img src={imageUrl} alt={name} className="h-full w-full object-cover" onError={handleImageError} /> : null}
-                    <div className={`h-full w-full items-center justify-center bg-blue-100 text-sm font-semibold text-blue-600 ${imageUrl ? "hidden" : "flex"}`}>{initials || "U"}</div>
+                    <div className={`h-full w-full items-center justify-center bg-secondary/70 text-sm font-semibold text-primary ${imageUrl ? "hidden" : "flex"}`}>{initials || "U"}</div>
                 </div>
 
                 <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-gray-900">{name}</p>
+                    <p className="truncate text-sm font-semibold text-primary">{name}</p>
 
                     {conversation.type === "group" ? (
-                        <button type="button" onClick={onMembers} className="flex items-center gap-1 text-xs text-gray-500 transition-colors hover:text-blue-600">
+                        <button type="button" onClick={onMembers} className="flex items-center gap-1 text-xs text-primary/60 transition-colors hover:text-primary">
                             <Users size={13} />
                             {conversation.memberIds.length} membres
                         </button>
                     ) : (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <span className={`h-2 w-2 rounded-full ${isOnline ? "bg-green-500" : "bg-gray-300"}`} />
+                        <div className="flex items-center gap-1.5 text-xs text-primary/60">
+                            <span className={`h-2 w-2 rounded-full ${isOnline ? "bg-green-500" : "bg-primary/20"}`} />
                             {isOnline ? "En ligne" : "Hors ligne"}
                         </div>
                     )}
@@ -64,24 +64,24 @@ const ChatHeader = ({ conversation, users, currentUserId, onSearch, onAudioCall,
 
             <div className="flex items-center gap-1">
                 {conversation.type === "group" && (
-                    <button type="button" onClick={onMembers} title="Membres" className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600">
+                    <button type="button" onClick={onMembers} title="Membres" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
                         <UserPlus size={18} />
                     </button>
                 )}
 
-                <button type="button" onClick={onAudioCall} title="Appel audio" className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600">
+                <button type="button" onClick={onAudioCall} title="Appel audio" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
                     <Phone size={18} />
                 </button>
 
-                <button type="button" onClick={onVideoCall} title="Appel vidéo" className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600">
+                <button type="button" onClick={onVideoCall} title="Appel vidéo" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
                     <Video size={18} />
                 </button>
 
-                <button type="button" onClick={onSearch} title="Rechercher" className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600">
+                <button type="button" onClick={onSearch} title="Rechercher" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
                     <Search size={18} />
                 </button>
 
-                <button type="button" onClick={onMenu} title="Plus" className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600">
+                <button type="button" onClick={onMenu} title="Plus" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
                     <MoreVertical size={18} />
                 </button>
             </div>

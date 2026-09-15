@@ -31,7 +31,7 @@ export default function SearchUserPage() {
 
                 {/* Partie gauche */}
 
-                <div className="hidden md:flex flex-col items-center justify-center bg-gradient-to-br from-blue-700 to-indigo-900 text-white p-12">
+                <div className="hidden md:flex flex-col items-center justify-center bg-primary text-white p-12">
 
                     <img
                         src={Logo}
@@ -43,7 +43,7 @@ export default function SearchUserPage() {
                         Retrouver votre compte
                     </h1>
 
-                    <p className="mt-5 text-center text-blue-100 leading-7 max-w-sm">
+                    <p className="mt-5 text-center text-secondary leading-7 max-w-sm">
                         Saisissez l'adresse e-mail associée à votre compte
                         Collab Task afin de vérifier son existence avant de
                         poursuivre la récupération de votre mot de passe.

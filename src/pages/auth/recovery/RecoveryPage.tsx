@@ -41,32 +41,36 @@ export default function RecoveryPage() {
 
 
     if (!email) {
-        return <div className="min-h-screen flex items-center justify-center">
-            Chargement...
+        return <div className="min-h-screen flex items-center justify-center bg-bg p-6">
+            <span className="text-sm text-gray-500">
+                Chargement...
+            </span>
         </div>;
     }
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 flex items-center justify-center p-6">
+        <div className="min-h-screen flex items-center justify-center bg-bg p-6">
 
-            <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl md:grid-cols-2">
+            <div className="grid w-full max-w-4xl gap-6 md:grid-cols-2 md:gap-10 items-center">
 
-                <div className="hidden bg-gradient-to-br from-blue-700 to-indigo-900 p-12 text-white md:flex md:flex-col md:items-center md:justify-center">
+                <div className="hidden md:flex flex-col items-center justify-center rounded-3xl bg-primary p-10 text-center shadow-lg md:min-h-[520px]">
 
-                    <img src={Logo} alt="Collab Task" className="mb-8 h-36 w-36 object-contain" />
+                    <img src={Logo} alt="Collab Task" className="mb-8 h-32 w-32 object-contain" />
 
-                    <h1 className="text-center text-3xl font-bold">
+                    <span className="mb-5 h-1 w-16 rounded-full bg-accent" />
+
+                    <h1 className="text-3xl font-bold text-white">
                         Réinitialiser votre mot de passe
                     </h1>
 
-                    <p className="mt-4 max-w-sm text-center text-blue-100">
+                    <p className="mt-4 max-w-sm text-secondary leading-relaxed">
                         Choisissez un nouveau mot de passe sécurisé afin de protéger votre compte.
                     </p>
 
                 </div>
 
-                <div className="flex items-center justify-center p-10">
+                <div className="flex items-center justify-center p-2">
 
                     <div className="w-full max-w-md">
 
