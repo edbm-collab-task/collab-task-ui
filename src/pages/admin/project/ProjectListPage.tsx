@@ -17,6 +17,7 @@ import { taskService } from "@/services/task/task.service";
 
 import type { ProjectRes } from "@/types/project";
 import type { TaskRes } from "@/types/task";
+import { ConfirmPopup } from "@/components/common/ConfirmPopup";
 
 function formatDate(date: string | null) {
     if (!date) return "—";
@@ -81,13 +82,21 @@ export default function ProjectListPage() {
         return { total, done, pct: total === 0 ? 0 : Math.round((done / total) * 100) };
     };
 
-    const handleArchive = async (project: ProjectRes) => {
-        if (!window.confirm(`Archiver le projet « ${project.title} » ?`)) return;
+    const [projectToArchive, setProjectToArchive] = useState<ProjectRes | null>(null);
+
+    const handleArchive = (project: ProjectRes) => {
+        setProjectToArchive(project);
+    };
+    
+    const confirmArchive = async () => {
+        if (!projectToArchive) return;
         try {
-            await projectService.archive(project.projectId);
+            await projectService.archive(projectToArchive.projectId);
             await loadData();
         } catch {
             console.error("Erreur archivage");
+        } finally {
+            setProjectToArchive(null);
         }
     };
 
@@ -110,6 +119,15 @@ export default function ProjectListPage() {
 
     return (
         <div className="space-y-6" key={showArchived ? "archived" : "active"}>
+            <ConfirmPopup
+                open={!!projectToArchive}
+                title="Confirmer l'archivage"
+                message={`Archiver le projet « ${projectToArchive?.title} » ?`}
+                confirmLabel="Archiver"
+                variant="danger"
+                onConfirm={confirmArchive}
+                onCancel={() => setProjectToArchive(null)}
+            />
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-primary">Projets</h2>
