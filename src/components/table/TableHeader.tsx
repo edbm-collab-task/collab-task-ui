@@ -17,9 +17,9 @@ export default function TableHeader({
     filters,
 }: Props) {
     return (
-        <div className="flex flex-col gap-4 rounded-lg border-none p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-2xl border border-secondary/60 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
 
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold text-primary sm:text-2xl">
                 {title}
             </h2>
 
@@ -37,7 +37,7 @@ export default function TableHeader({
                         key={action.label}
                         type="button"
                         onClick={action.onClick}
-                        className="flex items-center justify-center gap-2 rounded-md border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 hover:shadow-md"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition duration-300 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         {action.icon}
                         {action.label}

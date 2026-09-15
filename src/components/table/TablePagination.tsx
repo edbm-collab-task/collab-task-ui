@@ -18,11 +18,11 @@ export default function TablePagination({
 
     return (
 
-        <div className="flex items-center justify-between px-2 py-4">
+        <div className="flex flex-col items-center justify-between gap-3 px-1 py-4 sm:flex-row sm:px-2">
 
 
-            <p className="text-sm text-gray-600">
-                Page <span className="font-semibold text-blue-600">{page}</span> sur <span className="font-semibold text-blue-600">{totalPages}</span>
+            <p className="text-sm text-primary/60">
+                Page <span className="font-semibold text-primary">{page}</span> sur <span className="font-semibold text-primary">{totalPages}</span>
             </p>
 
 
@@ -32,13 +32,13 @@ export default function TablePagination({
                 <button
                     disabled={page === 1}
                     onClick={() => onChange(page - 1)}
-                    className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-xl border border-secondary/60 bg-secondary/30 px-4 py-2 text-sm font-medium text-primary/70 transition-colors hover:bg-secondary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     Précédent
                 </button>
 
 
-                <div className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white">
+                <div className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm">
                     {page}
                 </div>
 
@@ -46,7 +46,7 @@ export default function TablePagination({
                 <button
                     disabled={page === totalPages}
                     onClick={() => onChange(page + 1)}
-                    className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-xl border border-secondary/60 bg-secondary/30 px-4 py-2 text-sm font-medium text-primary/70 transition-colors hover:bg-secondary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     Suivant
                 </button>

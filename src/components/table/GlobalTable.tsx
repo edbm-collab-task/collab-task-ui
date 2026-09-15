@@ -32,13 +32,13 @@ export default function GlobalTable<T>({
 
     return (
 
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-secondary/60 bg-white shadow-sm">
 
             <div className="overflow-x-auto custom-scrollbar">
 
                 <table className="min-w-full text-sm">
 
-                    <thead className="sticky top-0 bg-gray-50">
+                    <thead className="sticky top-0 bg-secondary/30">
 
                         <tr>
 
@@ -47,7 +47,7 @@ export default function GlobalTable<T>({
 
                                     <th
                                         key={String(column.key)}
-                                        className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                                        className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-primary"
                                     >
                                         {column.header}
                                     </th>
@@ -55,7 +55,7 @@ export default function GlobalTable<T>({
                                 ))
                             }
 
-                            <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-primary">
                                 Actions
                             </th>
 
@@ -70,7 +70,7 @@ export default function GlobalTable<T>({
 
                                 <tr
                                     key={index}
-                                    className={`${index % 2 === 0 ? "bg-white" : "bg-slate-50"} transition-colors duration-200 hover:bg-blue-50`}
+                                    className={`${index % 2 === 0 ? "bg-white" : "bg-secondary/10"} transition-colors duration-150 hover:bg-secondary/40`}
                                 >
 
                                     {
@@ -78,7 +78,7 @@ export default function GlobalTable<T>({
 
                                             <td
                                                 key={String(column.key)}
-                                                className="px-5 py-4 text-gray-700"
+                                                className="px-5 py-4 text-primary/80"
                                             >
 
                                                 {
@@ -117,7 +117,7 @@ export default function GlobalTable<T>({
 
                                     <td
                                         colSpan={columns.length + 1}
-                                        className="py-12 text-center text-gray-400"
+                                        className="py-12 text-center text-primary/40"
                                     >
                                         Aucun élément trouvé
                                     </td>

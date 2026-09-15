@@ -30,9 +30,9 @@ export default function GlobalForms<T extends FieldValues>({
     const [loading, setLoading] = useState(false);
 
 
-    const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/20 disabled:bg-gray-100";
+    const inputClass = "w-full rounded-xl border border-secondary/60 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:bg-secondary/20 disabled:opacity-60";
 
-    const textareaClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none resize-none transition focus:border-primary focus:ring-4 focus:ring-primary/20 disabled:bg-gray-100";
+    const textareaClass = "w-full rounded-xl border border-secondary/60 bg-white px-4 py-3 outline-none resize-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:bg-secondary/20 disabled:opacity-60";
 
 
     const isTwoColumns = fields.length > 4;
@@ -70,16 +70,16 @@ export default function GlobalForms<T extends FieldValues>({
     return (
         <div className="mx-auto max-w-5xl">
 
-            <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+            <div className="overflow-hidden rounded-2xl border border-secondary/60 bg-white shadow-sm">
 
-                <div className="bg-gradient-to-r py-8 text-center">
+                <div className="border-b border-secondary/60 bg-secondary/30 py-8 text-center">
 
-                    <h2 className="text-3xl font-bold text-black/80">
+                    <h2 className="text-3xl font-bold text-primary">
                         {title}
                     </h2>
 
                     {subtitle && (
-                        <p className=" pt-2 text-black">
+                        <p className="pt-2 text-primary/70">
                             {subtitle}
                         </p>
                     )}
@@ -89,7 +89,7 @@ export default function GlobalForms<T extends FieldValues>({
 
                 <form
                     onSubmit={handleSubmit(submitHandler)}
-                    className="p-8"
+                    className="p-6 sm:p-8"
                 >
 
                     <div className={`grid gap-6 ${isTwoColumns ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
@@ -109,7 +109,7 @@ export default function GlobalForms<T extends FieldValues>({
                                 className="space-y-2"
                             >
 
-                                <label className="text-sm font-semibold text-gray-700">
+                                <label className="text-sm font-medium text-primary/80">
                                     {field.label}
                                 </label>
 
@@ -179,7 +179,7 @@ export default function GlobalForms<T extends FieldValues>({
                                                 type="button"
                                                 disabled={loading}
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-primary"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg text-primary/50 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                                             >
 
                                                 {showPassword
@@ -197,7 +197,7 @@ export default function GlobalForms<T extends FieldValues>({
 
 
                                 {field.description && (
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-primary/50">
                                         {field.description}
                                     </p>
                                 )}
@@ -219,7 +219,7 @@ export default function GlobalForms<T extends FieldValues>({
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="min-w-44 rounded-xl bg-primary px-8 py-3 font-semibold text-white shadow-lg transition duration-300 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+                                className="min-w-44 rounded-xl bg-primary px-8 py-3 font-semibold text-white shadow-sm transition duration-300 hover:bg-primary/90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-70"
                             >
 
                                 {loading ? `${submitLabel}...` : submitLabel}
