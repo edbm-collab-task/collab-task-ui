@@ -113,8 +113,8 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
         }
     };
 
-    const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
-    const labelClass = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500";
+    const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30";
+    const labelClass = "mb-1.5 block text-xs font-semibold  tracking-wide text-gray-500";
 
     const today = new Date().toISOString().slice(0, 10);
     const startMin = originalStartDate && originalStartDate < today ? originalStartDate : today;
@@ -131,14 +131,14 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
         <div className="mx-auto max-w-2xl">
             <button
                 onClick={() => navigate("/admin/projects")}
-                className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition hover:text-blue-600"
+                className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary/80 transition hover:text-accent"
             >
                 <ArrowLeft size={16} />
                 Retour aux projets
             </button>
 
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="border-b border-gray-100 bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5">
+                <div className="border-b border-gray-100 bg-gradient-to-r from-primary from-70% to-accent px-6 py-5">
                     <h2 className="text-xl font-bold text-white">
                         {isEdit ? "Modifier le projet" : "Nouveau projet"}
                     </h2>
@@ -207,14 +207,14 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                         <button
                             type="button"
                             onClick={() => navigate("/admin/projects")}
-                            className="rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                            className="rounded-xl px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-secondary"
                         >
                             Annuler
                         </button>
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary from-85% to-accent px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {submitting ? (
                                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
