@@ -40,7 +40,7 @@ export default function TableFilter<T = string>({
             <button
                 type="button"
                 onClick={() => setOpen(!open)}
-                className="flex h-10 w-full items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                className="flex h-10 w-full items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-accent"
             >
                 <span className="flex items-center gap-2">
                     {selected?.icon}
@@ -66,7 +66,7 @@ export default function TableFilter<T = string>({
                                 onClick={() => handleSelect(option)}
                                 className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition ${
                                     isSelected
-                                        ? "bg-blue-50 text-blue-600"
+                                        ? "bg-primary/10 text-accent"
                                         : "text-gray-700 hover:bg-gray-50"
                                 }`}
                             >

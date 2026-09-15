@@ -34,8 +34,8 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
             {
                 label: "Tâches créées",
                 data: points.map(point => point.created),
-                backgroundColor: "rgba(59, 130, 246, 0.85)",
-                hoverBackgroundColor: "rgba(59, 130, 246, 1)",
+                backgroundColor: "#d07694",
+                hoverBackgroundColor: "#6d526f",
                 borderRadius: 4,
                 borderSkipped: false,
                 barPercentage: 0.7,
@@ -44,8 +44,8 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
             {
                 label: "Tâches terminées",
                 data: points.map(point => point.completed),
-                backgroundColor: "rgba(16, 185, 129, 0.85)",
-                hoverBackgroundColor: "rgba(16, 185, 129, 1)",
+                backgroundColor: "#dddbff",
+                hoverBackgroundColor: "#6d526f",
                 borderRadius: 4,
                 borderSkipped: false,
                 barPercentage: 0.7,
@@ -120,7 +120,7 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-bold text-gray-800">Évolution de l&apos;activité</h3>
+                <h3 className="font-bold text-primary">Évolution de l&apos;activité</h3>
                 <TrendingUp size={18} className="text-gray-400" />
             </div>
 
@@ -134,14 +134,14 @@ export default function ActivityEvolutionChart({ evolution }: Props) {
                 <>
                     <div className="mb-5 flex items-center gap-6 text-sm">
                         <span className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-sm bg-blue-500" />
+                            <span className="h-2.5 w-2.5 rounded-sm bg-accent" />
                             <span className="text-gray-600">Créées</span>
-                            <span className="font-bold text-gray-800">{totalCreated}</span>
+                            <span className="font-bold text-primary">{totalCreated}</span>
                         </span>
                         <span className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
+                            <span className="h-2.5 w-2.5 rounded-sm bg-secondary" />
                             <span className="text-gray-600">Terminées</span>
-                            <span className="font-bold text-gray-800">{totalCompleted}</span>
+                            <span className="font-bold text-primary">{totalCompleted}</span>
                         </span>
                     </div>
 
