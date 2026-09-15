@@ -112,7 +112,7 @@ export default function Dashboard() {
                     onProjectChange={setSelectedProjectId}
                     showProjectDropdown={showProjectDropdown}
                     setShowProjectDropdown={setShowProjectDropdown}
-overdueCount={0}
+                    overdueCount={0}
                     onOverdueClick={() => setShowOverdueModal(true)}
                 />
                 <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -132,6 +132,7 @@ overdueCount={0}
     const empty = statsUnavailable || !data;
     const overdueCount = data?.stats?.overdueTasks ?? 0;
 
+    
     return (
         <div className={`space-y-6 transition-opacity duration-150 ${refreshing ? "opacity-50" : ""}`}>
 
@@ -151,10 +152,11 @@ overdueCount={0}
                 onOverdueClick={() => setShowOverdueModal(true)}
             />
 
-            <DashboardStatsCards
+
+            <DashboardStatsCards 
                 stats={empty ? null : data.stats}
                 evolution={empty ? null : data.evolution}
-            />
+                onOverdueClick={() => setShowOverdueModal(true)} />
 
             <ActivityEvolutionChart
                 evolution={empty ? null : data.evolution}
