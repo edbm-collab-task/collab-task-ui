@@ -38,6 +38,7 @@ export default function ActivityHistoryPage() {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
 
+    
     useEffect(() => {
         if (!projectId) return;
         setLoading(true);
