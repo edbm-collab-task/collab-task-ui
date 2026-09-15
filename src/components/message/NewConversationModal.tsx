@@ -57,15 +57,15 @@ const NewConversationModal = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl">
-                <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-md animate-scale-in overflow-hidden rounded-2xl border border-secondary/60 bg-white shadow-xl">
+                <div className="flex items-center justify-between border-b border-secondary/60 px-5 py-4">
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-900">
+                        <h2 className="text-lg font-semibold text-primary">
                             Nouvelle conversation
                         </h2>
 
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-primary/50">
                             Sélectionnez une personne
                         </p>
                     </div>
@@ -73,7 +73,7 @@ const NewConversationModal = ({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                        className="rounded-xl p-2 text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <X size={20} />
                     </button>
@@ -83,7 +83,7 @@ const NewConversationModal = ({
                     <div className="relative">
                         <Search
                             size={18}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40"
                         />
 
                         <input
@@ -93,7 +93,7 @@ const NewConversationModal = ({
                                 setSearch(event.target.value)
                             }
                             placeholder="Rechercher une personne..."
-                            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-100"
+                            className="w-full rounded-xl border border-secondary/60 bg-secondary/20 py-2.5 pl-10 pr-4 text-sm outline-none transition placeholder:text-primary/40 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/15"
                         />
                     </div>
                 </div>
@@ -113,7 +113,7 @@ const NewConversationModal = ({
                                     key={user.id}
                                     type="button"
                                     onClick={() => onSelect(user)}
-                                    className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-blue-50"
+                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-secondary/50"
                                 >
                                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
                                         {imageUrl && (
@@ -126,7 +126,7 @@ const NewConversationModal = ({
                                         )}
 
                                         <div
-                                            className={`h-full w-full items-center justify-center bg-blue-100 text-sm font-semibold text-blue-600 ${
+                                            className={`h-full w-full items-center justify-center bg-secondary/70 text-sm font-semibold text-primary ${
                                                 imageUrl ? "hidden" : "flex"
                                             }`}
                                         >
@@ -135,13 +135,13 @@ const NewConversationModal = ({
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium text-gray-900">
+                                        <p className="truncate text-sm font-medium text-primary">
                                             {user.firstname}{" "}
                                             {user.lastname}
                                         </p>
 
                                         {user.email && (
-                                            <p className="truncate text-xs text-gray-500">
+                                            <p className="truncate text-xs text-primary/50">
                                                 {user.email}
                                             </p>
                                         )}
@@ -157,25 +157,25 @@ const NewConversationModal = ({
                         <div className="px-4 py-10 text-center">
                             <User
                                 size={32}
-                                className="mx-auto text-gray-300"
+                                className="mx-auto text-secondary"
                             />
 
-                            <p className="mt-2 text-sm font-medium text-gray-600">
+                            <p className="mt-2 text-sm font-medium text-primary/70">
                                 Aucun utilisateur trouvé
                             </p>
 
-                            <p className="mt-1 text-xs text-gray-400">
+                            <p className="mt-1 text-xs text-primary/40">
                                 Essayez avec un autre nom ou email.
                             </p>
                         </div>
                     )}
                 </div>
 
-                <div className="border-t border-gray-200 bg-gray-50 px-5 py-3">
+                <div className="border-t border-secondary/60 bg-secondary/20 px-5 py-3">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                        className="w-full rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm font-medium text-primary/70 transition-colors hover:bg-secondary/50 hover:text-primary"
                     >
                         Annuler
                     </button>

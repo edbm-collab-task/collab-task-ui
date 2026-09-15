@@ -17,24 +17,24 @@ const ConversationMenu = ({ pinned, archived, group, onClose, onMarkRead, onPin,
         <div className="fixed inset-0 z-40">
             <div className="absolute inset-0" onClick={onClose} />
 
-            <div className="absolute right-5 top-[65px] z-50 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl">
-                <button type="button" onClick={onMarkRead} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600">
+            <div className="absolute right-5 top-[65px] z-50 w-56 animate-fade-in overflow-hidden rounded-xl border border-secondary/60 bg-white py-1 shadow-lg">
+                <button type="button" onClick={onMarkRead} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-primary transition-colors hover:bg-secondary/50">
                     <Check size={16} />
                     Marquer comme lu
                 </button>
 
-                <button type="button" onClick={onPin} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600">
+                <button type="button" onClick={onPin} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-primary transition-colors hover:bg-secondary/50">
                     <Pin size={16} />
                     {pinned ? "Désépingler" : "Épingler"}
                 </button>
 
-                <button type="button" onClick={onArchive} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600">
+                <button type="button" onClick={onArchive} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-primary transition-colors hover:bg-secondary/50">
                     <Archive size={16} />
                     {archived ? "Désarchiver" : "Archiver"}
                 </button>
 
                 {group && (
-                    <button type="button" onClick={onLeave} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-orange-600 transition-colors hover:bg-orange-50">
+                    <button type="button" onClick={onLeave} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-accent transition-colors hover:bg-accent/10">
                         <X size={16} />
                         Quitter le groupe
                     </button>

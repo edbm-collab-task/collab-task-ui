@@ -62,15 +62,15 @@ const isImageAttachment = (attachment: Message["attachments"][number]): boolean 
 
 const getFileIcon = (type: string) => {
     if (type?.startsWith("image/")) {
-        return <FileImage size={22} className="text-blue-500" />;
+        return <FileImage size={22} className="text-accent" />;
     }
 
     if (type === "application/pdf") {
-        return <FileText size={22} className="text-white-500" />;
+        return <FileText size={22} className="text-accent" />;
     }
 
     if (type?.includes("word") || type?.includes("document")) {
-        return <FileText size={22} className="text-blue-600" />;
+        return <FileText size={22} className="text-primary" />;
     }
 
     return <File size={22} className="text-gray-500" />;
@@ -136,12 +136,12 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                 <>
                     <img src={imageUrl} alt={fullName || "Utilisateur"} className="h-full w-full object-cover" onError={handleImageError} />
 
-                    <div className="hidden h-full w-full items-center justify-center bg-gray-200 text-xs font-semibold text-gray-700">
+                    <div className="hidden h-full w-full items-center justify-center bg-secondary/70 text-xs font-semibold text-primary">
                         {initials || "U"}
                     </div>
                 </>
             ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gray-200 text-xs font-semibold text-gray-700">
+                <div className="flex h-full w-full items-center justify-center bg-secondary/70 text-xs font-semibold text-primary">
                     {initials || "U"}
                 </div>
             )}
@@ -167,14 +167,14 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                                     <img
                                         src={url}
                                         alt={attachment.name}
-                                        className="max-h-80 max-w-[320px] cursor-pointer object-contain transition hover:opacity-90"
+                                        className="max-h-80 max-w-[260px] cursor-pointer object-contain transition hover:opacity-90 sm:max-w-[320px]"
                                         onError={(event) => {
                                             event.currentTarget.style.display = "none";
                                         }}
                                     />
                                 </a>
 
-                                <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-3 py-2">
+                                <div className="flex items-center justify-between gap-3 border-t border-secondary/40 px-3 py-2">
                                     <div className="min-w-0">
                                         <p className="truncate text-xs font-medium text-gray-700">
                                             {attachment.name}
@@ -188,10 +188,10 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                                     <button
                                         type="button"
                                         onClick={() => handleDownload(attachment)}
-                                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-blue-600"
-                                        title="Télécharger"
-                                    >
-                                        <Download size={15} />
+className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-500 transition hover:bg-secondary/60 hover:text-primary"
+                        title="Télécharger"
+                    >
+                        <Download size={15} />
                                     </button>
                                 </div>
                             </div>
@@ -201,7 +201,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                     return (
                         <div
                             key={attachment.id ?? `${attachment.name}-${attachment.url}`}
-                            className={`flex w-[280px] max-w-full items-center gap-3 rounded-xl border px-3 py-3 ${mine ? "border-blue-400/40 bg-blue-400/40" : "border-gray-200 bg-white"}`}
+                            className={`flex w-[280px] max-w-full items-center gap-3 rounded-xl border px-3 py-3 ${mine ? "border-white/25 bg-primary/30" : "border-gray-200 bg-white"}`}
                         >
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
                                 {getFileIcon(attachment.type)}
@@ -212,7 +212,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                                     {attachment.name}
                                 </p>
 
-                                <p className={`mt-0.5 text-[11px] ${mine ? "text-blue-100" : "text-gray-400"}`}>
+                                <p className={`mt-0.5 text-[11px] ${mine ? "text-secondary" : "text-gray-400"}`}>
                                     {formatFileSize(attachment.size)}
                                 </p>
                             </div>
@@ -220,7 +220,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                             <button
                                 type="button"
                                 onClick={() => handleDownload(attachment)}
-                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition ${mine ? "text-white hover:bg-white/10" : "text-gray-500 hover:bg-gray-100 hover:text-blue-600"}`}
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${mine ? "text-white hover:bg-white/10" : "text-gray-500 hover:bg-secondary/60 hover:text-primary"}`}
                                 title="Télécharger"
                             >
                                 <Download size={17} />
@@ -250,7 +250,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
             <>
                 {message.content && (
                     <div
-                        className="break-words text-sm [&_a]:text-blue-600 [&_a]:underline [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc"
+                        className="break-words text-sm [&_a]:text-accent [&_a]:underline [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc"
                         dangerouslySetInnerHTML={{ __html: sanitizedContent }}
                     />
                 )}
@@ -263,17 +263,17 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
     return (
         <div className={`group mb-4 flex w-full ${isMine ? "justify-end" : "justify-start"}`}>
             {!isMine && (
-                <div className="flex max-w-[75%] items-end gap-2">
+                <div className="flex max-w-[85%] items-end gap-2 sm:max-w-[75%]">
                     {avatar}
 
                     <div className="flex min-w-0 flex-col items-start">
-                        <p className="mb-1 px-2 text-xs font-medium text-gray-500">
+                        <p className="mb-1.5 px-2 text-xs font-medium text-primary/60">
                             {fullName || "Utilisateur"}
                         </p>
 
                         {replyMessage && (
-                            <div className="mb-1 max-w-[300px] rounded-lg border-l-2 border-blue-400 bg-gray-50 px-3 py-2 text-left text-xs text-gray-500">
-                                <p className="font-medium text-blue-500">
+                            <div className="mb-1 max-w-[220px] rounded-lg border-l-2 border-accent bg-secondary/40 px-3 py-2 text-left text-xs text-primary/60 sm:max-w-[300px]">
+                                <p className="font-medium text-primary">
                                     Réponse
                                 </p>
 
@@ -283,10 +283,10 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                             </div>
                         )}
 
-                        <div className="w-fit max-w-full rounded-2xl rounded-bl-md bg-gray-100 px-4 py-2.5 text-gray-900">
+                        <div className="w-fit max-w-full rounded-2xl rounded-bl-md bg-bg px-4 py-2.5 text-gray-800 ring-1 ring-black/5">
                             {renderMessageContent(false)}
 
-                            <div className="mt-1 text-left text-[10px] text-gray-400">
+                            <div className="mt-1 text-left text-[10px] text-primary/40">
                                 {messageTime}
                             </div>
                         </div>
@@ -305,10 +305,10 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
             )}
 
             {isMine && (
-                <div className="flex max-w-[75%] flex-col items-end">
+                <div className="flex max-w-[85%] flex-col items-end sm:max-w-[75%]">
                     {replyMessage && (
-                        <div className="mb-1 max-w-[300px] rounded-lg border-r-2 border-blue-400 bg-gray-50 px-3 py-2 text-right text-xs text-gray-500">
-                            <p className="font-medium text-blue-500">
+                        <div className="mb-1 max-w-[220px] rounded-lg border-r-2 border-accent bg-secondary/40 px-3 py-2 text-right text-xs text-primary/60 sm:max-w-[300px]">
+                            <p className="font-medium text-primary">
                                 Réponse
                             </p>
 
@@ -318,10 +318,10 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                         </div>
                     )}
 
-                    <div className="w-fit max-w-full rounded-2xl rounded-br-md bg-blue-600 px-4 py-2.5 text-white">
+                    <div className="w-fit max-w-full rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-white shadow-sm">
                         {renderMessageContent(true)}
 
-                        <div className="mt-1 text-right text-[10px] text-blue-100">
+                        <div className="mt-1 text-right text-[10px] text-secondary">
                             {messageTime}
                         </div>
                     </div>
@@ -351,11 +351,11 @@ interface MessageActionsProps {
 
 const MessageActions = ({ message, isMine, onReply, onDelete, onCopy }: MessageActionsProps) => {
     return (
-        <div className={`mt-1 flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 ${isMine ? "justify-end" : "justify-start"}`}>
+        <div className={`mt-1 flex items-center gap-1 opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 ${isMine ? "justify-end" : "justify-start"}`}>
             <button
                 type="button"
                 onClick={() => onReply(message)}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-blue-600"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition hover:bg-secondary/60 hover:text-primary"
                 title="Répondre"
             >
                 <Reply size={14} />
@@ -365,7 +365,7 @@ const MessageActions = ({ message, isMine, onReply, onDelete, onCopy }: MessageA
                 <button
                     type="button"
                     onClick={onCopy}
-                    className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-blue-600"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition hover:bg-secondary/60 hover:text-primary"
                     title="Copier"
                 >
                     <Copy size={14} />
@@ -376,7 +376,7 @@ const MessageActions = ({ message, isMine, onReply, onDelete, onCopy }: MessageA
                 <button
                     type="button"
                     onClick={() => onDelete(message.id)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition hover:bg-accent/10 hover:text-accent"
                     title="Supprimer"
                 >
                     <Trash2 size={14} />
@@ -385,7 +385,7 @@ const MessageActions = ({ message, isMine, onReply, onDelete, onCopy }: MessageA
 
             <button
                 type="button"
-                className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition hover:bg-secondary/60 hover:text-primary"
                 title="Plus"
             >
                 <MoreHorizontal size={14} />

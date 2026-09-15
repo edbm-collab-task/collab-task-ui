@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { MessageCircle } from "lucide-react";
+
 import MessageItem from "./MessageItem";
 
 import type { Message, ChatUser } from "@/types/message";
@@ -153,20 +155,20 @@ const MessageList = ({
     let previousDate = "";
 
     return (
-        <div className="min-h-0 flex-1 overflow-y-auto bg-white px-5 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 py-6 sm:px-6">
             <div className="mx-auto max-w-5xl">
                 {messages.length === 0 ? (
                     <div className="flex min-h-[400px] items-center justify-center text-center">
                         <div>
-                            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-2xl">
-                                💬
+                            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">
+                                <MessageCircle size={24} />
                             </div>
 
-                            <p className="mt-3 text-sm font-medium text-gray-700">
+                            <p className="mt-3 text-sm font-medium text-primary">
                                 Aucun message
                             </p>
 
-                            <p className="mt-1 text-xs text-gray-400">
+                            <p className="mt-1 text-xs text-primary/50">
                                 Envoyez le premier message.
                             </p>
                         </div>
@@ -208,8 +210,8 @@ const MessageList = ({
                         return (
                             <div key={message.id}>
                                 {showDate && (
-                                    <div className="my-5 flex justify-center">
-                                        <span className="rounded-full border border-blue-100 bg-blue-50 px-4 py-1 text-xs font-medium text-blue-600">
+                                    <div className="my-6 flex justify-center">
+                                        <span className="rounded-full border border-secondary/60 bg-secondary/40 px-4 py-1 text-xs font-medium text-primary/70">
                                             {label}
                                         </span>
                                     </div>

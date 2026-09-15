@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import {
     Archive,
+    Inbox,
     MessageSquarePlus,
+    Paperclip,
     Pin,
     Search,
     Users,
@@ -141,8 +143,9 @@ const ConversationSidebar = ({
             message.attachments.length > 0
         ) {
             return (
-                <span className="text-xs text-gray-500">
-                    📎 Pièce jointe
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <Paperclip size={12} className="shrink-0" />
+                    Pièce jointe
                 </span>
             );
         }
@@ -177,15 +180,15 @@ const ConversationSidebar = ({
     };
 
     return (
-        <aside className="flex h-full w-[320px] shrink-0 flex-col border-r border-gray-200 bg-white">
+        <aside className="flex h-full w-[300px] shrink-0 flex-col border-r border-secondary/60 bg-bg sm:w-[320px]">
             {/* Header */}
-            <div className="flex h-[72px] items-center justify-between border-b border-gray-200 px-4">
+            <div className="flex h-[72px] items-center justify-between border-b border-secondary/60 px-3 sm:px-4">
                 <div>
-                    <h1 className="text-lg font-semibold text-blue-800">
+                    <h1 className="text-lg font-semibold text-primary">
                         Messages
                     </h1>
 
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-primary/50">
                         {conversations.length} conversations
                     </p>
                 </div>
@@ -195,7 +198,7 @@ const ConversationSidebar = ({
                         type="button"
                         onClick={onNewConversation}
                         title="Nouvelle conversation"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <MessageSquarePlus size={18} />
                     </button>
@@ -204,7 +207,7 @@ const ConversationSidebar = ({
                         type="button"
                         onClick={onCreateGroup}
                         title="Créer un groupe"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <Users size={18} />
                     </button>
@@ -213,10 +216,10 @@ const ConversationSidebar = ({
 
             {/* Recherche */}
             <div className="p-3">
-                <div className="flex h-10 items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 transition-colors focus-within:border-blue-500 focus-within:bg-white focus-within:ring-1 focus-within:ring-blue-100">
+                <div className="flex h-10 items-center gap-2 rounded-xl border border-secondary/60 bg-white px-3 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15">
                     <Search
                         size={17}
-                        className="text-gray-400"
+                        className="text-primary/40"
                     />
 
                     <input
@@ -235,8 +238,8 @@ const ConversationSidebar = ({
                         onClick={() => setShowArchived(false)}
                         className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                             !showArchived
-                                ? "bg-blue-50 text-blue-700"
-                                : "text-gray-500 hover:bg-blue-50/50 hover:text-blue-600"
+                                ? "bg-secondary text-primary"
+                                : "text-primary/60 hover:bg-secondary/50 hover:text-primary"
                         }`}
                     >
                         Discussions
@@ -247,8 +250,8 @@ const ConversationSidebar = ({
                         onClick={() => setShowArchived(true)}
                         className={`flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                             showArchived
-                                ? "bg-blue-50 text-blue-700"
-                                : "text-gray-500 hover:bg-blue-50/50 hover:text-blue-600"
+                                ? "bg-secondary text-primary"
+                                : "text-primary/60 hover:bg-secondary/50 hover:text-primary"
                         }`}
                     >
                         <Archive size={13} />
@@ -258,17 +261,21 @@ const ConversationSidebar = ({
             </div>
 
             {/* Conversations */}
-            <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+            <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
                 {filtered.length === 0 ? (
-                    <div className="px-4 py-12 text-center">
-                        <p className="text-sm text-gray-500">
+                    <div className="px-4 py-14 text-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary">
+                            <Inbox size={22} />
+                        </div>
+
+                        <p className="mt-3 text-sm font-medium text-primary">
                             Aucune conversation
                         </p>
 
                         <button
                             type="button"
                             onClick={onNewConversation}
-                            className="mt-3 text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+                            className="mt-2 text-xs font-medium text-accent transition-colors hover:text-primary hover:underline"
                         >
                             Commencer une discussion
                         </button>
@@ -314,10 +321,10 @@ const ConversationSidebar = ({
                                 onClick={() =>
                                     onSelect(conversation)
                                 }
-                                className={`mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors ${
+                                className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors ${
                                     active
-                                        ? "bg-blue-50"
-                                        : "hover:bg-blue-50/50"
+                                        ? "bg-secondary"
+                                        : "hover:bg-secondary/50"
                                 }`}
                             >
                                 {/* Avatar */}
@@ -337,8 +344,8 @@ const ConversationSidebar = ({
                                                 <div
                                                     className={`hidden h-full w-full items-center justify-center text-sm font-semibold ${
                                                         active
-                                                            ? "bg-blue-100 text-blue-700"
-                                                            : "bg-gray-100 text-gray-600"
+                                                            ? "bg-primary/15 text-primary"
+                                                            : "bg-secondary/70 text-primary"
                                                     }`}
                                                 >
                                                     {conversation.type ===
@@ -353,8 +360,8 @@ const ConversationSidebar = ({
                                             <div
                                                 className={`flex h-full w-full items-center justify-center text-sm font-semibold ${
                                                     active
-                                                        ? "bg-blue-100 text-blue-700"
-                                                        : "bg-gray-100 text-gray-600"
+                                                        ? "bg-primary/15 text-primary"
+                                                        : "bg-secondary/70 text-primary"
                                                 }`}
                                             >
                                                 {conversation.type ===
@@ -377,14 +384,14 @@ const ConversationSidebar = ({
                                 {/* Informations */}
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2">
-                                        <p className="truncate text-sm font-semibold text-gray-900">
+                                        <p className="truncate text-sm font-semibold text-primary">
                                             {displayName}
                                         </p>
 
                                         {conversation.pinned && (
                                             <Pin
                                                 size={12}
-                                                className="shrink-0 text-blue-500"
+                                                className="shrink-0 text-accent"
                                             />
                                         )}
                                     </div>
@@ -395,7 +402,7 @@ const ConversationSidebar = ({
                                             {renderLastMessage(last)}
                                         </div>
 
-                                        <span className="shrink-0 text-[10px] text-gray-400">
+                                        <span className="shrink-0 text-[10px] text-primary/40">
                                             {lastMessageTime}
                                         </span>
                                     </div>
@@ -403,7 +410,7 @@ const ConversationSidebar = ({
 
                                 {/* Messages non lus */}
                                 {conversation.unreadCount > 0 && (
-                                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+                                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-white">
                                         {
                                             conversation.unreadCount
                                         }
