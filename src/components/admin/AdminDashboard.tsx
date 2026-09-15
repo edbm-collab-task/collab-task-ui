@@ -251,129 +251,113 @@ export default function AdminDashboard() {
             <AdminEvolutionChart evolution={data.evolution ?? null} />
 
             {/* Users Table */}
-            <div className="rounded-2xl border border-secondary/60 bg-white shadow-sm">
-                <div className="p-6 border-b border-secondary/40">
-                    <h3 className="font-bold text-primary flex items-center gap-2">
-                        <Users size={20} className="text-primary" />
-                        Top 10 Utilisateurs (par tâches assignées)
-                    </h3>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center justify-between">
+                    <h3 className="font-bold text-primary">Top 10 Utilisateurs</h3>
+                    <Users size={18} className="text-primary/50" />
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-secondary/10 border-b border-secondary/30">
-                            <tr className="text-left text-xs font-semibold uppercase tracking-wider text-primary/60">
-                                <th className="px-6 py-3">Utilisateur</th>
-                                <th className="px-6 py-3">Rôle</th>
-                                <th className="px-6 py-3">Direction</th>
-                                <th className="px-6 py-3 text-center">Assignées</th>
-                                <th className="px-6 py-3 text-center">Terminées</th>
-                                <th className="px-6 py-3 text-center">En retard</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-secondary/20">
-                            {data.topUsers.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
-                                        Aucune donnée
-                                    </td>
-                                </tr>
-                            ) : (
-                                data.topUsers.map((user) => (
-                                    <tr key={user.userId} className="hover:bg-secondary/10 transition">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/50 text-primary text-sm font-bold">
-                                                    {user.firstname[0]}{user.lastname[0]}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-primary">
-                                                        {user.firstname} {user.lastname}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">{user.email}</p>
-                                                </div>
+                {data.topUsers.length === 0 ? (
+                    <div className="flex h-32 items-center justify-center text-gray-400">
+                        <p className="text-sm">Aucune donnée</p>
+                    </div>
+                ) : (
+                    <ul className="divide-y divide-gray-100">
+                        {data.topUsers.map((user) => (
+                            <li key={user.userId} className="py-3 transition-all duration-200 hover:bg-gray-50 hover:px-3 rounded-lg">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/50 text-primary text-xs font-bold">
+                                            {user.firstname[0]}{user.lastname[0]}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="truncate text-sm font-semibold text-gray-800">
+                                                    {user.firstname} {user.lastname}
+                                                </p>
+                                                <span className="shrink-0 rounded-full bg-secondary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
+                                                    {user.role}
+                                                </span>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/30 text-primary">
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{user.direction}</td>
-                                        <td className="px-6 py-4 text-center font-semibold text-primary">{user.assignedTasks}</td>
-                                        <td className="px-6 py-4 text-center text-emerald-600 font-medium">{user.completedTasks}</td>
-                                        <td className="px-6 py-4 text-center text-accent font-medium">{user.overdueTasks}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                            <p className="mt-0.5 truncate text-xs text-gray-500">{user.direction}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 shrink-0 text-sm">
+                                        <div className="text-center">
+                                            <p className="font-bold text-primary">{user.assignedTasks}</p>
+                                            <p className="text-[11px] text-gray-400">assignées</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="font-bold text-accent">{user.completedTasks}</p>
+                                            <p className="text-[11px] text-gray-400">terminées</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className={`font-bold ${user.overdueTasks > 0 ? "text-accent" : "text-gray-400"}`}>{user.overdueTasks}</p>
+                                            <p className="text-[11px] text-gray-400">retard</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
 
             {/* Projects Table */}
-            <div className="rounded-2xl border border-secondary/60 bg-white shadow-sm mt-6">
-                <div className="p-6 border-b border-secondary/40">
-                    <h3 className="font-bold text-primary flex items-center gap-2">
-                        <FolderKanban size={20} className="text-primary" />
-                        Top 10 Projets (par volume de tâches)
-                    </h3>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center justify-between">
+                    <h3 className="font-bold text-primary">Top 10 Projets</h3>
+                    <FolderKanban size={18} className="text-primary/50" />
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-secondary/10 border-b border-secondary/30">
-                            <tr className="text-left text-xs font-semibold uppercase tracking-wider text-primary/60">
-                                <th className="px-6 py-3">Projet</th>
-                                <th className="px-6 py-3">Propriétaire</th>
-                                <th className="px-6 py-3 text-center">Total tâches</th>
-                                <th className="px-6 py-3 text-center">Terminées</th>
-                                <th className="px-6 py-3 text-center">En retard</th>
-                                <th className="px-6 py-3 text-center">Progression</th>
-                                <th className="px-6 py-3">Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-secondary/20">
-                            {data.topProjects.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
-                                        Aucun projet
-                                    </td>
-                                </tr>
-                            ) : (
-                                data.topProjects.map((project) => (
-                                    <tr key={project.projectId} className="hover:bg-secondary/10 transition">
-                                        <td className="px-6 py-4">
-                                            <p className="font-medium text-primary">{project.title}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{project.ownerName}</td>
-                                        <td className="px-6 py-4 text-center font-semibold text-primary">{project.totalTasks}</td>
-                                        <td className="px-6 py-4 text-center text-emerald-600 font-medium">{project.completedTasks}</td>
-                                        <td className="px-6 py-4 text-center text-accent font-medium">{project.overdueTasks}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <div className="w-24 mx-auto">
-                                                <div className="h-2 overflow-hidden rounded-full bg-secondary/20">
-                                                    <div
-                                                        className="h-full rounded-full bg-primary transition-all"
-                                                        style={{ width: `${project.progressPercent}%` }}
-                                                    />
-                                                </div>
-                                                <p className="mt-1 text-xs text-gray-500">{project.progressPercent}%</p>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                {data.topProjects.length === 0 ? (
+                    <div className="flex h-32 items-center justify-center text-gray-400">
+                        <p className="text-sm">Aucun projet</p>
+                    </div>
+                ) : (
+                    <ul className="divide-y divide-gray-100">
+                        {data.topProjects.map((project) => (
+                            <li key={project.projectId} className="py-3 transition-all duration-200 hover:bg-gray-50 hover:px-3 rounded-lg">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <p className="truncate text-sm font-semibold text-gray-800">{project.title}</p>
+                                            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
                                                 project.status === "Actif"
                                                     ? "bg-secondary/40 text-primary"
-                                                    : "bg-bg text-gray-500"
+                                                    : "bg-gray-100 text-gray-500"
                                             }`}>
                                                 {project.status}
                                             </span>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                        </div>
+                                        <p className="mt-0.5 text-xs text-gray-500">{project.ownerName}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4 shrink-0 text-sm">
+                                        <div className="text-center">
+                                            <p className="font-bold text-primary">{project.totalTasks}</p>
+                                            <p className="text-[11px] text-gray-400">tâches</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="font-bold text-accent">{project.completedTasks}</p>
+                                            <p className="text-[11px] text-gray-400">terminées</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className={`font-bold ${project.overdueTasks > 0 ? "text-accent" : "text-gray-400"}`}>{project.overdueTasks}</p>
+                                            <p className="text-[11px] text-gray-400">retard</p>
+                                        </div>
+                                        <div className="w-20 text-right">
+                                            <p className="text-sm font-bold text-gray-700">{project.progressPercent}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                                    <div
+                                        className={`h-full rounded-full ${project.progressPercent === 100 ? "bg-primary" : "bg-accent"}`}
+                                        style={{ width: `${project.progressPercent}%` }}
+                                    />
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
 
             {showOverdueModal && (
