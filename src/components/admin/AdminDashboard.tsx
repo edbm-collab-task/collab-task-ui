@@ -32,7 +32,7 @@ function StatCard({ title, value, icon, color, sparklineData, trend, highlighted
             role={isClickable ? "button" : undefined}
             tabIndex={isClickable ? 0 : undefined}
             onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") onClick?.(); } : undefined}
-            className={`rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md ${
+            className={`rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6 ${
                 highlighted ? "border-accent hover:bg-accent/5" : "border-secondary/60"
             } ${isClickable ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" : ""}`}
         >
@@ -42,7 +42,7 @@ function StatCard({ title, value, icon, color, sparklineData, trend, highlighted
                     <div className="mt-2 flex items-end gap-3">
                         <p className={`text-3xl font-bold ${highlighted ? "text-accent" : "text-primary"}`}>{value}</p>
                         {sparklineData && sparklineData.length > 0 && (
-                            <div className="h-10 w-28 flex-shrink-0">
+                            <div className="hidden h-10 w-28 flex-shrink-0 sm:block">
                                 <Sparkline data={sparklineData} color="#d07694" height={30} width={100} />
                             </div>
                         )}
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
 
     if (error) {
         return (
-            <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-secondary/60 bg-white shadow-sm">
+            <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <AlertCircle size={24} className="text-accent" />
                 <p className="text-sm text-gray-500">{error}</p>
                 <button
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
 
             {/* Date range for custom period */}
             {isCustom && (
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
                             <CalendarDays size={14} className="text-primary/60" />
@@ -287,7 +287,7 @@ export default function AdminDashboard() {
                                             <p className="text-[11px] text-gray-400">assignées</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="font-bold text-accent">{user.completedTasks}</p>
+                                            <p className="font-bold text-primary">{user.completedTasks}</p>
                                             <p className="text-[11px] text-gray-400">terminées</p>
                                         </div>
                                         <div className="text-center">
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                                             <p className="text-[11px] text-gray-400">tâches</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="font-bold text-accent">{project.completedTasks}</p>
+                                            <p className="font-bold text-primary">{project.completedTasks}</p>
                                             <p className="text-[11px] text-gray-400">terminées</p>
                                         </div>
                                         <div className="text-center">

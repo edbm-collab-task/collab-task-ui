@@ -118,7 +118,7 @@ export default function AdminEvolutionChart({ evolution }: Props) {
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-bold text-primary">Évolution des projets</h3>
-                <TrendingUp size={18} className="text-gray-400" />
+                <TrendingUp size={18} className="text-primary/50" />
             </div>
 
             {points.length === 0 ? (
