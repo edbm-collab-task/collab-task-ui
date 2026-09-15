@@ -2,18 +2,16 @@ import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
-    PointElement,
-    LineElement,
-    Filler,
+    BarElement,
     Tooltip,
     Legend,
 } from "chart.js";
 import type { ChartOptions } from "chart.js";
-import { Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import { TrendingUp, BarChart3 } from "lucide-react";
 import type { EvolutionPointResDto } from "@/types/adminDashboard";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 interface Props {
     evolution: EvolutionPointResDto[] | null;
@@ -33,29 +31,27 @@ export default function AdminEvolutionChart({ evolution }: Props) {
             {
                 label: "Projets créés",
                 data: points.map(point => point.created),
-                borderColor: "rgba(59, 130, 246, 1)",
-                backgroundColor: "rgba(59, 130, 246, 0.1)",
-                borderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                tension: 0.4,
-                fill: true,
+                backgroundColor: "#d07694",
+                hoverBackgroundColor: "#6d526f",
+                borderRadius: 4,
+                borderSkipped: false,
+                barPercentage: 0.7,
+                categoryPercentage: 0.65,
             },
             {
                 label: "Projets terminés",
                 data: points.map(point => point.completed),
-                borderColor: "rgba(16, 185, 129, 1)",
-                backgroundColor: "rgba(16, 185, 129, 0.1)",
-                borderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                tension: 0.4,
-                fill: true,
+                backgroundColor: "#dddbff",
+                hoverBackgroundColor: "#6d526f",
+                borderRadius: 4,
+                borderSkipped: false,
+                barPercentage: 0.7,
+                categoryPercentage: 0.65,
             },
         ],
     };
 
-    const options: ChartOptions<"line"> = {
+    const options: ChartOptions<"bar"> = {
         responsive: true,
         maintainAspectRatio: false,
         interaction: {
@@ -121,7 +117,7 @@ export default function AdminEvolutionChart({ evolution }: Props) {
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-bold text-gray-800">Évolution des projets</h3>
+                <h3 className="font-bold text-primary">Évolution des projets</h3>
                 <TrendingUp size={18} className="text-gray-400" />
             </div>
 
@@ -129,26 +125,26 @@ export default function AdminEvolutionChart({ evolution }: Props) {
                 <div className="flex h-48 items-center justify-center text-gray-400">
                     <div className="text-center">
                         <BarChart3 size={32} className="mx-auto text-gray-300" />
-                        <p className="mt-2 text-sm text-gray-500">Aucune donnée d'évolution disponible</p>
+                        <p className="mt-2 text-sm text-gray-500">Aucune donnée d&apos;évolution disponible</p>
                     </div>
                 </div>
             ) : (
                 <>
                     <div className="mb-5 flex items-center gap-6 text-sm">
                         <span className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-sm bg-blue-500" />
+                            <span className="h-2.5 w-2.5 rounded-sm bg-accent" />
                             <span className="text-gray-600">Créées</span>
-                            <span className="font-bold text-gray-800">{totalCreated}</span>
+                            <span className="font-bold text-primary">{totalCreated}</span>
                         </span>
                         <span className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
+                            <span className="h-2.5 w-2.5 rounded-sm bg-secondary" />
                             <span className="text-gray-600">Terminées</span>
-                            <span className="font-bold text-gray-800">{totalCompleted}</span>
+                            <span className="font-bold text-primary">{totalCompleted}</span>
                         </span>
                     </div>
 
                     <div className="h-72 sm:h-80">
-                        <Line data={data} options={options} />
+                        <Bar data={data} options={options} />
                     </div>
                 </>
             )}

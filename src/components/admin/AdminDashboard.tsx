@@ -8,6 +8,7 @@ import { DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
 import TableFilter from "@/components/table/TableFilter";
 import Sparkline from "./dashboard/Sparkline";
 import AdminEvolutionChart from "./dashboard/AdminEvolutionChart";
+import OverdueTasksModal from "./dashboard/OverdueTasksModal";
 import { generateIncreasingSparkline, getAdminSparkline } from "@/utils/sparkline";
 import { useDashboardPeriod } from "@/hooks/useDashboardPeriod";
 
@@ -20,13 +21,21 @@ interface StatCardProps {
     sparklineColor?: string;
     trend?: { value: number; label: string };
     highlighted?: boolean;
+    onClick?: () => void;
 }
 
-function StatCard({ title, value, icon, color, sparklineData, trend, highlighted = false }: StatCardProps) {
+function StatCard({ title, value, icon, color, sparklineData, trend, highlighted = false, onClick }: StatCardProps) {
+    const isClickable = !!onClick;
     return (
-        <div className={`rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md ${
-            highlighted ? "border-accent hover:bg-accent/5" : "border-secondary/60"
-        }`}>
+        <div
+            onClick={isClickable ? onClick : undefined}
+            role={isClickable ? "button" : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") onClick?.(); } : undefined}
+            className={`rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md ${
+                highlighted ? "border-accent hover:bg-accent/5" : "border-secondary/60"
+            } ${isClickable ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" : ""}`}
+        >
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-500">{title}</p>
@@ -59,6 +68,7 @@ export default function AdminDashboard() {
     const [data, setData] = useState<AdminDashboardStatsResDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showOverdueModal, setShowOverdueModal] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -124,12 +134,12 @@ export default function AdminDashboard() {
 
     if (error) {
         return (
-            <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <AlertCircle size={24} className="text-red-400" />
+            <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-secondary/60 bg-white shadow-sm">
+                <AlertCircle size={24} className="text-accent" />
                 <p className="text-sm text-gray-500">{error}</p>
                 <button
                     onClick={() => { setError(null); setLoading(true); setPeriod(p => p); }}
-                    className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
+                    className="text-sm font-medium text-primary transition hover:text-primary/80"
                 >
                     Réessayer
                 </button>
@@ -224,7 +234,8 @@ export default function AdminDashboard() {
                     value={data.overdueTasks}
                     icon={<AlertCircle size={22} className="text-accent" />}
                     color="bg-accent/15 ring-1 ring-accent/40"
-                    highlighted
+                    highlighted={data.overdueTasks > 0}
+                    onClick={() => setShowOverdueModal(true)}
                     sparklineData={generateIncreasingSparkline(data.overdueTasks, 7)}
                 />
                 <StatCard
@@ -240,17 +251,17 @@ export default function AdminDashboard() {
             <AdminEvolutionChart evolution={data.evolution ?? null} />
 
             {/* Users Table */}
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="p-6 border-b border-gray-200">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                        <Users size={20} className="text-gray-600" />
+            <div className="rounded-2xl border border-secondary/60 bg-white shadow-sm">
+                <div className="p-6 border-b border-secondary/40">
+                    <h3 className="font-bold text-primary flex items-center gap-2">
+                        <Users size={20} className="text-primary" />
                         Top 10 Utilisateurs (par tâches assignées)
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        <thead className="bg-secondary/10 border-b border-secondary/30">
+                            <tr className="text-left text-xs font-semibold uppercase tracking-wider text-primary/60">
                                 <th className="px-6 py-3">Utilisateur</th>
                                 <th className="px-6 py-3">Rôle</th>
                                 <th className="px-6 py-3">Direction</th>
@@ -259,7 +270,7 @@ export default function AdminDashboard() {
                                 <th className="px-6 py-3 text-center">En retard</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-secondary/20">
                             {data.topUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
@@ -268,14 +279,14 @@ export default function AdminDashboard() {
                                 </tr>
                             ) : (
                                 data.topUsers.map((user) => (
-                                    <tr key={user.userId} className="hover:bg-gray-50 transition">
+                                    <tr key={user.userId} className="hover:bg-secondary/10 transition">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-sm font-bold">
+                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/50 text-primary text-sm font-bold">
                                                     {user.firstname[0]}{user.lastname[0]}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-800">
+                                                    <p className="font-medium text-primary">
                                                         {user.firstname} {user.lastname}
                                                     </p>
                                                     <p className="text-xs text-gray-500">{user.email}</p>
@@ -283,14 +294,14 @@ export default function AdminDashboard() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/30 text-primary">
                                                 {user.role}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-500">{user.direction}</td>
-                                        <td className="px-6 py-4 text-center font-semibold text-gray-800">{user.assignedTasks}</td>
+                                        <td className="px-6 py-4 text-center font-semibold text-primary">{user.assignedTasks}</td>
                                         <td className="px-6 py-4 text-center text-emerald-600 font-medium">{user.completedTasks}</td>
-                                        <td className="px-6 py-4 text-center text-red-600 font-medium">{user.overdueTasks}</td>
+                                        <td className="px-6 py-4 text-center text-accent font-medium">{user.overdueTasks}</td>
                                     </tr>
                                 ))
                             )}
@@ -300,17 +311,17 @@ export default function AdminDashboard() {
             </div>
 
             {/* Projects Table */}
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm mt-6">
-                <div className="p-6 border-b border-gray-200">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                        <FolderKanban size={20} className="text-gray-600" />
+            <div className="rounded-2xl border border-secondary/60 bg-white shadow-sm mt-6">
+                <div className="p-6 border-b border-secondary/40">
+                    <h3 className="font-bold text-primary flex items-center gap-2">
+                        <FolderKanban size={20} className="text-primary" />
                         Top 10 Projets (par volume de tâches)
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        <thead className="bg-secondary/10 border-b border-secondary/30">
+                            <tr className="text-left text-xs font-semibold uppercase tracking-wider text-primary/60">
                                 <th className="px-6 py-3">Projet</th>
                                 <th className="px-6 py-3">Propriétaire</th>
                                 <th className="px-6 py-3 text-center">Total tâches</th>
@@ -320,7 +331,7 @@ export default function AdminDashboard() {
                                 <th className="px-6 py-3">Statut</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-secondary/20">
                             {data.topProjects.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
@@ -329,19 +340,19 @@ export default function AdminDashboard() {
                                 </tr>
                             ) : (
                                 data.topProjects.map((project) => (
-                                    <tr key={project.projectId} className="hover:bg-gray-50 transition">
+                                    <tr key={project.projectId} className="hover:bg-secondary/10 transition">
                                         <td className="px-6 py-4">
-                                            <p className="font-medium text-gray-800">{project.title}</p>
+                                            <p className="font-medium text-primary">{project.title}</p>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-500">{project.ownerName}</td>
-                                        <td className="px-6 py-4 text-center font-semibold text-gray-800">{project.totalTasks}</td>
+                                        <td className="px-6 py-4 text-center font-semibold text-primary">{project.totalTasks}</td>
                                         <td className="px-6 py-4 text-center text-emerald-600 font-medium">{project.completedTasks}</td>
-                                        <td className="px-6 py-4 text-center text-red-600 font-medium">{project.overdueTasks}</td>
+                                        <td className="px-6 py-4 text-center text-accent font-medium">{project.overdueTasks}</td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="w-24 mx-auto">
-                                                <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                                                <div className="h-2 overflow-hidden rounded-full bg-secondary/20">
                                                     <div
-                                                        className="h-full rounded-full bg-blue-500 transition-all"
+                                                        className="h-full rounded-full bg-primary transition-all"
                                                         style={{ width: `${project.progressPercent}%` }}
                                                     />
                                                 </div>
@@ -351,8 +362,8 @@ export default function AdminDashboard() {
                                         <td className="px-6 py-4 text-center">
                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                                 project.status === "Actif"
-                                                    ? "bg-emerald-100 text-emerald-700"
-                                                    : "bg-gray-100 text-gray-500"
+                                                    ? "bg-secondary/40 text-primary"
+                                                    : "bg-bg text-gray-500"
                                             }`}>
                                                 {project.status}
                                             </span>
@@ -364,6 +375,10 @@ export default function AdminDashboard() {
                     </table>
                 </div>
             </div>
+
+            {showOverdueModal && (
+                <OverdueTasksModal onClose={() => setShowOverdueModal(false)} />
+            )}
         </div>
     );
 }
