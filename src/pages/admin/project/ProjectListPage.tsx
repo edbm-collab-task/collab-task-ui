@@ -17,6 +17,7 @@ import { taskService } from "@/services/task/task.service";
 
 import type { ProjectRes } from "@/types/project";
 import type { TaskRes } from "@/types/task";
+import { ConfirmPopup } from "@/components/common/ConfirmPopup";
 
 function formatDate(date: string | null) {
     if (!date) return "—";
@@ -81,13 +82,21 @@ export default function ProjectListPage() {
         return { total, done, pct: total === 0 ? 0 : Math.round((done / total) * 100) };
     };
 
-    const handleArchive = async (project: ProjectRes) => {
-        if (!window.confirm(`Archiver le projet « ${project.title} » ?`)) return;
+    const [projectToArchive, setProjectToArchive] = useState<ProjectRes | null>(null);
+
+    const handleArchive = (project: ProjectRes) => {
+        setProjectToArchive(project);
+    };
+    
+    const confirmArchive = async () => {
+        if (!projectToArchive) return;
         try {
-            await projectService.archive(project.projectId);
+            await projectService.archive(projectToArchive.projectId);
             await loadData();
         } catch {
             console.error("Erreur archivage");
+        } finally {
+            setProjectToArchive(null);
         }
     };
 
@@ -110,9 +119,18 @@ export default function ProjectListPage() {
 
     return (
         <div className="space-y-6" key={showArchived ? "archived" : "active"}>
+            <ConfirmPopup
+                open={!!projectToArchive}
+                title="Confirmer l'archivage"
+                message={`Archiver le projet « ${projectToArchive?.title} » ?`}
+                confirmLabel="Archiver"
+                variant="danger"
+                onConfirm={confirmArchive}
+                onCancel={() => setProjectToArchive(null)}
+            />
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Projets</h2>
+                    <h2 className="text-2xl font-bold text-primary">Projets</h2>
                     <p className="mt-1 text-sm text-gray-500">
                         {filteredProjects.length} projet{filteredProjects.length > 1 ? "s" : ""}{" "}
                         {showArchived ? "archivé" : "actif"}
@@ -127,7 +145,7 @@ export default function ProjectListPage() {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Rechercher un projet…"
-                            className="w-64 rounded-xl border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            className="w-64 rounded-xl border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30"
                         />
                     </div>
 
@@ -135,8 +153,8 @@ export default function ProjectListPage() {
                         onClick={() => setShowArchived(v => !v)}
                         className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                             showArchived
-                                ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100"
-                                : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
+                                ? "border-primary bg-white text-primary hover:bg-primary hover:text-secondary"
+                                : "border-gray-300 bg-white text-gray-600 hover:bg-primary hover:text-secondary"
                         }`}
                     >
                         <Archive size={16} />
@@ -145,7 +163,7 @@ export default function ProjectListPage() {
 
                     <button
                         onClick={() => navigate("/admin/projects/create")}
-                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700"
+                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-accent"
                     >
                         <Plus size={16} />
                         Nouveau projet
@@ -155,7 +173,7 @@ export default function ProjectListPage() {
 
             {filteredProjects.length === 0 ? (
                 <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-white py-20 text-center">
-                    <FolderKanban size={40} className="mx-auto text-gray-300" />
+                    <FolderKanban size={40} className="mx-auto text-primary/70" />
                     <p className="mt-3 text-sm font-medium text-gray-500">
                         {search
                             ? "Aucun projet ne correspond à votre recherche"
@@ -166,7 +184,7 @@ export default function ProjectListPage() {
                     {!search && !showArchived && (
                         <button
                             onClick={() => navigate("/admin/projects/create")}
-                            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-primary to-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                         >
                             <Plus size={16} />
                             Créer le premier projet
@@ -183,32 +201,36 @@ export default function ProjectListPage() {
                                 className="group flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
                             >
                                 <div className="flex items-start justify-between gap-2">
-                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow">
-                                        <FolderKanban size={20} />
+                                    <div className="flex justify-center items-center gap-2">
+                                        <div className="p-2 bg-accent/20 rounded-full">
+                                            <FolderKanban size={22} className="text-primary"/>
+                                        </div>
+                                        <p className="text-base font-bold text-primary">{project.title}</p>
                                     </div>
                                     <span
                                         className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                                            project.isActive ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"
+                                            project.isActive ? " text-primary" : " text-gray-500"
                                         }`}
                                     >
                                         {project.isActive ? "Actif" : "Archivé"}
                                     </span>
                                 </div>
 
-                                <h3 className="mt-4 text-base font-bold text-gray-800">{project.title}</h3>
-                                <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                                <p className="mt-4 line-clamp-2 text-sm text-gray-500">
                                     {project.description || "Aucune description"}
                                 </p>
 
-                                <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
-                                    <UserIcon size={13} />
-                                    <span className="font-medium text-gray-600">{project.ownerName}</span>
-                                </div>
-                                <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-500">
-                                    <CalendarDays size={13} />
-                                    <span>
-                                        {formatDate(project.startDate)} → {formatDate(project.endDate)}
-                                    </span>
+                                <div className="flex flex-col gap-2 mt-4">
+                                    <div className="flex items-center gap-2 text-xs text-primary/90">
+                                        <UserIcon size={13} />
+                                        <span className="font-medium text-primary/90">{project.ownerName}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-primary/90">
+                                        <CalendarDays size={13} />
+                                        <span>
+                                            {formatDate(project.startDate)} → {formatDate(project.endDate)}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div className="mt-4">
@@ -220,8 +242,8 @@ export default function ProjectListPage() {
                                         <div
                                             className={`h-full rounded-full transition-all ${
                                                 pct === 100
-                                                    ? "bg-emerald-500"
-                                                    : "bg-gradient-to-r from-blue-500 to-indigo-500"
+                                                    ? "bg-primary"
+                                                    : "bg-primary"
                                             }`}
                                             style={{ width: `${pct}%` }}
                                         />
@@ -233,23 +255,23 @@ export default function ProjectListPage() {
 
                                 <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4">
                                     <button
-                                        onClick={() => navigate(`/admin/projects/${project.projectId}`)}
-                                        className="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
-                                    >
-                                        Voir le tableau
-                                    </button>
-                                    <button
                                         onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
                                         title="Modifier"
-                                        className="rounded-lg p-2 text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                                        className="rounded-lg p-2 text-gray-400 transition  hover:text-accent"
                                     >
                                         <Pencil size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/admin/projects/${project.projectId}`)}
+                                        className="flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary hover:text-secondary"
+                                    >
+                                        Voir le tableau
                                     </button>
                                     {showArchived ? (
                                         <button
                                             onClick={() => handleUnarchive(project)}
                                             title="Désarchiver"
-                                            className="rounded-lg p-2 text-gray-400 transition hover:bg-emerald-50 hover:text-emerald-600"
+                                            className="rounded-lg p-2 text-gray-400 transition hover:text-accent"
                                         >
                                             <ArchiveRestore size={16} />
                                         </button>
@@ -257,7 +279,7 @@ export default function ProjectListPage() {
                                         <button
                                             onClick={() => handleArchive(project)}
                                             title="Archiver"
-                                            className="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-500"
+                                            className="rounded-lg p-2 text-gray-400 transition hover:text-accent"
                                         >
                                             <Archive size={16} />
                                         </button>

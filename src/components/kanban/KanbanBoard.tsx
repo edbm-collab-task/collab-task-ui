@@ -135,7 +135,7 @@ export default function KanbanBoard({
                             <button
                                 onClick={() => onCreateTask(id)}
                                 title={`Ajouter une tâche dans ${status.name}`}
-                                className="rounded-lg p-1.5 text-gray-500 transition hover:bg-white hover:text-blue-600"
+                                className="rounded-lg p-1.5 text-gray-500 transition hover:bg-white hover:text-accent"
                             >
                                 <Plus size={18} />
                             </button>
@@ -168,14 +168,14 @@ export default function KanbanBoard({
                                                 <button
                                                     onClick={() => onEditTask(task)}
                                                     title="Modifier"
-                                                    className="rounded p-1 text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                                                    className="rounded p-1 text-gray-400 transition hover:bg-blue-50 hover:text-accent"
                                                 >
                                                     <Pencil size={14} />
                                                 </button>
                                                 <button
                                                     onClick={() => onDeleteTask(task)}
                                                     title="Archiver"
-                                                    className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-red-500"
+                                                    className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-accent"
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
@@ -194,7 +194,7 @@ export default function KanbanBoard({
                                                         <span
                                                             key={a.userId}
                                                             title={`${a.firstname} ${a.lastname}`}
-                                                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[9px] font-bold text-blue-700 ring-1 ring-white"
+                                                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white ring-1 ring-white"
                                                         >
                                                             {a.firstname?.[0]}{a.lastname?.[0]}
                                                         </span>
@@ -229,7 +229,7 @@ export default function KanbanBoard({
                                                     e.stopPropagation();
                                                     setCommentTaskId(task.taskId);
                                                 }}
-                                                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-blue-600"
+                                                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
                                                 title="Commentaires"
                                             >
                                                 <MessageSquare size={11} />

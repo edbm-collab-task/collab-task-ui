@@ -1,29 +1,44 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, History } from "lucide-react";
+import {
+    FolderPlus,
+    UserPlus,
+    UserMinus,
+    ClipboardList,
+    Pencil,
+    Trash2,
+    RefreshCw,
+    Flag,
+    UserCheck,
+    UserX,
+    type LucideIcon,
+} from "lucide-react";
 import { activityService } from "@/services/activity/activity.service";
 import type { Activity } from "@/types/activity";
 import Spinner from "@/components/common/Spinner";
 
-const typeConfig: Record<Activity["type"], { icon: string; color: string }> = {
-    PROJECT_CREATED: { icon: "📁", color: "text-blue-600" },
-    CONTRIBUTOR_ADDED: { icon: "👤", color: "text-green-600" },
-    CONTRIBUTOR_REMOVED: { icon: "👤", color: "text-red-500" },
-    TASK_CREATED: { icon: "📋", color: "text-blue-500" },
-    TASK_UPDATED: { icon: "✏️", color: "text-yellow-600" },
-    TASK_DELETED: { icon: "🗑️", color: "text-red-500" },
-    TASK_STATUS_CHANGED: { icon: "🔄", color: "text-purple-600" },
-    TASK_PRIORITY_CHANGED: { icon: "🔴", color: "text-orange-500" },
-    TASK_ASSIGNED: { icon: "👤", color: "text-green-600" },
-    TASK_UNASSIGNED: { icon: "👤", color: "text-gray-500" },
+const typeConfig: Record<Activity["type"], { icon: LucideIcon; color: string }> = {
+    PROJECT_CREATED: { icon: FolderPlus, color: "text-primary" },
+    CONTRIBUTOR_ADDED: { icon: UserPlus, color: "text-accent" },
+    CONTRIBUTOR_REMOVED: { icon: UserMinus, color: "text-primary/70" },
+    TASK_CREATED: { icon: ClipboardList, color: "text-primary" },
+    TASK_UPDATED: { icon: Pencil, color: "text-accent/80" },
+    TASK_DELETED: { icon: Trash2, color: "text-primary/70" },
+    TASK_STATUS_CHANGED: { icon: RefreshCw, color: "text-accent" },
+    TASK_PRIORITY_CHANGED: { icon: Flag, color: "text-accent" },
+    TASK_ASSIGNED: { icon: UserCheck, color: "text-accent" },
+    TASK_UNASSIGNED: { icon: UserX, color: "text-primary/50" },
 };
 
 export default function ActivityHistoryPage() {
     const { id: projectId } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
 
+    
     useEffect(() => {
         if (!projectId) return;
         setLoading(true);
@@ -32,6 +47,8 @@ export default function ActivityHistoryPage() {
             .catch(() => {})
             .finally(() => setLoading(false));
     }, [projectId]);
+
+    
 
     const formatTime = (dateStr: string) => {
         const date = new Date(dateStr);
@@ -63,14 +80,14 @@ export default function ActivityHistoryPage() {
                     <ArrowLeft size={20} />
                 </button>
                 <div className="flex items-center gap-3">
-                    <History size={24} className="text-blue-600" />
-                    <h1 className="text-2xl font-bold text-gray-800">Historique des activités</h1>
+                    <History size={24} className="text-primary" />
+                    <h1 className="text-2xl font-bold text-primary">Historique des activités</h1>
                 </div>
             </div>
 
             {loading ? (
                 <div className="flex justify-center py-16">
-                    <Spinner size={32} className="text-blue-500" />
+                    <Spinner size={32} className="text-primary" />
                 </div>
             ) : activities.length === 0 ? (
                 <div className="rounded-xl border border-gray-200 bg-white py-16 text-center">
@@ -84,7 +101,7 @@ export default function ActivityHistoryPage() {
                         return (
                             <div key={activity.activityId} className="relative">
                                 <span className="absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full bg-white text-sm">
-                                    {config.icon}
+                                    <config.icon className={`h-4 w-4 ${config.color}`} />
                                 </span>
                                 <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                     <p className={`text-sm font-medium ${config.color}`}>

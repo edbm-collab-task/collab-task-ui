@@ -174,12 +174,12 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
                 }`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+                <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 bg-primary ">
                     <div className="flex items-center gap-2">
-                        <MessageSquare size={18} className="text-blue-600" />
-                        <h3 className="text-lg font-bold text-gray-800">Commentaires</h3>
+                        <MessageSquare size={25} className="text-accent" />
+                        <h3 className="text-lg font-bold text-bg">Commentaires</h3>
                         {totalComments > 0 && (
-                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                            <span className="rounded-full bg-secondary/30 px-2 py-0.5 text-xs font-semibold text-bg">
                                 {totalComments}
                             </span>
                         )}
@@ -196,7 +196,7 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
                 <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 custom-scrollbar">
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
-                            <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                            <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
                         </div>
                     ) : comments.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -242,9 +242,9 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
                 )}
 
                 {/* Input */}
-                <div className="border-t border-gray-200 px-5 py-4">
-                    <div className="relative flex items-end gap-2">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                <div className="border-t bg-primary border-gray-200 px-5 py-4">
+                    <div className="relative flex items-center gap-2">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-bg">
                             {currentUserId.toString().slice(-2)}
                         </div>
                         <div className="relative flex-1">
@@ -263,13 +263,13 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
                                 onKeyDown={handleKeyDown}
                                 placeholder={replyTo ? "Écrire une réponse… (@ pour mentionner)" : "Écrire un commentaire… (@ pour mentionner)"}
                                 rows={1}
-                                className="w-full resize-none rounded-xl border border-gray-300 px-4 py-2.5 pr-12 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                className="w-full bg-bg resize-none rounded-xl border border-gray-300 px-4 py-2.5 pr-12 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
                                 style={{ minHeight: "42px", maxHeight: "120px" }}
                             />
                             <button
                                 onClick={handleSubmit}
                                 disabled={!newComment.trim() || submitting}
-                                className="absolute right-2 bottom-2 rounded-lg p-1.5 text-blue-600 transition hover:bg-blue-50 disabled:opacity-30"
+                                className="absolute right-2 bottom-2 rounded-lg p-1.5 text-accent transition mb-1 hover:bg-primary hover:text-bg disabled:opacity-30"
                                 title="Envoyer"
                             >
                                 <Send size={16} />

@@ -128,7 +128,7 @@ export default function CommentItem({
                             <textarea
                                 value={editContent}
                                 onChange={(e) => setEditContent(e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                                 rows={2}
                                 autoFocus
                                 onKeyDown={(e) => {
@@ -142,13 +142,7 @@ export default function CommentItem({
                                     }
                                 }}
                             />
-                            <div className="mt-1 flex gap-2">
-                                <button
-                                    onClick={handleSave}
-                                    className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-blue-700"
-                                >
-                                    Enregistrer
-                                </button>
+                            <div className="mt-1 flex gap-2 justify-end">
                                 <button
                                     onClick={() => {
                                         setEditing(false);
@@ -157,6 +151,12 @@ export default function CommentItem({
                                     className="rounded-lg px-3 py-1 text-xs font-medium text-gray-500 transition hover:bg-gray-100"
                                 >
                                     Annuler
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:bg-accent"
+                                >
+                                    Enregistrer
                                 </button>
                             </div>
                         </div>
@@ -174,8 +174,8 @@ export default function CommentItem({
                                     title={r.usernames.join(", ")}
                                     className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition ${
                                         r.reactedByCurrentUser
-                                            ? "border-blue-300 bg-blue-50 text-blue-700"
-                                            : "border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300"
+                                            ? "bg-blue-50 text-accent"
+                                            : "border-none bg-gray-50 text-primary hover:border-gray-300"
                                     }`}
                                 >
                                     <span>{r.emoji}</span>

@@ -26,7 +26,7 @@ function formatDate(date: string | null) {
     return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-// ✅ Fonction utilitaire pour convertir STATUSES en Status[]
+//  Fonction utilitaire pour convertir STATUSES en Status[]
 const convertSTATUSES = (): Status[] =>
     STATUSES.map(s => ({
         statusId: s.id,
@@ -289,13 +289,13 @@ export default function ProjectDetailPage() {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate("/admin/projects")}
-                        className="rounded-lg border border-gray-200 bg-white p-2 text-gray-500 shadow-sm transition hover:text-blue-600"
+                        className="rounded-lg border border-gray-200 bg-white p-2 text-gray-500 shadow-sm transition hover:text-accent"
                         title="Retour"
                     >
                         <ArrowLeft size={18} />
                     </button>
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-800">{project.title}</h2>
+                        <h2 className="text-2xl font-bold text-primary">{project.title}</h2>
                         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                             <span className="inline-flex items-center gap-1">
                                 <UserIcon size={13} />
@@ -317,7 +317,7 @@ export default function ProjectDetailPage() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setShowNewStatus(!showNewStatus)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-300 hover:text-blue-600"
+                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
                     >
                         <Plus size={15} />
                         {showNewStatus ? "Fermer" : "Ajouter un statut"}
@@ -325,7 +325,7 @@ export default function ProjectDetailPage() {
 
                     <button
                         onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-300 hover:text-blue-600"
+                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
                     >
                         <Pencil size={15} />
                         Modifier le projet
@@ -333,7 +333,7 @@ export default function ProjectDetailPage() {
 
                     <button
                         onClick={() => navigate(`/admin/projects/${project.projectId}/history`)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-300 hover:text-blue-600"
+                        className="inline-flex items-center gap-2 rounded-xl border border-secondary bg-secondary/40 px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
                     >
                         <History size={15} />
                         Historique
@@ -344,7 +344,7 @@ export default function ProjectDetailPage() {
             {/* Statuts personnalisés du projet */}
             {statuses.filter(s => s.projectId != null).length > 0 && (
                 <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                    <p className="mb-2 text-sm font-medium text-gray-700">Statuts personnalisés de ce projet</p>
+                    <p className="mb-2 text-sm font-medium text-primary">Statuts personnalisés de ce projet</p>
                     <div className="flex flex-wrap gap-2">
                         {statuses.filter(s => s.projectId != null).map(s => (
                             <span
@@ -354,7 +354,7 @@ export default function ProjectDetailPage() {
                                 {s.name}
                                 <button
                                     onClick={() => handleDeleteStatus(s)}
-                                    className="ml-1 text-gray-400 transition hover:text-red-500"
+                                    className="ml-1 text-gray-400 transition hover:text-accent"
                                     title="Supprimer ce statut"
                                 >
                                     <Trash2 size={13} />
@@ -368,27 +368,29 @@ export default function ProjectDetailPage() {
             {/* Formulaire de création de statut */}
             {showNewStatus && (
                 <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                    <p className="mb-2 text-sm font-medium text-gray-700">Nouveau statut</p>
-                    <div className="flex flex-wrap items-center gap-3">
+                    <p className="mb-2 text-sm font-medium text-primary">Nouveau statut</p>
+                    <div className="flex flex-col gap-3">
                         <input
                             value={newStatusName}
                             onChange={(e) => setNewStatusName(e.target.value)}
                             placeholder="Ex: En review"
-                            className="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            className="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                             onKeyDown={(e) => e.key === "Enter" && handleCreateStatus()}
                         />
-                        <button
-                            onClick={handleCreateStatus}
-                            className="rounded-xl bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700"
-                        >
-                            Créer
-                        </button>
-                        <button
-                            onClick={() => setShowNewStatus(false)}
-                            className="rounded-xl px-4 py-2 text-sm font-medium text-gray-500 transition hover:bg-gray-100"
-                        >
-                            Annuler
-                        </button>
+                        <div className="flex justify-end ">
+                            <button
+                                onClick={() => setShowNewStatus(false)}
+                                className="rounded-xl px-4 py-2 text-sm font-medium text-gray-500 transition hover:bg-secondary"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={handleCreateStatus}
+                                className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-accent"
+                            >
+                                Créer
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -399,19 +401,19 @@ export default function ProjectDetailPage() {
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                         <Users size={16} className="text-gray-500" />
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="text-sm font-medium text-primary">
                             Contributeurs ({contributors.length})
                         </p>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-2 my-3">
                     {contributors.map(c => (
                         <span
                             key={c.userId}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-600"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-secondary/30 px-3 py-1.5 text-sm text-gray-600"
                         >
-                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[9px] font-bold text-blue-700">
+                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-bg">
                                 {c.userName?.[0]?.toUpperCase() ?? "?"}
                             </span>
                             {c.userName}
@@ -435,7 +437,7 @@ export default function ProjectDetailPage() {
                     <select
                         value={selectedUserId ?? ""}
                         onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : null)}
-                        className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                     >
                         <option value="">Sélectionner un utilisateur…</option>
                         {allUsers
@@ -446,10 +448,55 @@ export default function ProjectDetailPage() {
                                 </option>
                             ))}
                     </select>
+                </div>
+                <div className="flex justify-between items-center gap-3 mt-3">
+
+                    {/* Transfert de propriété */}
+                    {!transferMode ? (
+                        <button
+                            onClick={() => setTransferMode(true)}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent transition hover:border-accent/50 hover:bg-accent/20"
+                        >
+                            Transférer la propriété
+                        </button>
+                    ) : (
+                        <div className="flex flex-col items-center gap-2 p-2">
+                            <select
+                                value={transferTargetId ?? ""}
+                                onChange={(e) => setTransferTargetId(e.target.value ? Number(e.target.value) : null)}
+                                className="flex-1 rounded-xl border border-accent/40 px-3 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+                            >
+                                <option value="">Choisir le nouveau propriétaire…</option>
+                                {allUsers
+                                    .filter(u => u.id !== project.ownerId)
+                                    .map(u => (
+                                        <option key={u.id} value={u.id}>
+                                            {u.firstname} {u.lastname} ({u.email})
+                                        </option>
+                                    ))}
+                            </select>
+                            <div className="flex justify-between w-[100%] ">
+                                <button
+                                    onClick={() => { setTransferMode(false); setTransferTargetId(null); }}
+                                    className="rounded-xl px-3 py-2 text-sm font-medium text-gray-500 transition hover:bg-gray-100"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    onClick={handleTransferOwnership}
+                                    disabled={!transferTargetId || transferring}
+                                    className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
+                                >
+                                    {transferring ? "Transfert..." : "Confirmer"}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     <button
                         onClick={handleAddContributor}
                         disabled={!selectedUserId || addingContributor}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-accent disabled:bg-secondary"
                     >
                         {addingContributor ? (
                             <span className="flex items-center gap-1.5">
@@ -463,48 +510,8 @@ export default function ProjectDetailPage() {
                             </>
                         )}
                     </button>
-                </div>
-
-                {/* Transfert de propriété */}
-                {!transferMode ? (
-                    <button
-                        onClick={() => setTransferMode(true)}
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:border-orange-300 hover:bg-orange-100"
-                    >
-                        Transférer la propriété
-                    </button>
-                ) : (
-                    <div className="mt-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3">
-                        <select
-                            value={transferTargetId ?? ""}
-                            onChange={(e) => setTransferTargetId(e.target.value ? Number(e.target.value) : null)}
-                            className="flex-1 rounded-xl border border-orange-300 px-3 py-2 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                        >
-                            <option value="">Choisir le nouveau propriétaire…</option>
-                            {allUsers
-                                .filter(u => u.id !== project.ownerId)
-                                .map(u => (
-                                    <option key={u.id} value={u.id}>
-                                        {u.firstname} {u.lastname} ({u.email})
-                                    </option>
-                                ))}
-                        </select>
-                        <button
-                            onClick={handleTransferOwnership}
-                            disabled={!transferTargetId || transferring}
-                            className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
-                        >
-                            {transferring ? "Transfert..." : "Confirmer"}
-                        </button>
-                        <button
-                            onClick={() => { setTransferMode(false); setTransferTargetId(null); }}
-                            className="rounded-xl px-3 py-2 text-sm font-medium text-gray-500 transition hover:bg-gray-100"
-                        >
-                            Annuler
-                        </button>
                     </div>
-                )}
-            </div>
+                </div>
             )}
 
             {/* Kanban avec statuts dynamiques */}
