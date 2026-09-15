@@ -14,7 +14,7 @@ export default function TaskDistribution({ distribution }: Props) {
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
-                <h3 className="font-bold text-gray-800">Répartition des tâches</h3>
+                <h3 className="font-bold text-primary">Répartition des tâches</h3>
                 <BarChart3 size={18} className="text-gray-400" />
             </div>
 

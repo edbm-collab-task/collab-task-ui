@@ -19,19 +19,28 @@ import EmptyState from "@/components/common/EmptyState";
 interface Props {
     activities: DashboardActivityItem[] | null;
 }
-
 const typeConfig: Record<Activity["type"], { Icon: typeof History; badge: string }> = {
-    PROJECT_CREATED: { Icon: FolderKanban, badge: "bg-blue-100 text-blue-600" },
-    CONTRIBUTOR_ADDED: { Icon: UserPlus, badge: "bg-emerald-100 text-emerald-600" },
-    CONTRIBUTOR_REMOVED: { Icon: UserMinus, badge: "bg-red-100 text-red-500" },
-    TASK_CREATED: { Icon: ClipboardList, badge: "bg-blue-100 text-blue-500" },
-    TASK_UPDATED: { Icon: Pencil, badge: "bg-amber-100 text-amber-600" },
-    TASK_DELETED: { Icon: Trash2, badge: "bg-red-100 text-red-500" },
-    TASK_STATUS_CHANGED: { Icon: RotateCcw, badge: "bg-purple-100 text-purple-600" },
-    TASK_PRIORITY_CHANGED: { Icon: AlertTriangle, badge: "bg-orange-100 text-orange-500" },
-    TASK_ASSIGNED: { Icon: UserCheck, badge: "bg-green-100 text-green-600" },
-    TASK_UNASSIGNED: { Icon: UserX, badge: "bg-gray-100 text-gray-500" },
+    // Priorité critique -> Accent plein (fond solide, texte blanc = alerte maximale)
+    TASK_PRIORITY_CHANGED: { Icon: AlertTriangle, badge: "bg-[var(--color-accent)] text-[var(--color-white)]" },
+
+    // Actions principales de création / suivi -> Primaire à 15% (forte présence)
+    PROJECT_CREATED: { Icon: FolderKanban, badge: "bg-[var(--color-primary)]/15 text-[var(--color-primary)]" },
+    TASK_CREATED: { Icon: ClipboardList, badge: "bg-[var(--color-primary)]/15 text-[var(--color-primary)]" },
+    TASK_STATUS_CHANGED: { Icon: RotateCcw, badge: "bg-[var(--color-primary)]/15 text-[var(--color-primary)]" },
+
+    // Personnes / Assignations -> Primaire à 5% (présence modérée)
+    CONTRIBUTOR_ADDED: { Icon: UserPlus, badge: "bg-[var(--color-primary)]/5 text-[var(--color-accent)]" },
+    TASK_ASSIGNED: { Icon: UserCheck, badge: "bg-[var(--color-primary)]/5 text-[var(--color-accent)]" },
+
+    // Mise à jour générique -> Secondaire à 5% (présence légère)
+    TASK_UPDATED: { Icon: Pencil, badge: "bg-[var(--color-secondary)]/5 text-[var(--color-accent)]" },
+
+    // Retraits / Suppressions -> Accent à 10% (présence discrète)
+    CONTRIBUTOR_REMOVED: { Icon: UserMinus, badge: "bg-[var(--color-accent)]/10 text-[var(--color-accent)]" },
+    TASK_DELETED: { Icon: Trash2, badge: "bg-[var(--color-accent)]/10 text-[var(--color-accent)]" },
+    TASK_UNASSIGNED: { Icon: UserX, badge: "bg-[var(--color-accent)]/10 text-[var(--color-accent)]" },
 };
+
 
 const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -50,11 +59,12 @@ export default function RecentActivity({ activities }: Props) {
 
     const list = activities ?? [];
 
+
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
-                <h3 className="font-bold text-gray-800">Activité récente</h3>
-                <History size={18} className="text-gray-400" />
+                <h3 className="font-bold text-primary">Activité récente</h3>
+                <History size={18} className="text-primary/50" />
             </div>
 
             {list.length === 0 ? (
@@ -82,7 +92,7 @@ export default function RecentActivity({ activities }: Props) {
                                     </p>
                                 </div>
 
-                                <span className="whitespace-nowrap text-xs text-gray-400">
+                                <span className="whitespace-nowrap text-xs text-primary/50">
                                     {formatTime(activity.createdAt)}
                                 </span>
                             </li>
