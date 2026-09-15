@@ -10,7 +10,7 @@ export default function Navbar({ toggleSidebar }: Props) {
     return (
         <header className="flex  h-20 w-full items-center justify-between border-none bg-primary px-6 shadow-sm">
 
-            {/* Left */}
+            {/* Left  */}
             <div className="flex items-center">
                 <button
                     onClick={toggleSidebar}
