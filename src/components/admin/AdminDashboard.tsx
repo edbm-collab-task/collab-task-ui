@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download, Users, FolderKanban, AlertCircle, Clock, TrendingUp } from "lucide-react";
+import { Download, Users, FolderKanban, AlertCircle, Clock, TrendingUp, CalendarDays } from "lucide-react";
 import Spinner from "@/components/common/Spinner";
 import { adminDashboardService } from "@/services/dashboard/adminDashboard.service";
 import type { AdminDashboardStatsResDto } from "@/types/adminDashboard";
@@ -8,6 +8,7 @@ import { DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
 import TableFilter from "@/components/table/TableFilter";
 import Sparkline from "./dashboard/Sparkline";
 import AdminEvolutionChart from "./dashboard/AdminEvolutionChart";
+import OverdueTasksModal from "./dashboard/OverdueTasksModal";
 import { generateIncreasingSparkline, getAdminSparkline } from "@/utils/sparkline";
 import { useDashboardPeriod } from "@/hooks/useDashboardPeriod";
 
@@ -19,19 +20,30 @@ interface StatCardProps {
     sparklineData?: number[];
     sparklineColor?: string;
     trend?: { value: number; label: string };
+    highlighted?: boolean;
+    onClick?: () => void;
 }
 
-function StatCard({ title, value, icon, color, sparklineData, trend }: StatCardProps) {
+function StatCard({ title, value, icon, color, sparklineData, trend, highlighted = false, onClick }: StatCardProps) {
+    const isClickable = !!onClick;
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div
+            onClick={isClickable ? onClick : undefined}
+            role={isClickable ? "button" : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") onClick?.(); } : undefined}
+            className={`rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6 ${
+                highlighted ? "border-accent hover:bg-accent/5" : "border-secondary/60"
+            } ${isClickable ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" : ""}`}
+        >
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-500">{title}</p>
                     <div className="mt-2 flex items-end gap-3">
-                        <p className="text-3xl font-bold text-gray-900">{value}</p>
+                        <p className={`text-3xl font-bold ${highlighted ? "text-accent" : "text-primary"}`}>{value}</p>
                         {sparklineData && sparklineData.length > 0 && (
-                            <div className="h-10 w-28 flex-shrink-0">
-                                <Sparkline data={sparklineData} color="#3b82f6" height={30} width={100} />
+                            <div className="hidden h-10 w-28 flex-shrink-0 sm:block">
+                                <Sparkline data={sparklineData} color="#d07694" height={30} width={100} />
                             </div>
                         )}
                     </div>
@@ -42,7 +54,7 @@ function StatCard({ title, value, icon, color, sparklineData, trend }: StatCardP
                         </p>
                     )}
                 </div>
-                <div className={`rounded-xl p-3 ${color} flex-shrink-0`}>
+                <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${color}`}>
                     {icon}
                 </div>
             </div>
@@ -56,6 +68,7 @@ export default function AdminDashboard() {
     const [data, setData] = useState<AdminDashboardStatsResDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showOverdueModal, setShowOverdueModal] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -122,11 +135,11 @@ export default function AdminDashboard() {
     if (error) {
         return (
             <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <AlertCircle size={24} className="text-red-400" />
+                <AlertCircle size={24} className="text-accent" />
                 <p className="text-sm text-gray-500">{error}</p>
                 <button
                     onClick={() => { setError(null); setLoading(true); setPeriod(p => p); }}
-                    className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
+                    className="text-sm font-medium text-primary transition hover:text-primary/80"
                 >
                     Réessayer
                 </button>
@@ -147,7 +160,7 @@ export default function AdminDashboard() {
             {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Dashboard Admin</h2>
+                    <h2 className="text-2xl font-bold text-primary">Dashboard Admin</h2>
                     <p className="mt-1 text-sm text-gray-500">
                         Vue globale utilisateurs, projets et tâches
                     </p>
@@ -156,7 +169,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         onClick={handleExportPdf}
-                        className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 hover:shadow-md"
+                        className="inline-flex items-center gap-2 rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition hover:bg-secondary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <Download size={16} />
                         Exporter PDF
@@ -172,25 +185,27 @@ export default function AdminDashboard() {
 
             {/* Date range for custom period */}
             {isCustom && (
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            <CalendarDays size={14} className="text-primary/60" />
                             Date de début
                         </label>
                         <input
                             type="date"
-                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            className="w-full rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm text-primary outline-none transition focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                         />
                     </div>
                     <div>
-                        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            <CalendarDays size={14} className="text-primary/60" />
                             Date de fin
                         </label>
                         <input
                             type="date"
-                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            className="w-full rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm text-primary outline-none transition focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                         />
@@ -203,29 +218,31 @@ export default function AdminDashboard() {
                 <StatCard
                     title="Utilisateurs totaux"
                     value={data.totalUsers}
-                    icon={<Users size={24} className="text-blue-600" />}
-                    color="bg-blue-50"
+                    icon={<Users size={22} className="text-primary" />}
+                    color="bg-secondary/40 ring-1 ring-secondary"
                     sparklineData={generateIncreasingSparkline(data.totalUsers, 7)}
                 />
                 <StatCard
                     title="Projets actifs"
                     value={data.activeProjects}
-                    icon={<FolderKanban size={24} className="text-emerald-600" />}
-                    color="bg-emerald-50"
+                    icon={<FolderKanban size={22} className="text-primary" />}
+                    color="bg-secondary/40 ring-1 ring-secondary"
                     sparklineData={generateIncreasingSparkline(data.activeProjects, 7)}
                 />
                 <StatCard
                     title="Tâches en retard"
                     value={data.overdueTasks}
-                    icon={<AlertCircle size={24} className="text-red-600" />}
-                    color="bg-red-50"
+                    icon={<AlertCircle size={22} className="text-accent" />}
+                    color="bg-accent/15 ring-1 ring-accent/40"
+                    highlighted={data.overdueTasks > 0}
+                    onClick={() => setShowOverdueModal(true)}
                     sparklineData={generateIncreasingSparkline(data.overdueTasks, 7)}
                 />
                 <StatCard
                     title="Tâches terminées"
                     value={data.completedTasks}
-                    icon={<Clock size={24} className="text-amber-600" />}
-                    color="bg-amber-50"
+                    icon={<Clock size={22} className="text-primary" />}
+                    color="bg-secondary/40 ring-1 ring-secondary"
                     sparklineData={getAdminSparkline(data.evolution, "completed", data.completedTasks)}
                 />
             </div>
@@ -234,130 +251,118 @@ export default function AdminDashboard() {
             <AdminEvolutionChart evolution={data.evolution ?? null} />
 
             {/* Users Table */}
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="p-6 border-b border-gray-200">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                        <Users size={20} className="text-gray-600" />
-                        Top 10 Utilisateurs (par tâches assignées)
-                    </h3>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center justify-between">
+                    <h3 className="font-bold text-primary">Top 10 Utilisateurs</h3>
+                    <Users size={18} className="text-primary/50" />
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                <th className="px-6 py-3">Utilisateur</th>
-                                <th className="px-6 py-3">Rôle</th>
-                                <th className="px-6 py-3">Direction</th>
-                                <th className="px-6 py-3 text-center">Assignées</th>
-                                <th className="px-6 py-3 text-center">Terminées</th>
-                                <th className="px-6 py-3 text-center">En retard</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {data.topUsers.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
-                                        Aucune donnée
-                                    </td>
-                                </tr>
-                            ) : (
-                                data.topUsers.map((user) => (
-                                    <tr key={user.userId} className="hover:bg-gray-50 transition">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-sm font-bold">
-                                                    {user.firstname[0]}{user.lastname[0]}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-gray-800">
-                                                        {user.firstname} {user.lastname}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">{user.email}</p>
-                                                </div>
+                {data.topUsers.length === 0 ? (
+                    <div className="flex h-32 items-center justify-center text-gray-400">
+                        <p className="text-sm">Aucune donnée</p>
+                    </div>
+                ) : (
+                    <ul className="divide-y divide-gray-100">
+                        {data.topUsers.map((user) => (
+                            <li key={user.userId} className="py-3 transition-all duration-200 hover:bg-gray-50 hover:px-3 rounded-lg">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/50 text-primary text-xs font-bold">
+                                            {user.firstname[0]}{user.lastname[0]}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="truncate text-sm font-semibold text-gray-800">
+                                                    {user.firstname} {user.lastname}
+                                                </p>
+                                                <span className="shrink-0 rounded-full bg-secondary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
+                                                    {user.role}
+                                                </span>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{user.direction}</td>
-                                        <td className="px-6 py-4 text-center font-semibold text-gray-800">{user.assignedTasks}</td>
-                                        <td className="px-6 py-4 text-center text-emerald-600 font-medium">{user.completedTasks}</td>
-                                        <td className="px-6 py-4 text-center text-red-600 font-medium">{user.overdueTasks}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                            <p className="mt-0.5 truncate text-xs text-gray-500">{user.direction}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 shrink-0 text-sm">
+                                        <div className="text-center">
+                                            <p className="font-bold text-primary">{user.assignedTasks}</p>
+                                            <p className="text-[11px] text-gray-400">assignées</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="font-bold text-primary">{user.completedTasks}</p>
+                                            <p className="text-[11px] text-gray-400">terminées</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className={`font-bold ${user.overdueTasks > 0 ? "text-accent" : "text-gray-400"}`}>{user.overdueTasks}</p>
+                                            <p className="text-[11px] text-gray-400">retard</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
 
             {/* Projects Table */}
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm mt-6">
-                <div className="p-6 border-b border-gray-200">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                        <FolderKanban size={20} className="text-gray-600" />
-                        Top 10 Projets (par volume de tâches)
-                    </h3>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center justify-between">
+                    <h3 className="font-bold text-primary">Top 10 Projets</h3>
+                    <FolderKanban size={18} className="text-primary/50" />
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                <th className="px-6 py-3">Projet</th>
-                                <th className="px-6 py-3">Propriétaire</th>
-                                <th className="px-6 py-3 text-center">Total tâches</th>
-                                <th className="px-6 py-3 text-center">Terminées</th>
-                                <th className="px-6 py-3 text-center">En retard</th>
-                                <th className="px-6 py-3 text-center">Progression</th>
-                                <th className="px-6 py-3">Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {data.topProjects.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
-                                        Aucun projet
-                                    </td>
-                                </tr>
-                            ) : (
-                                data.topProjects.map((project) => (
-                                    <tr key={project.projectId} className="hover:bg-gray-50 transition">
-                                        <td className="px-6 py-4">
-                                            <p className="font-medium text-gray-800">{project.title}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{project.ownerName}</td>
-                                        <td className="px-6 py-4 text-center font-semibold text-gray-800">{project.totalTasks}</td>
-                                        <td className="px-6 py-4 text-center text-emerald-600 font-medium">{project.completedTasks}</td>
-                                        <td className="px-6 py-4 text-center text-red-600 font-medium">{project.overdueTasks}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <div className="w-24 mx-auto">
-                                                <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-                                                    <div
-                                                        className="h-full rounded-full bg-blue-500 transition-all"
-                                                        style={{ width: `${project.progressPercent}%` }}
-                                                    />
-                                                </div>
-                                                <p className="mt-1 text-xs text-gray-500">{project.progressPercent}%</p>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                {data.topProjects.length === 0 ? (
+                    <div className="flex h-32 items-center justify-center text-gray-400">
+                        <p className="text-sm">Aucun projet</p>
+                    </div>
+                ) : (
+                    <ul className="divide-y divide-gray-100">
+                        {data.topProjects.map((project) => (
+                            <li key={project.projectId} className="py-3 transition-all duration-200 hover:bg-gray-50 hover:px-3 rounded-lg">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <p className="truncate text-sm font-semibold text-gray-800">{project.title}</p>
+                                            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
                                                 project.status === "Actif"
-                                                    ? "bg-emerald-100 text-emerald-700"
+                                                    ? "bg-secondary/40 text-primary"
                                                     : "bg-gray-100 text-gray-500"
                                             }`}>
                                                 {project.status}
                                             </span>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                        </div>
+                                        <p className="mt-0.5 text-xs text-gray-500">{project.ownerName}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4 shrink-0 text-sm">
+                                        <div className="text-center">
+                                            <p className="font-bold text-primary">{project.totalTasks}</p>
+                                            <p className="text-[11px] text-gray-400">tâches</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="font-bold text-primary">{project.completedTasks}</p>
+                                            <p className="text-[11px] text-gray-400">terminées</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className={`font-bold ${project.overdueTasks > 0 ? "text-accent" : "text-gray-400"}`}>{project.overdueTasks}</p>
+                                            <p className="text-[11px] text-gray-400">retard</p>
+                                        </div>
+                                        <div className="w-20 text-right">
+                                            <p className="text-sm font-bold text-gray-700">{project.progressPercent}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                                    <div
+                                        className={`h-full rounded-full ${project.progressPercent === 100 ? "bg-primary" : "bg-accent"}`}
+                                        style={{ width: `${project.progressPercent}%` }}
+                                    />
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
+
+            {showOverdueModal && (
+                <OverdueTasksModal onClose={() => setShowOverdueModal(false)} />
+            )}
         </div>
     );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, Clock, ArrowRight } from "lucide-react";
 import { taskService } from "@/services/task/task.service";
+import { projectService } from "@/services/project/project.service";
 import type { TaskRes } from "@/types/task";
 
 interface Props {
@@ -23,13 +24,20 @@ export default function OverdueTasksModal({ projectId, onClose }: Props) {
                 if (projectId) {
                     taskList = await taskService.getByProject(projectId);
                 } else {
-                    taskList = await taskService.getAll();
+                    const [allTasks, activeProjects] = await Promise.all([
+                        taskService.getAll(),
+                        projectService.getAll(),
+                    ]);
+                    if (cancelled) return;
+                    const activeIds = new Set(activeProjects.map(p => p.projectId));
+                    taskList = allTasks.filter(t => activeIds.has(t.projectId));
                 }
                 if (cancelled) return;
                 const now = new Date();
+                const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
                 const overdue = taskList.filter(t => {
-                    if (!t.dueDate || t.statusId === 3) return false; // 3 = Terminé
-                    return new Date(t.dueDate) < now;
+                    if (!t.dueDate || t.statusId === 3) return false;
+                    return t.dueDate < todayStr;
                 });
                 setTasks(overdue);
                 setLoading(false);
