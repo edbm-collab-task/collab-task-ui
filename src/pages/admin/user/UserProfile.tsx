@@ -506,15 +506,15 @@ export default function UserProfile() {
                         <span
                             className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
                                 userDetails.isActive
-                                    ? "bg-green-50 text-green-700"
-                                    : "bg-red-50 text-red-700"
+                                    ? "bg-secondary/40 text-primary"
+                                    : "bg-accent/10 text-accent"
                             }`}
                         >
                             <span
                                 className={`h-2 w-2 rounded-full ${
                                     userDetails.isActive
-                                        ? "bg-green-500"
-                                        : "bg-red-500"
+                                        ? "bg-primary"
+                                        : "bg-accent"
                                 }`}
                             />
 
@@ -526,8 +526,8 @@ export default function UserProfile() {
                         <span
                             className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
                                 userDetails.status
-                                    ? "bg-blue-50 text-blue-700"
-                                    : "bg-gray-100 text-gray-600"
+                                    ? "bg-primary/10 text-primary"
+                                    : "bg-bg text-gray-500"
                             }`}
                         >
                             {userDetails.status
