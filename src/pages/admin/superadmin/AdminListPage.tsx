@@ -114,7 +114,7 @@ export default function AdminListPage() {
 
             type: "view",
 
-            icon: <Eye size={18} />,
+            icon: <Eye size={18} className="text-secondary hover:text-primary " />,
 
             roles: ["SUPER_ADMIN"],
 
@@ -151,7 +151,7 @@ export default function AdminListPage() {
             icon: (
                 <Pencil
                     size={18}
-                    className="text-red-400"
+                    className="text-accent/80 hover:text-accent"
                 />
             ),
 
@@ -182,7 +182,7 @@ export default function AdminListPage() {
             type: "delete",
 
             icon: (admin) => (
-                <div className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${admin.isActive ? "bg-sky-600" : "bg-gray-400"}`}>
+                <div className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${admin.isActive ? "bg-primary" : "bg-gray-400"}`}>
                     <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${admin.isActive ? "right-0.5" : "left-0.5"}`} />
                 </div>
             ),
