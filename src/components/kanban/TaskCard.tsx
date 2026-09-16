@@ -41,7 +41,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 setDraggedTask?.(null);
                 setOverColumn?.(null);
             }}
-            className="group cursor-grab rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md hover:ring-blue-200 active:cursor-grabbing"
+            className="group cursor-grab rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md hover:ring-primary active:cursor-grabbing"
         >
             <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-semibold text-gray-800">{task.title}</p>

@@ -163,7 +163,7 @@ export default function KanbanBoard({
                                     setCommentTaskId={setCommentTaskId}
                                     setDraggedTask={setDraggedTask}
                                     setOverColumn={setOverColumn}
-                                    showActions={true} 
+                                    showActions={true}
                                 />
                             ))}
                         </div>
@@ -182,6 +182,11 @@ export default function KanbanBoard({
                         setCommentCounts(prev => ({ ...prev, [commentTaskId]: count }));
                     }
                 }}
+                task={tasks.find(t => t.taskId === commentTaskId)}
+                projectId={projectId}
+                priorityBadge={priorityBadge}
+                formatDate={formatDate}
+                getCount={getCount}
             />
         </div>
     );
