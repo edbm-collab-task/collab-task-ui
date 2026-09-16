@@ -12,7 +12,7 @@ import type { Status } from "@/types/status";
 import type { Contributor } from "@/types/contributor";
 import type { TaskAttachment } from "@/types/attachment";
 import { attachmentService } from "@/services/attachment/attachment.service";
-
+import { ConfirmPopup } from "../common/ConfirmPopup";
 interface Props {
     open: boolean;
     projectId: number;
@@ -67,6 +67,25 @@ export default function TaskModal({
 
     const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
     const [uploading, setUploading] = useState(false);
+
+    // --- État pour la gestion de la ConfirmPopup ---
+    const [confirmConfig, setConfirmConfig] = useState<{
+        open: boolean;
+        title: string;
+        message: string;
+        confirmLabel?: string;
+        variant?: "danger" | "default";
+        onConfirm: () => void;
+    }>({
+        open: false,
+        title: "",
+        message: "",
+        onConfirm: () => {},
+    });
+
+    const closeConfirm = () => {
+        setConfirmConfig(prev => ({ ...prev, open: false }));
+    };
 
     const loadAttachments = useCallback(async (taskId: number) => {
         try {
@@ -125,14 +144,25 @@ export default function TaskModal({
         input.click();
     };
 
-    const handleDeleteAttachment = async (attachmentId: number) => {
-        if (!window.confirm("Supprimer cette pièce jointe ?")) return;
-        try {
-            await attachmentService.delete(attachmentId);
-            if (task) await loadAttachments(task.taskId);
-        } catch {
-            // error handled by interceptor
-        }
+    // --- Suppression de la pièce jointe avec ConfirmPopup ---
+    const handleDeleteAttachment = (attachmentId: number, attachmentName?: string) => {
+        setConfirmConfig({
+            open: true,
+            title: "Supprimer la pièce jointe",
+            message: `Voulez-vous vraiment supprimer ${attachmentName ? `« ${attachmentName} »` : "cette pièce jointe"} ?`,
+            confirmLabel: "Supprimer",
+            variant: "danger",
+            onConfirm: async () => {
+                closeConfirm();
+                try {
+                    await attachmentService.delete(attachmentId);
+                    if (task) await loadAttachments(task.taskId);
+                    setTimeout(() => toast.success("Pièce jointe supprimée"));
+                } catch {
+                    // error handled by interceptor
+                }
+            },
+        });
     };
 
     const toggleAssignee = (userId: number) => {
@@ -164,8 +194,8 @@ export default function TaskModal({
         void onSubmit(form);
     };
 
-    const inputClass = "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
-    const labelClass = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500";
+    const inputClass = "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30";
+    const labelClass = "mb-1.5 block text-xs font-semibold tracking-wide text-gray-500";
 
     const today = new Date().toISOString().slice(0, 10);
     const originalDueDate = task?.dueDate ?? null;
@@ -178,217 +208,230 @@ export default function TaskModal({
     };
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
-            onClick={onClose}
-            style={{ visibility: open ? "visible" : "hidden", pointerEvents: open ? "auto" : "none" }}
-        >
+        <>
             <div
-                className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl custom-scrollbar"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+                onClick={onClose}
+                style={{ visibility: open ? "visible" : "hidden", pointerEvents: open ? "auto" : "none" }}
             >
-                <div className="mb-5 flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-gray-800">
-                        {task ? "Modifier la tâche" : "Nouvelle tâche"}
-                    </h3>
-                    <button onClick={onClose} className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600">
-                        <X size={20} />
-                    </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className={labelClass}>Titre *</label>
-                        <input
-                            autoFocus
-                            className={inputClass}
-                            value={form.title}
-                            onChange={(e) => setForm({ ...form, title: e.target.value })}
-                            placeholder="Ex. Concevoir la maquette"
-                        />
+                <div
+                    className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl custom-scrollbar"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="mb-5 flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-gray-800">
+                            {task ? "Modifier la tâche" : "Nouvelle tâche"}
+                        </h3>
+                        <button onClick={onClose} className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600">
+                            <X size={20} />
+                        </button>
                     </div>
 
-                    <div>
-                        <label className={labelClass}>Description</label>
-                        <textarea
-                            className={`${inputClass} min-h-[90px] resize-y`}
-                            value={form.description}
-                            onChange={(e) => setForm({ ...form, description: e.target.value })}
-                            placeholder="Détails de la tâche…"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className={labelClass}>Priorité</label>
-                            <select
-                                className={inputClass}
-                                value={form.priorityId}
-                                onChange={(e) => setForm({ ...form, priorityId: Number(e.target.value) })}
-                            >
-                                {PRIORITIES.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className={labelClass}>Statut</label>
-                            <select
-                                className={inputClass}
-                                value={form.statusId}
-                                onChange={(e) => setForm({ ...form, statusId: Number(e.target.value) })}
-                            >
-                                {availableStatuses.map(s => (
-                                    <option key={s.statusId} value={s.statusId}>{s.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className={labelClass}>Échéance *</label>
+                            <label className={labelClass}>Titre *</label>
                             <input
-                                type="date"
+                                autoFocus
                                 className={inputClass}
-                                value={form.dueDate ?? ""}
-                                min={dueMin}
-                                required
-                                onChange={(e) => setForm({ ...form, dueDate: e.target.value || null })}
+                                value={form.title}
+                                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                placeholder="Ex. Concevoir la maquette"
                             />
                         </div>
 
                         <div>
-                            <label className={labelClass}>Tâche parente</label>
-                            <select
-                                className={inputClass}
-                                value={form.parentTaskId ?? ""}
-                                onChange={(e) => setForm({ ...form, parentTaskId: e.target.value ? Number(e.target.value) : null })}
-                            >
-                                <option value="">Aucune</option>
-                                {tasks
-                                    .filter(t => t.taskId !== task?.taskId)
-                                    .map(t => (
-                                        <option key={t.taskId} value={t.taskId}>{t.title}</option>
-                                    ))}
-                            </select>
+                            <label className={labelClass}>Description</label>
+                            <textarea
+                                className={`${inputClass} min-h-[90px] resize-y`}
+                                value={form.description}
+                                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                placeholder="Détails de la tâche…"
+                            />
                         </div>
-                    </div>
 
-                    {/* Assignation des membres */}
-                    {contributors.length > 0 && (
-                        <div>
-                            <label className={labelClass}>
-                                <Users size={13} className="mr-1 inline" />
-                                Assignés
-                            </label>
-                            <div className="flex flex-wrap gap-2 rounded-xl border border-gray-200 p-3">
-                                {contributors.map(c => {
-                                    const initials = (c.userName ?? "")
-                                        .split(" ")
-                                        .map(w => w[0])
-                                        .join("")
-                                        .toUpperCase()
-                                        .slice(0, 2) || "?";
-                                    const selected = form.assigneeIds?.includes(c.userId) ?? false;
-                                    return (
-                                        <button
-                                            key={c.userId}
-                                            type="button"
-                                            onClick={() => toggleAssignee(c.userId)}
-                                            title={c.userName}
-                                            className={`relative flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition ${
-                                                selected
-                                                    ? "bg-blue-600 text-white ring-2 ring-blue-300 ring-offset-1"
-                                                    : "bg-gray-100 text-gray-500 ring-1 ring-gray-200 hover:ring-blue-300"
-                                            }`}
-                                        >
-                                            {initials}
-                                        </button>
-                                    );
-                                })}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className={labelClass}>Priorité</label>
+                                <select
+                                    className={inputClass}
+                                    value={form.priorityId}
+                                    onChange={(e) => setForm({ ...form, priorityId: Number(e.target.value) })}
+                                >
+                                    {PRIORITIES.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                </select>
                             </div>
-                            {form.assigneeIds && form.assigneeIds.length > 0 && (
-                                <p className="mt-1.5 text-xs text-gray-400">
-                                    {form.assigneeIds.length} assigné{form.assigneeIds.length > 1 ? "s" : ""}
-                                </p>
-                            )}
-                        </div>
-                    )}
-
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
-                        >
-                            Annuler
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={submitting || !form.title.trim()}
-                            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            {task ? "Enregistrer" : "Créer la tâche"}
-                        </button>
-                    </div>
-                </form>
-
-                {task && (
-                    <div className="mt-4 border-t border-gray-200 pt-4">
-                        <label className={labelClass}>
-                            <Paperclip size={13} className="mr-1 inline" />
-                            Pièces jointes ({attachments.length})
-                        </label>
-                        <div className="rounded-xl border border-gray-200 p-3 space-y-2">
-                            {attachments.length > 0 && (
-                                <div className="space-y-1">
-                                    {attachments.map(att => (
-                                        <div key={att.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                                            <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-gray-700">{att.originalName}</p>
-                                                <p className="text-xs text-gray-400">{formatSize(att.size)}</p>
-                                            </div>
-                                            <div className="flex items-center gap-1 ml-2">
-                                                <a
-                                                    href={attachmentService.downloadUrl(att.id)}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-blue-600"
-                                                    title="Télécharger"
-                                                >
-                                                    <Download size={14} />
-                                                </a>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleDeleteAttachment(att.id)}
-                                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-red-500"
-                                                    title="Supprimer"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
 
                             <div>
-                                <button
-                                    type="button"
-                                    onClick={openFilePicker}
-                                    disabled={uploading}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
+                                <label className={labelClass}>Statut</label>
+                                <select
+                                    className={inputClass}
+                                    value={form.statusId}
+                                    onChange={(e) => setForm({ ...form, statusId: Number(e.target.value) })}
                                 >
-                                    <Paperclip size={13} />
-                                    {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
-                                </button>
+                                    {availableStatuses.map(s => (
+                                        <option key={s.statusId} value={s.statusId}>{s.name}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
-                    </div>
-                )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className={labelClass}>Échéance *</label>
+                                <input
+                                    type="date"
+                                    className={inputClass}
+                                    value={form.dueDate ?? ""}
+                                    min={dueMin}
+                                    required
+                                    onChange={(e) => setForm({ ...form, dueDate: e.target.value || null })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className={labelClass}>Tâche parente</label>
+                                <select
+                                    className={inputClass}
+                                    value={form.parentTaskId ?? ""}
+                                    onChange={(e) => setForm({ ...form, parentTaskId: e.target.value ? Number(e.target.value) : null })}
+                                >
+                                    <option value="">Aucune</option>
+                                    {tasks
+                                        .filter(t => t.taskId !== task?.taskId)
+                                        .map(t => (
+                                            <option key={t.taskId} value={t.taskId}>{t.title}</option>
+                                        ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Assignation des membres */}
+                        {contributors.length > 0 && (
+                            <div>
+                                <label className={labelClass}>
+                                    <Users size={13} className="mr-1 inline" />
+                                    Assignés
+                                </label>
+                                <div className="flex flex-wrap gap-2 rounded-xl border border-gray-200 p-3">
+                                    {contributors.map(c => {
+                                        const initials = (c.userName ?? "")
+                                            .split(" ")
+                                            .map(w => w[0])
+                                            .join("")
+                                            .toUpperCase()
+                                            .slice(0, 2) || "?";
+                                        const selected = form.assigneeIds?.includes(c.userId) ?? false;
+                                        return (
+                                            <button
+                                                key={c.userId}
+                                                type="button"
+                                                onClick={() => toggleAssignee(c.userId)}
+                                                title={c.userName}
+                                                className={`relative flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition ${
+                                                    selected
+                                                        ? "bg-primary text-white ring-1 ring-accent ring-offset-1"
+                                                        : "bg-bg text-primary ring-1 ring-bg hover:ring-accent"
+                                                }`}
+                                            >
+                                                {initials}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {form.assigneeIds && form.assigneeIds.length > 0 && (
+                                    <p className="mt-1.5 text-xs text-gray-400">
+                                        {form.assigneeIds.length} assigné{form.assigneeIds.length > 1 ? "s" : ""}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={submitting || !form.title.trim()}
+                                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {task ? "Enregistrer" : "Créer la tâche"}
+                            </button>
+                        </div>
+                    </form>
+
+                    {task && (
+                        <div className="mt-4 border-t border-gray-200 pt-4">
+                            <label className={labelClass}>
+                                <Paperclip size={13} className="mr-1 inline" />
+                                Pièces jointes ({attachments.length})
+                            </label>
+                            <div className="rounded-xl border border-gray-200 p-3 space-y-2">
+                                {attachments.length > 0 && (
+                                    <div className="space-y-1">
+                                        {attachments.map(att => (
+                                            <div key={att.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium text-gray-700">{att.originalName}</p>
+                                                    <p className="text-xs text-gray-400">{formatSize(att.size)}</p>
+                                                </div>
+                                                <div className="flex items-center gap-1 ml-2">
+                                                    <a
+                                                        href={attachmentService.downloadUrl(att.id)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
+                                                        title="Télécharger"
+                                                    >
+                                                        <Download size={14} />
+                                                    </a>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteAttachment(att.id, att.originalName)}
+                                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-accent"
+                                                        title="Supprimer"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div>
+                                    <button
+                                        type="button"
+                                        onClick={openFilePicker}
+                                        disabled={uploading}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-accent hover:text-accent disabled:opacity-50"
+                                    >
+                                        <Paperclip size={13} />
+                                        {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+
+            {/* Modal de confirmation dynamique */}
+            <ConfirmPopup
+                open={confirmConfig.open}
+                title={confirmConfig.title}
+                message={confirmConfig.message}
+                confirmLabel={confirmConfig.confirmLabel}
+                variant={confirmConfig.variant}
+                onConfirm={confirmConfig.onConfirm}
+                onCancel={closeConfirm}
+            />
+        </>
     );
 }
