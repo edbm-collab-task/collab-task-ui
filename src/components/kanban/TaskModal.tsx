@@ -164,8 +164,8 @@ export default function TaskModal({
         void onSubmit(form);
     };
 
-    const inputClass = "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
-    const labelClass = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500";
+    const inputClass = "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30";
+    const labelClass = "mb-1.5 block text-xs font-semibold tracking-wide text-gray-500";
 
     const today = new Date().toISOString().slice(0, 10);
     const originalDueDate = task?.dueDate ?? null;
@@ -300,8 +300,8 @@ export default function TaskModal({
                                             title={c.userName}
                                             className={`relative flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition ${
                                                 selected
-                                                    ? "bg-blue-600 text-white ring-2 ring-blue-300 ring-offset-1"
-                                                    : "bg-gray-100 text-gray-500 ring-1 ring-gray-200 hover:ring-blue-300"
+                                                    ? "bg-primary text-white ring-1 ring-accent ring-offset-1"
+                                                    : "bg-bg text-primary ring-1 ring-bg hover:ring-accent"
                                             }`}
                                         >
                                             {initials}
@@ -328,7 +328,7 @@ export default function TaskModal({
                         <button
                             type="submit"
                             disabled={submitting || !form.title.trim()}
-                            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {task ? "Enregistrer" : "Créer la tâche"}
                         </button>
@@ -355,7 +355,7 @@ export default function TaskModal({
                                                     href={attachmentService.downloadUrl(att.id)}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-blue-600"
+                                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
                                                     title="Télécharger"
                                                 >
                                                     <Download size={14} />
@@ -363,7 +363,7 @@ export default function TaskModal({
                                                 <button
                                                     type="button"
                                                     onClick={() => handleDeleteAttachment(att.id)}
-                                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-red-500"
+                                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-accent"
                                                     title="Supprimer"
                                                 >
                                                     <Trash2 size={14} />
@@ -379,7 +379,7 @@ export default function TaskModal({
                                     type="button"
                                     onClick={openFilePicker}
                                     disabled={uploading}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
+                                    className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-accent hover:text-accent disabled:opacity-50"
                                 >
                                     <Paperclip size={13} />
                                     {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
