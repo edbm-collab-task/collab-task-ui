@@ -232,6 +232,7 @@ export default function KanbanBoard({
                                                 className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
                                                 title="Commentaires"
                                             >
+                                          
                                                 <MessageSquare size={11} />
                                                 {getCount(task.taskId) || ""}
                                             </button>
