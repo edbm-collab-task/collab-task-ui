@@ -1,5 +1,5 @@
 import { useForm, type FieldValues, type Path } from "react-hook-form";
-import type { FormField } from "@/components/form/Forms";
+import type { FormField } from "@/components/Form/Forms";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 

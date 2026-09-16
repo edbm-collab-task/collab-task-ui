@@ -8,7 +8,7 @@ import {
 } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 
-import type { FormField } from "@/components/form/Forms";
+import type { FormField } from "@/components/Form/Forms";
 
 interface GlobalEditFormProps<T extends FieldValues> {
     title?: string;

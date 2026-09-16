@@ -1,4 +1,4 @@
-import GlobalForms from "@/components/form/GlobalForm";
+import GlobalForms from "@/components/Form/GlobalForm";
 import { userEmailFormFields } from "@/components/user/auth/userEmailForm";
 
 import type { Email } from "@/types/email";

@@ -1,4 +1,4 @@
-import GlobalForms from "@/components/form/GlobalForm";
+import GlobalForms from "@/components/Form/GlobalForm";
 import { userFormFields } from "@/components/user/userForm";
 import type { RegisterForm } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";

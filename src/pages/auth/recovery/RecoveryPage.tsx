@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import GlobalForms from "@/components/form/GlobalForm";
+import GlobalForms from "@/components/Form/GlobalForm";
 import { recoveryFormFields } from "@/components/user/auth/recoveryForm";
 import Logo from "@/assets/logo.png";
 

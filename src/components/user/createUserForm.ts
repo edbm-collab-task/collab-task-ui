@@ -1,4 +1,4 @@
-import type { FormField } from "@/components/form/Forms";
+import type { FormField } from "@/components/Form/Forms";
 import type { DirectionRes } from "@/types/direction";
 import type { CreateUser } from "@/types/user";
 

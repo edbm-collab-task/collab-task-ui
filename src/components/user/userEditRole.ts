@@ -1,4 +1,4 @@
-import type { FormField } from "@/components/form/Forms";
+import type { FormField } from "@/components/Form/Forms";
 import type { AttacheRole } from "@/types/role";
 import { RoleType } from "@/enum/role.enum";
 

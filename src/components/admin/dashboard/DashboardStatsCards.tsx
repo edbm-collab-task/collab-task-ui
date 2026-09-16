@@ -1,6 +1,5 @@
 import { FolderKanban, ListTodo, CircleCheck, Clock3, Users } from "lucide-react";
 import type { DashboardStats, DashboardEvolution } from "@/types/dashboard";
-import Sparkline from "./Sparkline";
 import { generateIncreasingSparkline, getSparklineFromEvolution } from "@/utils/sparkline";
 
 interface Props {
@@ -28,8 +27,6 @@ export default function DashboardStatsCards({ stats, evolution = null, onOverdue
                 const isClickable = isOverdueCard && !!onOverdueClick;
                 const isHighlighted = isOverdueCard && hasValue;
 
-                console.log(card.value);
-                
                 return (
                     <div
                         key={card.label}
