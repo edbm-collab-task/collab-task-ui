@@ -205,7 +205,7 @@ export default function RoleListPage() {
                             value={roleName}
                             onChange={(e) => setRoleName(e.target.value)}
                             disabled={editingRole !== null}
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none disabled:bg-gray-100"
                             placeholder="Ex: MANAGER"
                         />
                     </div>
@@ -220,8 +220,8 @@ export default function RoleListPage() {
                                     key={perm.id}
                                     className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all ${
                                         selectedPermissions.includes(perm.name)
-                                            ? "border-blue-500 bg-blue-50"
-                                            : "border-gray-200 hover:border-gray-300"
+                                            ? "border-accent bg-accent/10"
+                                            : "border-gray-200 hover:border-accent"
                                     }`}
                                 >
                                     <input
@@ -233,7 +233,7 @@ export default function RoleListPage() {
                                     <div
                                         className={`flex h-5 w-5 items-center justify-center rounded border ${
                                             selectedPermissions.includes(perm.name)
-                                                ? "border-blue-500 bg-blue-500"
+                                                ? "bg-primary"
                                                 : "border-gray-300"
                                         }`}
                                     >
@@ -250,21 +250,21 @@ export default function RoleListPage() {
                         </div>
                     </div>
 
-                    <div className="flex gap-2">
-                        <button
-                            onClick={handleSave}
-                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                        >
-                            {editingRole ? "Mettre à jour" : "Créer"}
-                        </button>
+                    <div className="flex justify-end gap-2">
                         <button
                             onClick={() => {
                                 setShowForm(false);
                                 setEditingRole(null);
                             }}
-                            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-secondary hover:text-white"
                         >
                             Annuler
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-accent"
+                        >
+                            {editingRole ? "Mettre à jour" : "Créer"}
                         </button>
                     </div>
                 </div>
