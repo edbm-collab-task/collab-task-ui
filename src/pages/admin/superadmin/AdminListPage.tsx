@@ -47,16 +47,32 @@ export default function AdminListPage() {
 
 
     /**
-     * Charge tous les utilisateurs pour le SUPER_ADMIN (users, admins, super_admins).
+     * Charge tous les utilisateurs pour le SUPER_ADMIN (users, admins, super_admins)
+     * selon le filtre de statut sélectionné.
      */
-    const loadAdmins = async () => {
+    const loadAdmins = async (status: StatusFilter) => {
 
         try {
 
             setLoading(true);
 
-            const response =
-                await userService.getAllActive();
+            let response: UserTable[];
+
+            switch (status) {
+
+                case "disable":
+                    response = await userService.getAllDisable();
+                    break;
+
+                case "all":
+                    response = await userService.getAll();
+                    break;
+
+                case "active":
+                default:
+                    response = await userService.getAllActive();
+                    break;
+            }
 
             setAdmins(response);
 
@@ -77,13 +93,13 @@ export default function AdminListPage() {
 
 
     /**
-     * Recharge les administrateurs.
+     * Recharge les administrateurs lorsque le filtre de statut change.
      */
     useEffect(() => {
 
-        loadAdmins();
+        loadAdmins(statusFilter);
 
-    }, []);
+    }, [statusFilter]);
 
 
     /**
@@ -216,7 +232,7 @@ export default function AdminListPage() {
                     );
 
 
-                    await loadAdmins();
+                    await loadAdmins(statusFilter);
 
                 } catch (error) {
 
