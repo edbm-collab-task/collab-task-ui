@@ -1,9 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @theme{
     --color-bg: #f3f4f6;
     --color-primary: #6d526f;
     --color-secondary: #dddbff;
     --color-accent: #d07694;
+
+    --font-sans: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
     --animate-fade-in: fade-in 0.2s ease-out;
     --animate-scale-in: scale-in 0.22s ease-out;
@@ -31,4 +34,8 @@
             transform: scale(1) translateY(0);
         }
     }
+}
+
+body {
+    font-family: var(--font-sans);
 }
