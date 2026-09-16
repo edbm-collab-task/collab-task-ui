@@ -81,11 +81,6 @@ export default function AdminMenu({ collapsed, expand }: Props) {
                     <div className={`my-4 border-t border-secondary transition-all duration-300 ${
                         collapsed ? "lg:mx-2 lg:group-hover/sb:mx-0" : ""
                     }`} />
-                    <p className={`ml-5 mt-5 italic text-sm font-semibold uppercase tracking-wider text-secondary transition-all duration-300 ${
-                        collapsed ? "lg:hidden lg:group-hover/sb:block" : ""
-                    }`}>
-                        Super Admin
-                    </p>
                     {superAdminMenus.map((menu) => {
                         const Icon = menu.icon;
 
@@ -103,7 +98,7 @@ export default function AdminMenu({ collapsed, expand }: Props) {
                                         className={`group relative mb-3 flex items-center gap-4 overflow-hidden rounded-xl px-5 py-4 transition-all duration-300
                                             ${
                                                 collapsed
-                                                    ? "lg:justify-center lg:gap-0 lg:px-0"
+                                                ? "lg:justify-center lg:gap-0 lg:px-0 lg:group-hover/sb:justify-start lg:group-hover/sb:gap-4 lg:group-hover/sb:px-5"
                                                     : ""
                                             }
                                             ${
@@ -127,7 +122,7 @@ export default function AdminMenu({ collapsed, expand }: Props) {
 
                                         <span className={`whitespace-nowrap font-medium tracking-wide transition-all duration-300 ${
                                             collapsed
-                                                ? "lg:max-w-0 lg:opacity-0"
+                                                 ? "lg:max-w-0 lg:opacity-0 lg:group-hover/sb:max-w-48 lg:group-hover/sb:opacity-100"
                                                 : "lg:max-w-48 lg:opacity-100"
                                         }`}>
                                             {menu.name}
