@@ -61,7 +61,7 @@ export default function ChangePwdPage() {
                         className="mb-4 h-40 w-40 object-contain"
                     />
 
-                    <h1 className="text-center text-2xl font-bold text-gray-900">
+                    <h1 className="text-center text-2xl font-bold text-primary">
                         Sécurisez votre compte
                     </h1>
 
@@ -79,8 +79,8 @@ export default function ChangePwdPage() {
                                 <div
                                     className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
                                         step >= 1
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-gray-100 text-gray-500"
+                                            ? "bg-primary text-white"
+                                            : "bg-secondary/40 text-primary/60"
                                     }`}
                                 >
                                     {step > 1 ? <Check size={15} /> : "1"}
@@ -89,16 +89,16 @@ export default function ChangePwdPage() {
                                 <div
                                     className={`h-1 w-12 ${
                                         step >= 2
-                                            ? "bg-blue-600"
-                                            : "bg-gray-200"
+                                            ? "bg-primary"
+                                            : "bg-secondary/40"
                                     }`}
                                 />
 
                                 <div
                                     className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
                                         step >= 2
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-gray-100 text-gray-500"
+                                            ? "bg-primary text-white"
+                                            : "bg-secondary/40 text-primary/60"
                                     }`}
                                 >
                                     2
@@ -112,11 +112,11 @@ export default function ChangePwdPage() {
 
                                 <div className="text-center">
 
-                                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
-                                        <LockKeyhole className="h-6 w-6 text-blue-600" />
+                                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15">
+                                        <LockKeyhole className="h-6 w-6 text-accent" />
                                     </div>
 
-                                    <h2 className="text-xl font-bold text-gray-900">
+                                    <h2 className="text-xl font-bold text-primary">
                                         Gestion du mot de passe
                                     </h2>
 
@@ -127,13 +127,13 @@ export default function ChangePwdPage() {
 
                                 </div>
 
-                                <div className="rounded-xl border border-gray-200 p-3">
+                                <div className="rounded-xl border border-secondary/60 p-3">
 
                                     <div className="flex gap-3">
-                                        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                                        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
 
                                         <div>
-                                            <p className="text-sm font-semibold text-gray-800">
+                                            <p className="text-sm font-semibold text-primary">
                                                 Conseils de sécurité
                                             </p>
 
@@ -150,7 +150,7 @@ export default function ChangePwdPage() {
                                 <button
                                     type="button"
                                     onClick={() => setStep(2)}
-                                    className="w-full rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                    className="w-full rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90"
                                 >
                                     Continuer
                                 </button>
@@ -164,7 +164,7 @@ export default function ChangePwdPage() {
                                 <button
                                     type="button"
                                     onClick={() => setStep(1)}
-                                    className="mb-3 text-sm font-medium text-blue-600 hover:text-blue-700"
+                                    className="mb-3 text-sm font-medium text-primary hover:text-primary/80"
                                 >
                                     ← Retour
                                 </button>
