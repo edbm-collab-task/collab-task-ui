@@ -1,5 +1,7 @@
 import Swal from "sweetalert2";
 
+const PRIMARY_COLOR = "#6d526f";
+
 export async function confirmDelete(
     element: string
 ): Promise<boolean> {
@@ -7,6 +9,12 @@ export async function confirmDelete(
     const confirmation = await Swal.fire({
 
         html: `
+            <style>
+                .swal2-icon.swal2-warning {
+                    color: ${PRIMARY_COLOR};
+                    border-color: ${PRIMARY_COLOR};
+                }
+            </style>
             <div class="text-sm text-gray-500 -mt-2">
                 Voulez-vous
                 <span class="font-semibold text-gray-800">
@@ -37,10 +45,10 @@ export async function confirmDelete(
             actions: "!mt-2 !gap-2",
 
             confirmButton:
-                "!m-0 !rounded-lg !bg-red-400 !px-4 !py-2 !text-sm !font-medium !text-white !border-0 !outline-none focus:!outline-none focus:!ring-0",
+                "!m-0 !rounded-lg !bg-primary hover:!bg-accent !px-4 !py-2 !text-sm !font-medium !text-white !border-0 !outline-none focus:!outline-none focus:!ring-0",
 
             cancelButton:
-                "!m-0 !rounded-lg !bg-white !px-4 !py-2 !text-sm !font-medium !text-blue-600 !border !border-blue-500 !outline-none focus:!outline-none focus:!ring-0",
+                "!m-0 !rounded-lg !bg-secondary hover:!bg-accent !px-4 !py-2 !text-sm !font-medium !text-blue-600 !border-0 !outline-none focus:!outline-none focus:!ring-0",
         },
     });
 
@@ -102,10 +110,10 @@ export async function confirmDelete(
             actions: "!mt-2 !gap-2",
 
             confirmButton:
-                "!m-0 !rounded-lg !bg-red-500 !px-4 !py-2 !text-sm !font-medium !text-white !border-0 !outline-none focus:!outline-none focus:!ring-0",
+                "!m-0 !rounded-lg !bg-primary hover:!bg-accent !px-4 !py-2 !text-sm !font-medium !text-white !border-0 !outline-none focus:!outline-none focus:!ring-0",
 
             cancelButton:
-                "!m-0 !rounded-lg !bg-white !px-4 !py-2 !text-sm !font-medium !text-blue-600 !border !border-blue-500 !outline-none focus:!outline-none focus:!ring-0",
+                "!m-0 !rounded-lg !bg-secondary hover:!bg-accent !px-4 !py-2 !text-sm !font-medium !text-primary !border !outline-none focus:!outline-none focus:!ring-0",
         },
 
         inputAttributes: {
