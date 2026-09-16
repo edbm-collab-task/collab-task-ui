@@ -1,4 +1,4 @@
-import GlobalForms from "@/components/form/GlobalForm";
+import GlobalForms from "@/components/Form/GlobalForm";
 import { codeVerificationFormFields } from "@/components/user/auth/codeVerification";
 import type { CodeVerification } from "@/types/codeVerification";
 import { authService } from "@/services/auth/auth.service";

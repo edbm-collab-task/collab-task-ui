@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import GlobalEditForm from "@/components/form/GlobalEditForm";
+import GlobalEditForm from "@/components/Form/GlobalEditForm";
 import { editUserFormFields } from "@/components/user/EditUser";
 
 import { userService } from "@/services/user/user.service";

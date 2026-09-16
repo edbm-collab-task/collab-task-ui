@@ -1,5 +1,5 @@
 import {Link } from "react-router-dom";
-import GlobalForms from "@/components/form/GlobalForm";
+import GlobalForms from "@/components/Form/GlobalForm";
 import type { UserLoginReq } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
 import { loginFormFields } from "@/components/user/auth/loginForm";
