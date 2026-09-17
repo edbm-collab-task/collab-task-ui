@@ -1,4 +1,4 @@
-import { CalendarDays, Download, Filter, Clock, ChevronDown } from "lucide-react";
+import { CalendarDays, Download, Filter, ChevronDown } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { DASHBOARD_PERIODS, DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
 import type { DashboardPeriod } from "@/types/dashboard";
@@ -37,8 +37,8 @@ export default function DashboardHeader({
     onProjectChange,
     showProjectDropdown,
     setShowProjectDropdown,
-    overdueCount,
-    onOverdueClick,
+    overdueCount: _overdueCount,
+    onOverdueClick: _onOverdueClick,
 }: Props) {
 
     const isCustom = period === DASHBOARD_PERIODS.CUSTOM;

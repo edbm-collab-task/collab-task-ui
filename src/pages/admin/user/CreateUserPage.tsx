@@ -1,4 +1,4 @@
-import GlobalForms from "@/components/form/GlobalForm";
+import GlobalForms from "@/components/Form/GlobalForm";
 import type { CreateUser } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
 import { useNavigate } from "react-router";

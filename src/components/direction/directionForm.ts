@@ -1,4 +1,4 @@
-import type { FormField } from "@/components/form/Forms";
+import type { FormField } from "@/components/Form/Forms";
 import type { DirectionReq } from "@/types/direction";
 
 export const directionFormField:FormField<DirectionReq>[] = [

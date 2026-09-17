@@ -1,4 +1,4 @@
-import GlobalForms from "@/components/form/GlobalForm";
+import GlobalForms from "@/components/Form/GlobalForm";
 import {directionFormField} from "@/components/direction/directionForm"
 import type {DirectionReq} from "@/types/direction"
 import {directionService} from "@/services/direction/direction.service"
