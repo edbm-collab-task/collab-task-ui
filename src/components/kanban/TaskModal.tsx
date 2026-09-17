@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { X, Paperclip, Trash2, Download, Users } from "lucide-react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { X, Paperclip, Trash2, Download, Users, Search } from "lucide-react";
 import toast from "react-hot-toast";
 
 import {
@@ -16,7 +16,6 @@ import { ConfirmPopup } from "../common/ConfirmPopup";
 interface Props {
     open: boolean;
     projectId: number;
-    projectOwnerId?: number;
     task?: TaskRes | null;
     defaultStatusId?: number | null;
     tasks: TaskRes[];
@@ -38,10 +37,118 @@ const emptyForm = (projectId: number, statusId: number): TaskReq => ({
     assigneeIds: [],
 });
 
+const initialsOf = (name: string) =>
+    name
+        .trim()
+        .split(/\s+/)
+        .map(w => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "?";
+
+interface AssigneePickerProps {
+    contributors: Contributor[];
+    selectedIds: number[];
+    onToggle: (userId: number) => void;
+}
+
+function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerProps) {
+    const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState("");
+    const containerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const selected = contributors.filter(c => selectedIds.includes(c.userId));
+
+    const results = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return contributors.filter(c => {
+            if (selectedIds.includes(c.userId)) return false;
+            if (!q) return true;
+            return (c.userName ?? "").toLowerCase().includes(q)
+                || (c.userEmail ?? "").toLowerCase().includes(q);
+        });
+    }, [contributors, selectedIds, query]);
+
+    const handlePick = (userId: number) => {
+        onToggle(userId);
+        setQuery("");
+        inputRef.current?.focus();
+    };
+
+    return (
+        <div className="space-y-2">
+            <div className="flex min-h-[56px] flex-wrap items-center gap-2 rounded-xl border border-gray-200 p-3">
+                {selected.map(c => (
+                    <button
+                        key={c.userId}
+                        type="button"
+                        onClick={() => onToggle(c.userId)}
+                        title={`${c.userName} — cliquer pour désassigner`}
+                        className="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white ring-1 ring-accent ring-offset-1 transition hover:opacity-80"
+                    >
+                        {initialsOf(c.userName)}
+                    </button>
+                ))}
+                {selected.length === 0 && (
+                    <span className="text-xs text-gray-400">Aucun membre assigné.</span>
+                )}
+            </div>
+
+            <div ref={containerRef} className="relative">
+                <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+                    onFocus={() => setOpen(true)}
+                    onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
+                    placeholder="Rechercher un membre à assigner…"
+                    className="w-full rounded-xl border border-gray-300 py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30"
+                />
+                {open && (
+                    <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg custom-scrollbar">
+                        {results.length > 0 ? (
+                            results.map(c => (
+                                <button
+                                    key={c.userId}
+                                    type="button"
+                                    onClick={() => handlePick(c.userId)}
+                                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-secondary/40"
+                                >
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-primary">
+                                        {initialsOf(c.userName)}
+                                    </span>
+                                    <span className="min-w-0">
+                                        <span className="block truncate text-sm font-medium text-gray-700">{c.userName}</span>
+                                        <span className="block truncate text-[11px] text-gray-400">{c.userEmail}</span>
+                                    </span>
+                                </button>
+                            ))
+                        ) : (
+                            <p className="px-3 py-2 text-xs text-gray-400">Aucun résultat.</p>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 export default function TaskModal({
     open,
     projectId,
-    projectOwnerId,
     task = null,
     defaultStatusId = null,
     tasks,
@@ -112,8 +219,7 @@ export default function TaskModal({
             loadAttachments(task.taskId);
         } else {
             const defaultId = defaultStatusId ?? statusIdDefault;
-            const defaultAssignees = projectOwnerId ? [projectOwnerId] : [];
-            setForm({ ...emptyForm(projectId, defaultId), assigneeIds: defaultAssignees });
+            setForm(emptyForm(projectId, defaultId));
             setAttachments([]);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -314,32 +420,11 @@ export default function TaskModal({
                                     <Users size={13} className="mr-1 inline" />
                                     Assignés
                                 </label>
-                                <div className="flex flex-wrap gap-2 rounded-xl border border-gray-200 p-3">
-                                    {contributors.map(c => {
-                                        const initials = (c.userName ?? "")
-                                            .split(" ")
-                                            .map(w => w[0])
-                                            .join("")
-                                            .toUpperCase()
-                                            .slice(0, 2) || "?";
-                                        const selected = form.assigneeIds?.includes(c.userId) ?? false;
-                                        return (
-                                            <button
-                                                key={c.userId}
-                                                type="button"
-                                                onClick={() => toggleAssignee(c.userId)}
-                                                title={c.userName}
-                                                className={`relative flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition ${
-                                                    selected
-                                                        ? "bg-primary text-white ring-1 ring-accent ring-offset-1"
-                                                        : "bg-bg text-primary ring-1 ring-bg hover:ring-accent"
-                                                }`}
-                                            >
-                                                {initials}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                                <AssigneePicker
+                                    contributors={contributors}
+                                    selectedIds={form.assigneeIds ?? []}
+                                    onToggle={toggleAssignee}
+                                />
                                 {form.assigneeIds && form.assigneeIds.length > 0 && (
                                     <p className="mt-1.5 text-xs text-gray-400">
                                         {form.assigneeIds.length} assigné{form.assigneeIds.length > 1 ? "s" : ""}

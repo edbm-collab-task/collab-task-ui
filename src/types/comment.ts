@@ -1,3 +1,10 @@
+export interface CommentAttachment {
+    name: string;
+    contentType: string;
+    size: number;
+    path: string;
+}
+
 export interface TaskComment {
     commentId: number;
     content: string;
@@ -7,6 +14,7 @@ export interface TaskComment {
     parentId: number | null;
     replies: TaskComment[];
     reactions: CommentReaction[];
+    attachment: CommentAttachment | null;
 }
 
 export interface CommentAuthor {

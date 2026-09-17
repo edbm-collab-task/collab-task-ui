@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
     Pencil,
     Trash2,
@@ -84,6 +84,11 @@ export default function KanbanBoard({
     const [commentTaskId, setCommentTaskId] = useState<number | null>(null);
     const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
 
+    const commentTask = useMemo(
+        () => commentTaskId !== null ? tasks.find(t => t.taskId === commentTaskId) ?? null : null,
+        [commentTaskId, tasks]
+    );
+
     const getCount = (taskId: number) => commentCounts[taskId] ?? 0;
 
     const fallbackStatuses: Status[] = STATUSES.map(s => ({
@@ -107,7 +112,9 @@ export default function KanbanBoard({
             {availableStatuses.map(status => {
                 // ✅ Correction : on utilise directement status.statusId
                 const id = status.statusId;
-                const columnTasks = tasks.filter(t => t.statusId === id);
+                const columnTasks = tasks
+                    .filter(t => t.statusId === id)
+                    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
                 const style = getStatusStyle(status);
 
                 return (
@@ -247,7 +254,7 @@ export default function KanbanBoard({
 
             <CommentPanel
                 open={commentTaskId !== null}
-                taskId={commentTaskId}
+                task={commentTask}
                 currentUserId={currentUserId}
                 availableUsers={allUsers}
                 onClose={() => setCommentTaskId(null)}

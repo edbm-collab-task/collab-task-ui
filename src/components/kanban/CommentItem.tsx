@@ -1,7 +1,21 @@
 import { useState } from "react";
-import { Pencil, Trash2, Reply } from "lucide-react";
+import { createPortal } from "react-dom";
+import {
+    Pencil,
+    Trash2,
+    Reply,
+    Eye,
+    Download,
+    FileText,
+    X,
+    ZoomIn,
+    ZoomOut,
+    Maximize,
+    ExternalLink,
+} from "lucide-react";
 import type { TaskComment } from "@/types/comment";
 import type { UserResponse } from "@/types/user";
+import { commentService } from "@/services/comment/comment.service";
 import ReactionPicker from "./ReactionPicker";
 
 interface Props {
@@ -30,6 +44,149 @@ function timeAgo(dateStr: string): string {
     return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
 }
 
+function formatFileSize(size: number): string {
+    if (!size || size <= 0) return "0 B";
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function isImageType(ct: string | null | undefined): boolean {
+    return ct?.startsWith("image/") ?? false;
+}
+
+// Modal de prévisualisation de fichier
+function FilePreviewModal({
+    onClose,
+    attachmentPath,
+    attachmentName,
+    attachmentContentType,
+}: {
+    onClose: () => void;
+    attachmentPath: string;
+    attachmentName: string;
+    attachmentContentType: string | null;
+}) {
+    const viewUrl = commentService.getAttachmentUrl(attachmentPath);
+    const isPdf = attachmentContentType === "application/pdf";
+    const [scale, setScale] = useState(1);
+    const [fit, setFit] = useState(true);
+
+    const zoomIn = () => {
+        setFit(false);
+        setScale((s) => Math.min(5, +(s + 0.25).toFixed(2)));
+    };
+    const zoomOut = () => {
+        setFit(false);
+        setScale((s) => Math.max(0.25, +(s - 0.25).toFixed(2)));
+    };
+    const resetZoom = () => {
+        setFit(true);
+        setScale(1);
+    };
+
+    const toolBtn =
+        "rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-primary";
+
+    const modal = (
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            onClick={onClose}
+        >
+            <div
+                className="flex h-[88vh] w-[92vw] max-w-[1100px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+                    <h3
+                        className="truncate pr-3 text-sm font-semibold text-gray-800"
+                        title={attachmentName}
+                    >
+                        {attachmentName}
+                    </h3>
+                    <div className="flex shrink-0 items-center gap-1">
+                        {!isPdf && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={zoomOut}
+                                    className={toolBtn}
+                                    title="Zoom arrière"
+                                >
+                                    <ZoomOut size={16} />
+                                </button>
+                                <span className="w-12 text-center text-xs font-medium text-gray-500">
+                                    {fit ? "Auto" : `${Math.round(scale * 100)}%`}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={zoomIn}
+                                    className={toolBtn}
+                                    title="Zoom avant"
+                                >
+                                    <ZoomIn size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={resetZoom}
+                                    className={toolBtn}
+                                    title="Ajuster à l'écran"
+                                >
+                                    <Maximize size={16} />
+                                </button>
+                            </>
+                        )}
+                        <a
+                            href={viewUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={toolBtn}
+                            title="Ouvrir dans un nouvel onglet"
+                        >
+                            <ExternalLink size={16} />
+                        </a>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className={toolBtn}
+                            title="Fermer"
+                        >
+                            <X size={18} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Body */}
+                <div className="flex flex-1 items-center justify-center overflow-auto bg-slate-100 p-4">
+                    {isPdf ? (
+                        <iframe
+                            src={viewUrl}
+                            className="h-full w-full rounded-lg border-none bg-white"
+                            title={attachmentName}
+                        />
+                    ) : (
+                        <img
+                            src={viewUrl}
+                            alt={attachmentName}
+                            onDoubleClick={resetZoom}
+                            className="select-none"
+                            style={{
+                                maxWidth: fit ? "100%" : "none",
+                                maxHeight: fit ? "100%" : "none",
+                                transform: `scale(${fit ? 1 : scale})`,
+                                transition: "transform 0.15s ease-out",
+                            }}
+                        />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    return createPortal(modal, document.body);
+}
+
 export default function CommentItem({
     comment,
     taskId,
@@ -43,10 +200,14 @@ export default function CommentItem({
 }: Props) {
     const [editing, setEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
+    const [showPreview, setShowPreview] = useState(false);
     const isAuthor = comment.author.userId === currentUserId;
 
     const initials = (comment.author.firstname?.[0] ?? "") + (comment.author.lastname?.[0] ?? "");
     const isModified = comment.updatedAt != null;
+    const attachment = comment.attachment;
+    const viewUrl = attachment ? commentService.getAttachmentUrl(attachment.path) : "";
+    const isPdf = attachment?.contentType === "application/pdf";
 
     const handleSave = async () => {
         if (!editContent.trim()) return;
@@ -90,23 +251,26 @@ export default function CommentItem({
             }
         }
 
-        if (lastIndex === 0) {
-            return text;
-        }
-
-        if (lastIndex < text.length) {
-            parts.push(text.slice(lastIndex));
-        }
-
+        if (lastIndex === 0) return text;
+        if (lastIndex < text.length) parts.push(text.slice(lastIndex));
         return parts.length > 0 ? parts : text;
     };
+
+    const eyeButtonClass =
+        "rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-primary transition";
+    const downloadButtonClass =
+        "rounded-lg p-1 text-gray-400 hover:bg-primary hover:text-bg transition";
 
     return (
         <div className={`group ${isReply ? "ml-8" : ""}`}>
             <div className="flex gap-3">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
                     {comment.author.imagePath ? (
-                        <img src={comment.author.imagePath} alt="" className="h-8 w-8 rounded-full object-cover" />
+                        <img
+                            src={comment.author.imagePath}
+                            alt=""
+                            className="h-8 w-8 rounded-full object-cover"
+                        />
                     ) : (
                         initials.toUpperCase()
                     )}
@@ -161,11 +325,103 @@ export default function CommentItem({
                             </div>
                         </div>
                     ) : (
-                        <p className="mt-0.5 text-sm text-gray-700 whitespace-pre-wrap">{renderContent(comment.content)}</p>
+                        <p className="mt-0.5 text-sm text-gray-700 whitespace-pre-wrap">
+                            {renderContent(comment.content)}
+                        </p>
+                    )}
+
+                    {/* Attachment */}
+                    {!editing && attachment && (
+                        <div className="mt-2">
+                            {isImageType(attachment.contentType) ? (
+                                <div className="max-w-[260px] overflow-hidden rounded-xl border border-gray-200 bg-white flex flex-col">
+                                    <div className="flex items-center justify-between p-2 border-b border-gray-100 bg-gray-50">
+                                        <span className="text-xs text-gray-600">{attachment.name}</span>
+                                        <span className="text-[10px] text-gray-400">
+                                            {formatFileSize(attachment.size)}
+                                        </span>
+                                    </div>
+                                    <img
+                                        src={viewUrl}
+                                        alt={attachment.name}
+                                        className="max-w-full max-h-48 w-full object-contain"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = "none";
+                                        }}
+                                    />
+                                    <div className="p-2 border-t border-gray-100 bg-gray-50 flex items-center gap-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPreview(true)}
+                                            className={eyeButtonClass}
+                                            title="Visualiser"
+                                        >
+                                            <Eye size={16} />
+                                        </button>
+                                        <a
+                                            href={`${viewUrl}?download=true`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={downloadButtonClass}
+                                            title="Télécharger"
+                                        >
+                                            <Download size={16} />
+                                        </a>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex max-w-[260px] items-center gap-3 rounded-xl border border-gray-200 bg-white p-3">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                        {isPdf ? (
+                                            <FileText size={18} className="text-accent" />
+                                        ) : (
+                                            <FileText size={18} className="text-primary" />
+                                        )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p
+                                            className="truncate text-xs font-medium text-gray-700"
+                                            title={attachment.name}
+                                        >
+                                            {attachment.name}
+                                        </p>
+                                        <p className="text-[10px] text-gray-400">
+                                            {formatFileSize(attachment.size)}
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPreview(true)}
+                                        className={eyeButtonClass}
+                                        title="Visualiser"
+                                    >
+                                        <Eye size={14} />
+                                    </button>
+                                    <a
+                                        href={`${viewUrl}?download=true`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={downloadButtonClass}
+                                        title="Télécharger"
+                                    >
+                                        <Download size={14} />
+                                    </a>
+                                </div>
+                            )}
+
+                            {showPreview && (
+                                <FilePreviewModal
+                                    onClose={() => setShowPreview(false)}
+                                    attachmentPath={attachment.path || ""}
+                                    attachmentName={attachment.name || "Pièce jointe"}
+                                    attachmentContentType={attachment.contentType || ""}
+                                />
+                            )}
+                        </div>
                     )}
 
                     {/* Réactions */}
-                    {comment.reactions.length > 0 && (
+                    {!editing && comment.reactions.length > 0 && (
                         <div className="mt-1.5 flex flex-wrap gap-1">
                             {comment.reactions.map((r) => (
                                 <button
@@ -182,14 +438,23 @@ export default function CommentItem({
                                     <span className="font-medium">{r.count}</span>
                                 </button>
                             ))}
-                            <ReactionPicker onSelect={(emoji) => onReaction(comment.commentId, emoji)} />
+                            <ReactionPicker
+                                onSelect={(emoji) => onReaction(comment.commentId, emoji)}
+                            />
+                        </div>
+                    )}
+
+                    {!editing && comment.reactions.length === 0 && (
+                        <div className="mt-1 opacity-0 transition group-hover:opacity-100">
+                            <ReactionPicker
+                                onSelect={(emoji) => onReaction(comment.commentId, emoji)}
+                            />
                         </div>
                     )}
 
                     {/* Actions */}
                     {!editing && (
                         <div className="mt-1 flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
-                            <ReactionPicker onSelect={(emoji) => onReaction(comment.commentId, emoji)} />
                             {!isReply && (
                                 <button
                                     onClick={() => onReply(comment.commentId)}
@@ -210,9 +475,8 @@ export default function CommentItem({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            if (window.confirm("Supprimer ce commentaire ?")) {
+                                            if (window.confirm("Supprimer ce commentaire ?"))
                                                 onDelete(comment.commentId);
-                                            }
                                         }}
                                         className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-red-500"
                                         title="Supprimer"
@@ -227,9 +491,9 @@ export default function CommentItem({
             </div>
 
             {/* Réponses */}
-            {comment.replies.length > 0 && (
+            {!editing && comment.replies.length > 0 && (
                 <div className="mt-3 space-y-3 border-l-2 border-gray-100 pl-3">
-                    {comment.replies.map(reply => (
+                    {comment.replies.map((reply) => (
                         <CommentItem
                             key={reply.commentId}
                             comment={reply}

@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { ArrowLeft, CalendarDays, Pencil, User as UserIcon, Plus, Trash2, Users, History } from "lucide-react";
 import Spinner from "@/components/common/Spinner";
 import { ConfirmPopup } from "@/components/common/ConfirmPopup"; 
+import UserSearchSelect from "@/components/user/UserSearchSelect";
 
 import KanbanBoard from "@/components/kanban/KanbanBoard";
 import TaskModal from "@/components/kanban/TaskModal";
@@ -486,20 +487,13 @@ export default function ProjectDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <select
-                            value={selectedUserId ?? ""}
-                            onChange={(e) => setSelectedUserId(e.target.value ? Number(e.target.value) : null)}
-                            className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
-                        >
-                            <option value="">Sélectionner un utilisateur…</option>
-                            {allUsers
-                                .filter(u => u.id !== project.ownerId && !contributors.some(c => c.userId === u.id))
-                                .map(u => (
-                                    <option key={u.id} value={u.id}>
-                                        {u.firstname} {u.lastname} ({u.email})
-                                    </option>
-                                ))}
-                        </select>
+                        <UserSearchSelect
+                            users={allUsers.filter(u => u.id !== project.ownerId && !contributors.some(c => c.userId === u.id))}
+                            value={selectedUserId}
+                            onChange={setSelectedUserId}
+                            placeholder="Sélectionner un utilisateur…"
+                            searchPlaceholder="Rechercher un utilisateur…"
+                        />
                     </div>
                     <div className="flex justify-between items-center gap-3 mt-3">
 
@@ -512,20 +506,13 @@ export default function ProjectDetailPage() {
                             </button>
                         ) : (
                             <div className="flex flex-col items-center gap-2 p-2">
-                                <select
-                                    value={transferTargetId ?? ""}
-                                    onChange={(e) => setTransferTargetId(e.target.value ? Number(e.target.value) : null)}
-                                    className="flex-1 rounded-xl border border-accent/40 px-3 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
-                                >
-                                    <option value="">Choisir le nouveau propriétaire…</option>
-                                    {allUsers
-                                        .filter(u => u.id !== project.ownerId)
-                                        .map(u => (
-                                            <option key={u.id} value={u.id}>
-                                                {u.firstname} {u.lastname} ({u.email})
-                                            </option>
-                                        ))}
-                                </select>
+                                <UserSearchSelect
+                                    users={allUsers.filter(u => u.id !== project.ownerId)}
+                                    value={transferTargetId}
+                                    onChange={setTransferTargetId}
+                                    placeholder="Choisir le nouveau propriétaire…"
+                                    searchPlaceholder="Rechercher un propriétaire…"
+                                />
                                 <div className="flex justify-between w-[100%]">
                                     <button
                                         onClick={() => { setTransferMode(false); setTransferTargetId(null); }}
@@ -582,7 +569,6 @@ export default function ProjectDetailPage() {
             <TaskModal
                 open={modalOpen}
                 projectId={projectId}
-                projectOwnerId={project.ownerId}
                 task={editingTask}
                 defaultStatusId={defaultStatusId}
                 tasks={tasks}
