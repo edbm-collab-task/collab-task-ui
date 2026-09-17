@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { X, MessageSquare, Send } from "lucide-react";
 import type { TaskComment } from "@/types/comment";
 import type { UserResponse } from "@/types/user";
+import type { TaskRes } from "@/types/task";
 import { commentService } from "@/services/comment/comment.service";
 import { userService } from "@/services/user/user.service";
 import CommentItem from "./CommentItem";
 import MentionDropdown from "./MentionDropdown";
+import { TaskCard } from "./TaskCard";
 
 interface Props {
     open: boolean;
@@ -14,9 +16,17 @@ interface Props {
     availableUsers?: UserResponse[];
     onClose: () => void;
     onCountChange?: (count: number) => void;
+    task?: TaskRes;
+    projectId?: number;
+    priorityBadge?: (priorityId: any) => { name: string; color: string };
+    formatDate?: (date: string | null) => string | null;
+    getCount?: (taskId: any) => number | string;
 }
 
-export default function CommentPanel({ open, taskId, currentUserId, availableUsers = [], onClose, onCountChange }: Props) {
+export default function CommentPanel({
+    open, taskId, currentUserId, availableUsers = [], onClose, onCountChange,
+    task, projectId, priorityBadge, formatDate, getCount
+}: Props) {
     const [comments, setComments] = useState<TaskComment[]>([]);
     const [loading, setLoading] = useState(false);
     const [newComment, setNewComment] = useState("");
@@ -191,6 +201,18 @@ export default function CommentPanel({ open, taskId, currentUserId, availableUse
                         <X size={18} />
                     </button>
                 </div>
+
+                {/* Task Context */}
+                {task && (
+                        <TaskCard
+                            task={task}
+                            projectId={projectId ?? 0}
+                            priorityBadge={priorityBadge ?? (() => ({ name: "", color: "" }))}
+                            formatDate={formatDate ?? (() => "")}
+                            getCount={getCount ?? (() => 0)}
+                            showActions={false}
+                        />
+                )}
 
                 {/* Comments list */}
                 <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 custom-scrollbar">
