@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { X, Paperclip, Trash2, Download, Users, Search } from "lucide-react";
+import { X, Paperclip, Trash2, Download, Users, Search, Info, CalendarClock } from "lucide-react";
 import toast from "react-hot-toast";
 
 import {
@@ -13,6 +13,8 @@ import type { Contributor } from "@/types/contributor";
 import type { TaskAttachment } from "@/types/attachment";
 import { attachmentService } from "@/services/attachment/attachment.service";
 import { ConfirmPopup } from "../common/ConfirmPopup";
+import { CarouselTabs } from "../common/CarouselTabs";
+
 interface Props {
     open: boolean;
     projectId: number;
@@ -45,6 +47,12 @@ const initialsOf = (name: string) =>
         .join("")
         .toUpperCase()
         .slice(0, 2) || "?";
+
+const ALL_TABS = [
+    { id: "details", label: "Détails", icon: Info },
+    { id: "organisation", label: "Organisation", icon: CalendarClock },
+    { id: "pieces", label: "Pièces jointes", icon: Paperclip },
+];
 
 interface AssigneePickerProps {
     contributors: Contributor[];
@@ -88,7 +96,7 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
 
     return (
         <div className="space-y-2">
-            <div className="flex min-h-[56px] flex-wrap items-center gap-2 rounded-xl border border-gray-200 p-3">
+            <div className="flex min-h-[56px] flex-wrap items-center gap-2 rounded-xl border border-primary/30 p-3">
                 {selected.map(c => (
                     <button
                         key={c.userId}
@@ -101,12 +109,12 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
                     </button>
                 ))}
                 {selected.length === 0 && (
-                    <span className="text-xs text-gray-400">Aucun membre assigné.</span>
+                    <span className="text-xs text-primary/50">Aucun membre assigné.</span>
                 )}
             </div>
 
             <div ref={containerRef} className="relative">
-                <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-primary/50" />
                 <input
                     ref={inputRef}
                     type="text"
@@ -115,29 +123,29 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
                     onFocus={() => setOpen(true)}
                     onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
                     placeholder="Rechercher un membre à assigner…"
-                    className="w-full rounded-xl border border-gray-300 py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30"
+                    className="w-full rounded-xl border border-primary/30 py-2.5 pl-9 pr-3 text-sm text-primary outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30"
                 />
                 {open && (
-                    <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg custom-scrollbar">
+                    <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-primary/30 bg-[var(--color-bg)] py-1 shadow-lg custom-scrollbar">
                         {results.length > 0 ? (
                             results.map(c => (
                                 <button
                                     key={c.userId}
                                     type="button"
                                     onClick={() => handlePick(c.userId)}
-                                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-secondary/40"
+                                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-primary/10"
                                 >
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-primary">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
                                         {initialsOf(c.userName)}
                                     </span>
                                     <span className="min-w-0">
-                                        <span className="block truncate text-sm font-medium text-gray-700">{c.userName}</span>
-                                        <span className="block truncate text-[11px] text-gray-400">{c.userEmail}</span>
+                                        <span className="block truncate text-sm font-medium text-primary">{c.userName}</span>
+                                        <span className="block truncate text-[11px] text-primary/60">{c.userEmail}</span>
                                     </span>
                                 </button>
                             ))
                         ) : (
-                            <p className="px-3 py-2 text-xs text-gray-400">Aucun résultat.</p>
+                            <p className="px-3 py-2 text-xs text-primary/60">Aucun résultat.</p>
                         )}
                     </div>
                 )}
@@ -168,12 +176,19 @@ export default function TaskModal({
     const availableStatuses = statuses ?? fallbackStatuses;
     const statusIdDefault = availableStatuses[0]?.statusId ?? 1;
 
+    const tabs = useMemo(() =>
+        task ? ALL_TABS : ALL_TABS.filter(t => t.id !== "pieces"),
+        [task],
+    );
+
     const [form, setForm] = useState<TaskReq>(
         emptyForm(projectId, statusIdDefault)
     );
 
     const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
     const [uploading, setUploading] = useState(false);
+
+    const [activeTab, setActiveTab] = useState("details");
 
     // --- État pour la gestion de la ConfirmPopup ---
     const [confirmConfig, setConfirmConfig] = useState<{
@@ -205,6 +220,7 @@ export default function TaskModal({
 
     useEffect(() => {
         if (!open) return;
+        setActiveTab("details");
         if (task) {
             setForm({
                 title: task.title,
@@ -250,7 +266,6 @@ export default function TaskModal({
         input.click();
     };
 
-    // --- Suppression de la pièce jointe avec ConfirmPopup ---
     const handleDeleteAttachment = (attachmentId: number, attachmentName?: string) => {
         setConfirmConfig({
             open: true,
@@ -281,6 +296,16 @@ export default function TaskModal({
         });
     };
 
+    const lastTabId = tabs[tabs.length - 1].id;
+    const isLastStep = activeTab === lastTabId;
+
+    const goNext = () => {
+        const index = tabs.findIndex(t => t.id === activeTab);
+        if (index >= 0 && index < tabs.length - 1) {
+            setActiveTab(tabs[index + 1].id);
+        }
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.title.trim()) return;
@@ -300,8 +325,8 @@ export default function TaskModal({
         void onSubmit(form);
     };
 
-    const inputClass = "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30";
-    const labelClass = "mb-1.5 block text-xs font-semibold tracking-wide text-gray-500";
+    const inputClass = "w-full rounded-xl border border-primary/30 px-4 py-2.5 text-sm text-primary outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30";
+    const labelClass = "mb-1.5 block text-xs font-semibold tracking-wide text-primary";
 
     const today = new Date().toISOString().slice(0, 10);
     const originalDueDate = task?.dueDate ?? null;
@@ -316,194 +341,221 @@ export default function TaskModal({
     return (
         <>
             <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+                className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg)]/60 p-4 backdrop-blur-sm"
                 onClick={onClose}
                 style={{ visibility: open ? "visible" : "hidden", pointerEvents: open ? "auto" : "none" }}
             >
                 <div
-                    className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl custom-scrollbar"
+                    className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-[var(--color-bg)] shadow-2xl"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="mb-5 flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-gray-800">
+                    <div className="flex items-center justify-between p-6 pb-4">
+                        <h3 className="text-xl font-bold text-primary">
                             {task ? "Modifier la tâche" : "Nouvelle tâche"}
                         </h3>
-                        <button onClick={onClose} className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600">
+                        <button onClick={onClose} className="rounded-lg p-2 text-primary/60 transition hover:bg-primary/10 hover:text-primary">
                             <X size={20} />
                         </button>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className={labelClass}>Titre *</label>
-                            <input
-                                autoFocus
-                                className={inputClass}
-                                value={form.title}
-                                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                placeholder="Ex. Concevoir la maquette"
-                            />
-                        </div>
+                    <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+                        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-2 custom-scrollbar">
+                            <CarouselTabs tabs={tabs} activeId={activeTab} onChange={setActiveTab}>
+                                {activeTab === "details" && (
+                                    <>
+                                        <div>
+                                            <label className={labelClass}>Titre *</label>
+                                            <input
+                                                autoFocus
+                                                className={inputClass}
+                                                value={form.title}
+                                                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                                placeholder="Ex. Concevoir la maquette"
+                                            />
+                                        </div>
 
-                        <div>
-                            <label className={labelClass}>Description</label>
-                            <textarea
-                                className={`${inputClass} min-h-[90px] resize-y`}
-                                value={form.description}
-                                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                placeholder="Détails de la tâche…"
-                            />
-                        </div>
+                                        <div>
+                                            <label className={labelClass}>Description</label>
+                                            <textarea
+                                                className={`${inputClass} min-h-[90px] resize-y`}
+                                                value={form.description}
+                                                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                                placeholder="Détails de la tâche…"
+                                            />
+                                        </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className={labelClass}>Priorité</label>
-                                <select
-                                    className={inputClass}
-                                    value={form.priorityId}
-                                    onChange={(e) => setForm({ ...form, priorityId: Number(e.target.value) })}
-                                >
-                                    {PRIORITIES.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                    ))}
-                                </select>
-                            </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={labelClass}>Priorité</label>
+                                                <select
+                                                    className={inputClass}
+                                                    value={form.priorityId}
+                                                    onChange={(e) => setForm({ ...form, priorityId: Number(e.target.value) })}
+                                                >
+                                                    {PRIORITIES.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
 
-                            <div>
-                                <label className={labelClass}>Statut</label>
-                                <select
-                                    className={inputClass}
-                                    value={form.statusId}
-                                    onChange={(e) => setForm({ ...form, statusId: Number(e.target.value) })}
-                                >
-                                    {availableStatuses.map(s => (
-                                        <option key={s.statusId} value={s.statusId}>{s.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className={labelClass}>Échéance *</label>
-                                <input
-                                    type="date"
-                                    className={inputClass}
-                                    value={form.dueDate ?? ""}
-                                    min={dueMin}
-                                    required
-                                    onChange={(e) => setForm({ ...form, dueDate: e.target.value || null })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>Tâche parente</label>
-                                <select
-                                    className={inputClass}
-                                    value={form.parentTaskId ?? ""}
-                                    onChange={(e) => setForm({ ...form, parentTaskId: e.target.value ? Number(e.target.value) : null })}
-                                >
-                                    <option value="">Aucune</option>
-                                    {tasks
-                                        .filter(t => t.taskId !== task?.taskId)
-                                        .map(t => (
-                                            <option key={t.taskId} value={t.taskId}>{t.title}</option>
-                                        ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Assignation des membres */}
-                        {contributors.length > 0 && (
-                            <div>
-                                <label className={labelClass}>
-                                    <Users size={13} className="mr-1 inline" />
-                                    Assignés
-                                </label>
-                                <AssigneePicker
-                                    contributors={contributors}
-                                    selectedIds={form.assigneeIds ?? []}
-                                    onToggle={toggleAssignee}
-                                />
-                                {form.assigneeIds && form.assigneeIds.length > 0 && (
-                                    <p className="mt-1.5 text-xs text-gray-400">
-                                        {form.assigneeIds.length} assigné{form.assigneeIds.length > 1 ? "s" : ""}
-                                    </p>
+                                            <div>
+                                                <label className={labelClass}>Statut</label>
+                                                <select
+                                                    className={inputClass}
+                                                    value={form.statusId}
+                                                    onChange={(e) => setForm({ ...form, statusId: Number(e.target.value) })}
+                                                >
+                                                    {availableStatuses.map(s => (
+                                                        <option key={s.statusId} value={s.statusId}>{s.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
-                            </div>
-                        )}
 
-                        <div className="flex justify-end gap-3 pt-2">
+                                {activeTab === "organisation" && (
+                                    <>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={labelClass}>Échéance *</label>
+                                                <input
+                                                    type="date"
+                                                    className={inputClass}
+                                                    value={form.dueDate ?? ""}
+                                                    min={dueMin}
+                                                    required
+                                                    onChange={(e) => setForm({ ...form, dueDate: e.target.value || null })}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className={labelClass}>Tâche parente</label>
+                                                <select
+                                                    className={inputClass}
+                                                    value={form.parentTaskId ?? ""}
+                                                    onChange={(e) => setForm({ ...form, parentTaskId: e.target.value ? Number(e.target.value) : null })}
+                                                >
+                                                    <option value="">Aucune</option>
+                                                    {tasks
+                                                        .filter(t => t.taskId !== task?.taskId)
+                                                        .map(t => (
+                                                            <option key={t.taskId} value={t.taskId}>{t.title}</option>
+                                                        ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {contributors.length > 0 && (
+                                            <div>
+                                                <label className={labelClass}>
+                                                    <Users size={13} className="mr-1 inline" />
+                                                    Assignés
+                                                </label>
+                                                <AssigneePicker
+                                                    contributors={contributors}
+                                                    selectedIds={form.assigneeIds ?? []}
+                                                    onToggle={toggleAssignee}
+                                                />
+                                                {form.assigneeIds && form.assigneeIds.length > 0 && (
+                                                    <p className="mt-1.5 text-xs text-primary/60">
+                                                        {form.assigneeIds.length} assigné{form.assigneeIds.length > 1 ? "s" : ""}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                {activeTab === "pieces" && (
+                                    <div>
+                                        <label className={labelClass}>
+                                            <Paperclip size={13} className="mr-1 inline" />
+                                            Pièces jointes ({attachments.length})
+                                        </label>
+                                        <div className="rounded-xl border border-primary/30 p-3 space-y-2">
+                                            {attachments.length > 0 && (
+                                                <div className="space-y-1">
+                                                    {attachments.map(att => (
+                                                        <div key={att.id} className="flex items-center justify-between rounded-lg bg-primary/10 px-3 py-2">
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="truncate text-sm font-medium text-primary">{att.originalName}</p>
+                                                                <p className="text-xs text-primary/60">{formatSize(att.size)}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-1 ml-2">
+                                                                <a
+                                                                    href={attachmentService.downloadUrl(att.id)}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="rounded-lg p-1.5 text-primary/60 transition hover:bg-primary/10 hover:text-primary"
+                                                                    title="Télécharger"
+                                                                >
+                                                                    <Download size={14} />
+                                                                </a>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleDeleteAttachment(att.id, att.originalName)}
+                                                                    className="rounded-lg p-1.5 text-primary/60 transition hover:bg-primary/10 hover:text-accent"
+                                                                    title="Supprimer"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div>
+                                                <button
+                                                    type="button"
+                                                    onClick={openFilePicker}
+                                                    disabled={uploading}
+                                                    className="inline-flex items-center gap-2 rounded-lg border border-dashed border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:border-accent hover:text-accent disabled:opacity-50"
+                                                >
+                                                    <Paperclip size={13} />
+                                                    {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </CarouselTabs>
+                        </div>
+
+                        <div className="flex justify-end gap-3 p-6 pt-3">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                                className="rounded-xl px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-primary/10"
                             >
                                 Annuler
                             </button>
-                            <button
-                                type="submit"
-                                disabled={submitting || !form.title.trim()}
-                                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                {task ? "Enregistrer" : "Créer la tâche"}
-                            </button>
+                            {isLastStep ? (
+                                <button
+                                    key="submit"
+                                    type="submit"
+                                    disabled={submitting || !form.title.trim()}
+                                    className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {task ? "Enregistrer" : "Créer la tâche"}
+                                </button>
+                            ) : (
+                                <button
+                                    key="next"
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        goNext();
+                                    }}
+                                    disabled={!form.title.trim()}
+                                    className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    Suivant
+                                </button>
+                            )}
                         </div>
                     </form>
-
-                    {task && (
-                        <div className="mt-4 border-t border-gray-200 pt-4">
-                            <label className={labelClass}>
-                                <Paperclip size={13} className="mr-1 inline" />
-                                Pièces jointes ({attachments.length})
-                            </label>
-                            <div className="rounded-xl border border-gray-200 p-3 space-y-2">
-                                {attachments.length > 0 && (
-                                    <div className="space-y-1">
-                                        {attachments.map(att => (
-                                            <div key={att.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium text-gray-700">{att.originalName}</p>
-                                                    <p className="text-xs text-gray-400">{formatSize(att.size)}</p>
-                                                </div>
-                                                <div className="flex items-center gap-1 ml-2">
-                                                    <a
-                                                        href={attachmentService.downloadUrl(att.id)}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
-                                                        title="Télécharger"
-                                                    >
-                                                        <Download size={14} />
-                                                    </a>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDeleteAttachment(att.id, att.originalName)}
-                                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-accent"
-                                                        title="Supprimer"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <div>
-                                    <button
-                                        type="button"
-                                        onClick={openFilePicker}
-                                        disabled={uploading}
-                                        className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-accent hover:text-accent disabled:opacity-50"
-                                    >
-                                        <Paperclip size={13} />
-                                        {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 

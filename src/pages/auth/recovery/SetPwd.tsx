@@ -57,7 +57,7 @@ export default function ChangePwdPage() {
                 
                     {
                         step == 1 &&
-                        <div className="m-2">
+                        <div className="m-2 absolute">
                             <BackButton/>
                         </div>
                     }
