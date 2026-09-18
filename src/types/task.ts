@@ -32,6 +32,7 @@ export interface TaskRes {
     statusName: string;
     parentTaskId: number | null;
     assignees: AssigneeRes[];
+    sortOrder?: number;
 }
 
 export interface AssigneeRes {

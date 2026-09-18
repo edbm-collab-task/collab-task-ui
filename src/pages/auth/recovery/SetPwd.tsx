@@ -6,8 +6,9 @@ import type { RecoverPasswordFormUI } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
 import useAuth from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { Check, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, LockKeyhole, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
+import { BackButton } from "@/components/common/BackButton";
 
 export default function ChangePwdPage() {
     const { user } = useAuth();
@@ -53,13 +54,19 @@ export default function ChangePwdPage() {
     return (
         <div className="flex h-full w-full items-center justify-center overflow-hidden px-6 py-4">
             <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl md:grid-cols-2">
-
+                
+                    {
+                        step == 1 &&
+                        <div className="m-2">
+                            <BackButton/>
+                        </div>
+                    }
                 <div className="hidden flex-col items-center justify-center p-8 md:flex">
                     <img
                         src="/pwd.jpg"
                         alt="Gestion du mot de passe"
                         className="mb-4 h-40 w-40 object-contain"
-                    />
+                        />
 
                     <h1 className="text-center text-2xl font-bold text-primary">
                         Sécurisez votre compte
