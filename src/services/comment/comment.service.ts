@@ -13,6 +13,12 @@ export const commentService = {
         return res.count;
     },
 
+    /**
+     * Création de commentaire avec pièce jointe optionnelle.
+     * Utilise FormData + api.post direct (pas apiClient) car multipart/form-data
+     * nécessite le header Content-Type explicite (géré par le navigateur avec boundary).
+     * L'API attend : content (string), parentCommentId (optionnel), file (optionnel).
+     */
     create: async (taskId: number, data: CommentReq, file?: File | null): Promise<TaskComment> => {
         const form = new FormData();
         form.append("content", data.content);
@@ -38,6 +44,10 @@ export const commentService = {
         await apiClient.delete(`/tasks/${taskId}/comments/${commentId}`);
     },
 
+    /**
+     * Toggle réaction (ajoute si absent, retire si présent).
+     * L'emoji est passé en query param (encodé pour gérer les caractères spéciaux).
+     */
     toggleReaction: async (taskId: number, commentId: number, emoji: string): Promise<TaskComment> => {
         return apiClient.post<TaskComment, null>(
             `/tasks/${taskId}/comments/${commentId}/reactions?emoji=${encodeURIComponent(emoji)}`,
@@ -45,6 +55,11 @@ export const commentService = {
         );
     },
 
+    /**
+     * Construit l'URL absolue d'une pièce jointe à partir du chemin relatif du backend.
+     * Gère les cas : chemin vide, URL déjà absolue, chemin relatif (préfixe avec VITE_API_BASE_URL).
+     * Utilisé par CommentItem pour l'affichage et le téléchargement.
+     */
     getAttachmentUrl: (path: string): string => {
         if (!path) return "";
         if (path.startsWith("http")) return path;

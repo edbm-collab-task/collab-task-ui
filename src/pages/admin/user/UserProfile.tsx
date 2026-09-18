@@ -116,6 +116,10 @@ export default function UserProfile() {
     const fileInputRef =
         useRef<HTMLInputElement | null>(null);
 
+    /**
+     * Charge les détails du profil via l'email de l'utilisateur connecté.
+     * showLoading contrôle l'affichage du spinner global (true au mount, false pour le polling).
+     */
     const loadUserDetails = async (
         showLoading = false
     ) => {
@@ -150,6 +154,9 @@ export default function UserProfile() {
         }
     };
 
+    // Chargement initial + polling toutes les 5s pour détecter les changements
+    // (ex: modification de profil par un admin, changement de statut en ligne)
+    // On ne montre le spinner qu'au premier chargement (showLoading=true)
     useEffect(() => {
         if (!user?.email) {
             return;
@@ -174,6 +181,8 @@ export default function UserProfile() {
         fileInputRef.current?.click();
     };
 
+    // Gestion de l'upload d'image : validation côté client (type image) puis appel API
+    // On recharge le profil après succès pour récupérer le nouveau chemin d'image
     const handleImageChange = async (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -242,6 +251,8 @@ export default function UserProfile() {
         );
     }
 
+    // Construction de l'URL d'image avec cache busting (timestamp)
+// pour forcer le rechargement après upload sans changer le nom de fichier
     const imageUrl =
         userDetails.id &&
         userDetails.imagePath
@@ -410,6 +421,8 @@ export default function UserProfile() {
                                         ? "Féminin"
                                         : "Non renseigné"}
                             </p>
+                            {/* NOTE: L'enum Gender utilise "M"/"F" mais userDetails.tsx utilise "H" pour Homme.
+                                 Ce composant gère correctement M/F. Si le backend renvoie "H", il affichera "Non renseigné". */}
                         </div>
                     </div>
 
@@ -503,6 +516,7 @@ export default function UserProfile() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
+                        {/* isActive = compte activé/désactivé (admin) — gère l'accès à l'application */}
                         <span
                             className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
                                 userDetails.isActive
@@ -514,7 +528,7 @@ export default function UserProfile() {
                                 className={`h-2 w-2 rounded-full ${
                                     userDetails.isActive
                                         ? "bg-primary"
-                                        : "bg-accent"
+                                        : "bg_accent"
                                 }`}
                             />
 
@@ -523,6 +537,7 @@ export default function UserProfile() {
                                 : "Compte désactivé"}
                         </span>
 
+                        {/* status = présence en temps réel (WebSocket/heartbeat) — indépendant de isActive */}
                         <span
                             className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
                                 userDetails.status

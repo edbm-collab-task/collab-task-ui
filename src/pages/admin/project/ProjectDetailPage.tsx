@@ -28,6 +28,11 @@ function formatDate(date: string | null) {
     return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/**
+ * Convertit les statuts "en dur" (seed backend) en format Status attendu par l'UI.
+ * Les statuts du seed ont des propriétés {id, name, color...} mais l'API /statuses
+ * renvoie {statusId, name, sortOrder, projectId?}. On mappe pour uniformiser.
+ */
 const convertSTATUSES = (): Status[] =>
     STATUSES.map(s => ({
         statusId: s.id,
@@ -41,21 +46,26 @@ export default function ProjectDetailPage() {
     const navigate = useNavigate();
     const { user } = useAuth();
 
+    // État principal du projet et données associées
     const [project, setProject] = useState<ProjectRes | null>(null);
     const [tasks, setTasks] = useState<TaskRes[]>([]);
     const [statuses, setStatuses] = useState<Status[]>(convertSTATUSES);
     const [contributors, setContributors] = useState<Contributor[]>([]);
+    // Utilisateurs potentiels (pas encore contributeurs) pour l'assignation
     const [allUsers, setAllUsers] = useState<UserResponse[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // États UI pour la modale de tâche
     const [modalOpen, setModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<TaskRes | null>(null);
     const [defaultStatusId, setDefaultStatusId] = useState<number | null>(null);
+    // États pour la création de statut personnalisé
     const [newStatusName, setNewStatusName] = useState("");
     const [showNewStatus, setShowNewStatus] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    // --- États pour gérer la ConfirmPopup ---
+    // Configuration unique pour toutes les confirmations (archivage, suppression, etc.)
+    // On évite ainsi de multiplier les modales ConfirmPopup dans le JSX
     const [confirmConfig, setConfirmConfig] = useState<{
         open: boolean;
         title: string;
@@ -74,6 +84,7 @@ export default function ProjectDetailPage() {
         setConfirmConfig(prev => ({ ...prev, open: false }));
     };
 
+    // Loaders mémorisés pour éviter les re-créations inutiles et stabiliser les deps des useEffect
     const loadTasks = useCallback(async () => {
         try {
             const list = await taskService.getByProject(projectId);
@@ -111,6 +122,8 @@ export default function ProjectDetailPage() {
         }
     }, [projectId]);
 
+    // Chargement initial : projet d'abord, puis données dépendantes en parallèle
+    // On ne charge les users potentiels que si l'utilisateur est propriétaire
     useEffect(() => {
         const load = async () => {
             try {
@@ -134,6 +147,7 @@ export default function ProjectDetailPage() {
         load();
     }, [projectId, loadTasks, loadStatuses, loadContributors, loadUsers, navigate]);
 
+    // Réinitialisation des états UI quand on change de projet (navigation entre détails)
     useEffect(() => {
         setModalOpen(false);
         setEditingTask(null);
@@ -153,6 +167,8 @@ export default function ProjectDetailPage() {
         setModalOpen(true);
     };
 
+    // Création de statut personnalisé : appel API puis rechargement de la liste
+    // Le setTimeout sur le toast permet d'éviter qu'il soit masqué par la mise à jour d'état immédiate
     const handleCreateStatus = async () => {
         if (!newStatusName.trim()) {
             toast.error("Le nom du statut est requis");
@@ -170,7 +186,8 @@ export default function ProjectDetailPage() {
         }
     };
 
-    // 1. Suppression d'un statut personnalisé
+    // Suppression d'un statut personnalisé avec confirmation
+    // On réassigne les tâches concernées côté backend (géré par l'API)
     const handleDeleteStatus = (status: Status) => {
         setConfirmConfig({
             open: true,
@@ -198,6 +215,8 @@ export default function ProjectDetailPage() {
     const [transferTargetId, setTransferTargetId] = useState<number | null>(null);
     const [transferring, setTransferring] = useState(false);
 
+    // Ajout d'un contributeur : on rafraîchit ensuite la liste des contributeurs
+    // et la liste des utilisateurs potentiels (car l'utilisateur n'est plus potentiel)
     const handleAddContributor = async () => {
         if (!selectedUserId) return;
         try {
@@ -214,7 +233,8 @@ export default function ProjectDetailPage() {
         }
     };
 
-    // 2. Retrait d'un contributeur
+    // Retrait d'un contributeur avec confirmation
+    // Le rechargement des deux listes maintient l'UI cohérente
     const handleRemoveContributor = (userId: number, userName: string) => {
         setConfirmConfig({
             open: true,
@@ -236,7 +256,8 @@ export default function ProjectDetailPage() {
         });
     };
 
-    // 3. Transfert de propriété du projet
+    // Transfert de propriété : action irréversible, double confirmation via ConfirmPopup
+    // On met à jour le projet local après succès pour refléter le nouveau propriétaire
     const handleTransferOwnership = () => {
         if (!transferTargetId) return;
         const target = contributors.find(c => c.userId === transferTargetId);
@@ -292,6 +313,9 @@ export default function ProjectDetailPage() {
         }
     };
 
+    // Déplacement de tâche (drag & drop) : mise à jour optimiste + rollback si échec
+    // On met à jour l'état local immédiatement pour un feedback instantané,
+    // puis on appelle l'API. Si l'API échoue, on restaure l'état précédent.
     const handleMoveTask = async (task: TaskRes, statusId: number) => {
         const previous = tasks;
         setTasks(prev => prev.map(t => (t.taskId === task.taskId ? { ...t, statusId } : t)));
@@ -305,7 +329,8 @@ export default function ProjectDetailPage() {
         }
     };
 
-    // 4. Archivage / suppression d'une tâche
+    // Archivage d'une tâche (soft delete) avec confirmation
+    // On filtre localement la liste après succès pour éviter un rechargement complet
     const handleDeleteTask = (task: TaskRes) => {
         setConfirmConfig({
             open: true,
@@ -552,7 +577,8 @@ export default function ProjectDetailPage() {
                 </div>
             )}
 
-            {/* Kanban Board */}
+            {/* Kanban Board : compose la vue colonne + cartes + panneau commentaires
+     Les callbacks remontent vers cette page qui orchestre les appels API */}
             <KanbanBoard
                 projectId={projectId}
                 tasks={tasks}
@@ -565,7 +591,8 @@ export default function ProjectDetailPage() {
                 currentUserId={user?.userId ?? 0}
             />
 
-            {/* Modal de création / modification de tâche */}
+            {/* Modal de création / modification de tâche
+                 Reçoit la liste des tâches (pour tâche parente) et contributeurs (pour assignation) */}
             <TaskModal
                 open={modalOpen}
                 projectId={projectId}
@@ -579,7 +606,8 @@ export default function ProjectDetailPage() {
                 submitting={submitting}
             />
 
-            {/* Popup de confirmation globale */}
+            {/* Popup de confirmation globale réutilisée pour toutes les actions destructives
+                 (statuts, contributeurs, transfert, tâches) — évite de multiplier les modales */}
             <ConfirmPopup
                 open={confirmConfig.open}
                 title={confirmConfig.title}

@@ -30,6 +30,10 @@ interface Props {
     onReply: (parentId: number) => void;
 }
 
+/**
+ * Formatage relatif "à l'instant / Xmin / Xh / Xj" puis date courte après 7 jours.
+ * Dupliqué dans ActivityHistoryPage, NotificationBell, NotificationsPage.
+ */
 function timeAgo(dateStr: string): string {
     const now = new Date();
     const date = new Date(dateStr);
@@ -55,7 +59,8 @@ function isImageType(ct: string | null | undefined): boolean {
     return ct?.startsWith("image/") ?? false;
 }
 
-// Modal de prévisualisation de fichier
+// Modal de prévisualisation de fichier (image zoomable / PDF dans iframe)
+// Utilise createPortal pour s'afficher au-dessus de tout (z-[100])
 function FilePreviewModal({
     onClose,
     attachmentPath,
@@ -201,6 +206,7 @@ export default function CommentItem({
     const [editing, setEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
     const [showPreview, setShowPreview] = useState(false);
+    // Seul l'auteur peut modifier/supprimer son commentaire
     const isAuthor = comment.author.userId === currentUserId;
 
     const initials = (comment.author.firstname?.[0] ?? "") + (comment.author.lastname?.[0] ?? "");
@@ -215,6 +221,12 @@ export default function CommentItem({
         setEditing(false);
     };
 
+    /**
+     * Rendu du contenu avec détection des mentions @Prénom Nom
+     * On trie les utilisateurs par nom décroissant pour matcher les noms longs en premier
+     * (ex: @Jean Dupont avant @Jean). Vérification de limites de mots pour éviter
+     * les faux positifs dans d'autres mots.
+     */
     const renderContent = (text: string) => {
         const parts: React.ReactNode[] = [];
         let lastIndex = 0;
@@ -330,7 +342,7 @@ export default function CommentItem({
                         </p>
                     )}
 
-                    {/* Attachment */}
+                    {/* Attachment : affichage différencié image vs PDF/autre + preview modal */}
                     {!editing && attachment && (
                         <div className="mt-2">
                             {isImageType(attachment.contentType) ? (
@@ -420,7 +432,8 @@ export default function CommentItem({
                         </div>
                     )}
 
-                    {/* Réactions */}
+                    {/* Réactions : badges avec compteur + picker pour ajouter.
+                         La réaction de l'utilisateur courant est surlignée (bg-blue-50). */}
                     {!editing && comment.reactions.length > 0 && (
                         <div className="mt-1.5 flex flex-wrap gap-1">
                             {comment.reactions.map((r) => (
@@ -444,6 +457,7 @@ export default function CommentItem({
                         </div>
                     )}
 
+                    {/* Picker affiché au survol du commentaire (group-hover) s'il n'y a pas encore de réaction */}
                     {!editing && comment.reactions.length === 0 && (
                         <div className="mt-1 opacity-0 transition group-hover:opacity-100">
                             <ReactionPicker
@@ -452,7 +466,8 @@ export default function CommentItem({
                         </div>
                     )}
 
-                    {/* Actions */}
+                    {/* Actions : répondre (pas sur les réponses), modifier/supprimer (auteur uniquement).
+                         Suppression via window.confirm natif (différent de ConfirmPopup utilisé ailleurs). */}
                     {!editing && (
                         <div className="mt-1 flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
                             {!isReply && (
@@ -490,7 +505,8 @@ export default function CommentItem({
                 </div>
             </div>
 
-            {/* Réponses */}
+            {/* Réponses récursives : même composant avec isReply=true pour indentation
+                 et masquage du bouton "Répondre" sur les réponses. */}
             {!editing && comment.replies.length > 0 && (
                 <div className="mt-3 space-y-3 border-l-2 border-gray-100 pl-3">
                     {comment.replies.map((reply) => (

@@ -5,6 +5,11 @@ import type { Conversation } from "@/types/message";
 /**
  * Hook centralisant la gestion des conversations (chargement, sélection,
  * synchronisation, pin, archivage, suppression, sortie de groupe).
+ * 
+ * Pattern récurrent : après chaque mutation, on recharge TOUTE la liste via
+ * getConversations(true) pour avoir les compteurs unreadCount à jour.
+ * Le WebSocket (dans useMessages) ne met PAS à jour cette liste —
+ * c'est pourquoi on recharge manuellement après chaque action.
  */
 export function useConversations() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -25,6 +30,7 @@ export function useConversations() {
         try {
             setSelectedConversation(conversation);
 
+            // Recharge pour avoir l'état frais (unreadCount, pinned, etc.)
             const loadedConversations = await messageService.getConversations(true);
             setConversations(loadedConversations);
 
@@ -37,6 +43,11 @@ export function useConversations() {
         }
     }, []);
 
+    /**
+     * Synchronisation manuelle d'une conversation spécifique (non utilisée actuellement).
+     * Prévue pour être appelée depuis useMessages quand un message arrive via WebSocket
+     * pour mettre à jour lastMessage/unreadCount dans la sidebar sans recharger tout.
+     */
     const synchronizeConversation = useCallback(async (conversationId: number) => {
         try {
             const data = await messageService.getConversations(true);
@@ -75,6 +86,7 @@ export function useConversations() {
             setConversations(list);
 
             if (updated.archived) {
+                // Si archivée, on bascule sur la première conversation non archivée
                 const next = list.find((conversation) => !conversation.archived) ?? null;
                 setSelectedConversation(next);
 

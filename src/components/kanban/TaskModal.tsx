@@ -26,17 +26,19 @@ interface Props {
     submitting?: boolean;
 }
 
+/** Formulaire vide pré-rempli avec le projectId et le statusId par défaut */
 const emptyForm = (projectId: number, statusId: number): TaskReq => ({
     title: "",
     description: "",
     dueDate: null,
     projectId,
-    priorityId: 2,
+    priorityId: 2, // Priorité "Moyenne" par défaut (seed backend)
     statusId,
     parentTaskId: null,
     assigneeIds: [],
 });
 
+/** Extrait les initiales (2 premières lettres des mots) pour l'avatar */
 const initialsOf = (name: string) =>
     name
         .trim()
@@ -58,6 +60,7 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Fermeture du dropdown au clic en dehors (pattern réutilisé dans plusieurs composants)
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -70,6 +73,7 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
 
     const selected = contributors.filter(c => selectedIds.includes(c.userId));
 
+    // Filtrage côté client : exclut les déjà sélectionnés, filtre par nom/email
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
         return contributors.filter(c => {
@@ -159,6 +163,8 @@ export default function TaskModal({
     submitting = false,
 }: Props) {
 
+    // Fallback sur les statuts "en dur" (seed backend) si l'API ne renvoie pas de statuts personnalisés
+    // STATUSES = [{id:1,name:"A faire"}, {id:2,name:"En cours"}, {id:3,name:"Terminé"}]
     const fallbackStatuses: Status[] = STATUSES.map(s => ({
         statusId: s.id,
         name: s.name,
@@ -175,7 +181,8 @@ export default function TaskModal({
     const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
     const [uploading, setUploading] = useState(false);
 
-    // --- État pour la gestion de la ConfirmPopup ---
+    // État unique pour toutes les confirmations (suppression pièce jointe)
+    // Évite de multiplier les ConfirmPopup dans le JSX
     const [confirmConfig, setConfirmConfig] = useState<{
         open: boolean;
         title: string;
@@ -203,6 +210,11 @@ export default function TaskModal({
         }
     }, []);
 
+    // Synchronisation du formulaire à l'ouverture de la modale :
+    // - Si édition : on pré-remplit depuis la tâche existante + on charge les pièces jointes
+    // - Si création : on réinitialise avec le statut par défaut (ou celui passé par la colonne Kanban)
+    // Déps réduites intentionnellement (eslint-disable) : on ne veut recharger que si open/taskId changent,
+    // pas à chaque changement de `task` (objet) ou `projectId` (stable)
     useEffect(() => {
         if (!open) return;
         if (task) {
@@ -233,12 +245,14 @@ export default function TaskModal({
             await attachmentService.upload(taskId, file);
             await loadAttachments(taskId);
         } catch {
-            // error handled by interceptor
+            // error handled by interceptor (toast global)
         } finally {
             setUploading(false);
         }
     };
 
+    // Création dynamique d'un input file pour déclencher le sélecteur natif
+    // Accept限定 les types bureautiques courants (pas d'images ici, gérées côté commentaires)
     const openFilePicker = () => {
         const input = document.createElement("input");
         input.type = "file";
@@ -250,7 +264,7 @@ export default function TaskModal({
         input.click();
     };
 
-    // --- Suppression de la pièce jointe avec ConfirmPopup ---
+    // Suppression de pièce jointe avec ConfirmPopup (cohérence avec le reste de l'app)
     const handleDeleteAttachment = (attachmentId: number, attachmentName?: string) => {
         setConfirmConfig({
             open: true,
@@ -285,11 +299,14 @@ export default function TaskModal({
         e.preventDefault();
         if (!form.title.trim()) return;
 
+        // Date d'échéance obligatoire (règle métier)
         if (!form.dueDate) {
             toast.error("La date d'échéance est obligatoire");
             return;
         }
 
+        // Validation date passée : on autorise seulement si la date n'a pas été modifiée
+        // (cas édition où la date d'origine était déjà passée)
         const today = new Date().toISOString().slice(0, 10);
         const dueDateChanged = form.dueDate !== (task?.dueDate ?? null);
         if (dueDateChanged && form.dueDate < today) {
@@ -305,6 +322,8 @@ export default function TaskModal({
 
     const today = new Date().toISOString().slice(0, 10);
     const originalDueDate = task?.dueDate ?? null;
+    // dueMin pour l'input date : si la date d'origine est dans le passé, on la garde comme min
+    // pour ne pas forcer l'utilisateur à la changer s'il ne touche pas au champ
     const dueMin = originalDueDate && originalDueDate < today ? originalDueDate : today;
 
     const formatSize = (bytes: number) => {
