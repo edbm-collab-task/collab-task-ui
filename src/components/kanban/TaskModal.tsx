@@ -13,6 +13,9 @@ import { toStatusListFromSeed } from "@/mappers/status.mapper";
 import type { Contributor } from "@/types/contributor";
 import type { TaskAttachment } from "@/types/attachment";
 import { attachmentService } from "@/services/attachment/attachment.service";
+import { getInitialsFromName } from "@/utils/avatar";
+import { formatFileSizeFr } from "@/utils/format";
+import { useClickOutside } from "@/hooks/useClickOutside";
 import { ConfirmPopup } from "../common/ConfirmPopup";
 interface Props {
     open: boolean;
@@ -39,16 +42,6 @@ const emptyForm = (projectId: number, statusId: number): TaskReq => ({
     assigneeIds: [],
 });
 
-/** Extrait les initiales (2 premières lettres des mots) pour l'avatar */
-const initialsOf = (name: string) =>
-    name
-        .trim()
-        .split(/\s+/)
-        .map(w => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2) || "?";
-
 interface AssigneePickerProps {
     contributors: Contributor[];
     selectedIds: number[];
@@ -58,19 +51,8 @@ interface AssigneePickerProps {
 function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerProps) {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useClickOutside<HTMLDivElement>(() => setOpen(false));
     const inputRef = useRef<HTMLInputElement>(null);
-
-    // Fermeture du dropdown au clic en dehors (pattern réutilisé dans plusieurs composants)
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
 
     const selected = contributors.filter(c => selectedIds.includes(c.userId));
 
@@ -102,7 +84,7 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
                         title={`${c.userName} — cliquer pour désassigner`}
                         className="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white ring-1 ring-accent ring-offset-1 transition hover:opacity-80"
                     >
-                        {initialsOf(c.userName)}
+                        {getInitialsFromName(c.userName)}
                     </button>
                 ))}
                 {selected.length === 0 && (
@@ -133,7 +115,7 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
                                     className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-secondary/40"
                                 >
                                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-primary">
-                                        {initialsOf(c.userName)}
+                                        {getInitialsFromName(c.userName)}
                                     </span>
                                     <span className="min-w-0">
                                         <span className="block truncate text-sm font-medium text-gray-700">{c.userName}</span>
@@ -323,12 +305,6 @@ export default function TaskModal({
     // pour ne pas forcer l'utilisateur à la changer s'il ne touche pas au champ
     const dueMin = originalDueDate && originalDueDate < today ? originalDueDate : today;
 
-    const formatSize = (bytes: number) => {
-        if (bytes < 1024) return bytes + " o";
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " Ko";
-        return (bytes / (1024 * 1024)).toFixed(1) + " Mo";
-    };
-
     return (
         <>
             <div
@@ -480,7 +456,7 @@ export default function TaskModal({
                                             <div key={att.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
                                                 <div className="min-w-0 flex-1">
                                                     <p className="truncate text-sm font-medium text-gray-700">{att.originalName}</p>
-                                                    <p className="text-xs text-gray-400">{formatSize(att.size)}</p>
+                                                    <p className="text-xs text-gray-400">{formatFileSizeFr(att.size)}</p>
                                                 </div>
                                                 <div className="flex items-center gap-1 ml-2">
                                                     <a
