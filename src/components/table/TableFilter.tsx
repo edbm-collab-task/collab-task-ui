@@ -70,7 +70,7 @@ export default function TableFilter<T = string>({
                                         : "text-gray-700 hover:bg-gray-50"
                                 }`}
                             >
-                                <span className="flex items-center gap-2">
+                                <span className="flex items-center gap-2 max-sm:text-sm">
                                     {option.icon}
                                     {option.label}
                                 </span>
