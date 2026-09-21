@@ -3,6 +3,7 @@ import { AtSign, Bold, FileText, Italic, Link, List, Paperclip, Send, Smile, X }
 import EmojiPicker from "./EmojiPicker";
 import MentionPicker from "./MentionPicker";
 import type { ChatUser } from "@/types/message";
+import { formatFileSizeEnShort } from "@/utils/format";
 
 interface Props {
     users: ChatUser[];
@@ -175,7 +176,7 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
 
                             <div className="flex min-w-0 flex-col">
                                 <span className="max-w-[180px] truncate text-xs text-primary/80">{file.name}</span>
-                                <span className="text-[10px] text-primary/40">{formatFileSize(file.size)}</span>
+                                <span className="text-[10px] text-primary/40">{formatFileSizeEnShort(file.size)}</span>
                             </div>
 
                             <button type="button" onClick={() => removeFile(index)} className="shrink-0 rounded-md p-0.5 text-primary/40 transition-colors hover:bg-secondary/60 hover:text-accent" title="Supprimer le fichier">
@@ -255,25 +256,6 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
             </div>
         </div>
     );
-};
-
-/**
- * Formater la taille d'un fichier
- */
-const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) {
-        return `${bytes} B`;
-    }
-
-    if (bytes < 1024 * 1024) {
-        return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-
-    if (bytes < 1024 * 1024 * 1024) {
-        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    }
-
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 };
 
 export default MessageComposer;

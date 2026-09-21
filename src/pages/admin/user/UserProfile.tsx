@@ -15,11 +15,7 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import { authService } from "@/services/auth/auth.service";
 import { userService } from "@/services/user/user.service";
-
-import {
-    API_CONFIG,
-    API_ENDPOINTS
-} from "@/api/constants";
+import { getUserImageUrlWithCacheBust } from "@/utils/image";
 
 import type { Email } from "@/types/email";
 import type { UserProfile } from "@/types/user";
@@ -256,7 +252,7 @@ export default function UserProfile() {
     const imageUrl =
         userDetails.id &&
         userDetails.imagePath
-            ? `${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS.BASE}/${userDetails.id}/image`
+            ? getUserImageUrlWithCacheBust(userDetails.id)
             : null;
 
     return (
@@ -276,7 +272,7 @@ export default function UserProfile() {
                             <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-gray-100 shadow-md">
                                 {imageUrl ? (
                                     <img
-                                        src={`${imageUrl}?t=${Date.now()}`}
+                                        src={imageUrl}
                                         alt={`${userDetails.firstname} ${userDetails.lastname}`}
                                         className="h-full w-full object-cover"
                                     />

@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { SmilePlus } from "lucide-react";
 import { REACTION_EMOJIS } from "@/types/comment";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 interface Props {
     onSelect: (emoji: string) => void;
@@ -8,17 +9,7 @@ interface Props {
 
 export default function ReactionPicker({ onSelect }: Props) {
     const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-        if (open) document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, [open]);
+    const ref = useClickOutside<HTMLDivElement>(() => setOpen(false), open);
 
     return (
         <div className="relative" ref={ref}>

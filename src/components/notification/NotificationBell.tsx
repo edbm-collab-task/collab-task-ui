@@ -1,14 +1,15 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Bell, CheckCheck, UserPlus, ClipboardList, AlertTriangle, AlarmClock, Hourglass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { notificationService } from "@/services/notification/notification.service";
 import type { Notification } from "@/types/notification";
+import { formatRelativeTime } from "@/utils/time";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 export default function NotificationBell() {
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const dropdownRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
     const loadNotifications = useCallback(async () => {
@@ -30,15 +31,10 @@ export default function NotificationBell() {
         return () => clearInterval(interval);
     }, [loadNotifications]);
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    const closeDropdown = useCallback(() => setOpen(false), []);
+
+    // Hook pour fermer le dropdown au clic en dehors
+    const dropdownRef = useClickOutside<HTMLDivElement>(closeDropdown, open);
 
     const handleMarkAsRead = async (id: number) => {
         try {
@@ -66,19 +62,6 @@ export default function NotificationBell() {
         if (notif.projectId) {
             navigate(`/admin/projects/${notif.projectId}`);
         }
-    };
-
-    const formatTime = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-        const minutes = Math.floor(diff / 60000);
-        if (minutes < 1) return "à l'instant";
-        if (minutes < 60) return `il y a ${minutes}min`;
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `il y a ${hours}h`;
-        const days = Math.floor(hours / 24);
-        return `il y a ${days}j`;
     };
 
     const getIcon = (type: Notification["type"]) => {
@@ -144,7 +127,7 @@ export default function NotificationBell() {
                                             <p className={`text-sm leading-snug ${!notif.isRead ? "font-semibold text-primary" : "text-primary/70"}`}>
                                                 {notif.message}
                                             </p>
-                                            <p className="mt-1 text-xs text-primary/50">{formatTime(notif.createdAt)}</p>
+                                            <p className="mt-1 text-xs text-primary/50">{formatRelativeTime(notif.createdAt)}</p>
                                         </div>
                                         {!notif.isRead && (
                                             <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-accent" />

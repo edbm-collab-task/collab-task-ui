@@ -2,25 +2,14 @@ import { useState } from "react";
 import { Search, User, X } from "lucide-react";
 
 import type { ChatUser } from "@/types/message";
-
-import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
+import { getInitialsFromChatUser } from "@/utils/avatar";
+import { getUserImageUrl } from "@/utils/image";
 
 interface NewConversationModalProps {
     users: ChatUser[];
     onClose: () => void;
     onSelect: (user: ChatUser) => void;
 }
-
-const getUserImageUrl = (
-    userId: number,
-    avatar: string | null | undefined
-): string | null => {
-    if (!avatar || avatar.trim() === "") {
-        return null;
-    }
-
-    return `${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS.BASE}/${userId}/image`;
-};
 
 const NewConversationModal = ({
     users,
@@ -50,10 +39,6 @@ const NewConversationModal = ({
         if (fallback instanceof HTMLElement) {
             fallback.style.display = "flex";
         }
-    };
-
-    const getInitials = (user: ChatUser) => {
-        return `${user.firstname?.charAt(0) ?? ""}${user.lastname?.charAt(0) ?? ""}`.toUpperCase();
     };
 
     return (
@@ -106,7 +91,7 @@ const NewConversationModal = ({
                                 user.avatar
                             );
 
-                            const initials = getInitials(user);
+                            const initials = getInitialsFromChatUser(user);
 
                             return (
                                 <button

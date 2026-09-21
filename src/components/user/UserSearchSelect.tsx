@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 
 import type { UserResponse } from "@/types/user";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 interface Props {
     users: UserResponse[];
@@ -26,21 +27,13 @@ export default function UserSearchSelect({
 }: Props) {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useClickOutside<HTMLDivElement>(() => {
+        setOpen(false);
+        setQuery("");
+    });
     const inputRef = useRef<HTMLInputElement>(null);
 
     const selected = users.find(u => u.id === value) ?? null;
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setOpen(false);
-                setQuery("");
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();

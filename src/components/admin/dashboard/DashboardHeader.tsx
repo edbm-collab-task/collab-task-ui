@@ -1,10 +1,11 @@
 import { CalendarDays, Download, Filter, ChevronDown } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { useState } from "react";
 import { DASHBOARD_PERIODS, DASHBOARD_PERIOD_OPTIONS } from "@/types/dashboard";
 import type { DashboardPeriod } from "@/types/dashboard";
 import TableFilter from "@/components/table/TableFilter";
 import { projectService } from "@/services/project/project.service";
 import type { ProjectRes } from "@/types/project";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 interface Props {
     period: DashboardPeriod;
@@ -42,20 +43,8 @@ export default function DashboardHeader({
 }: Props) {
 
     const isCustom = period === DASHBOARD_PERIODS.CUSTOM;
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false), showProjectDropdown);
     const [isOpen, setIsOpen] = useState(false);
-
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        }
-        if (showProjectDropdown) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [showProjectDropdown]);
 
     const handleExportPdf = async () => {
         try {

@@ -18,12 +18,7 @@ import { taskService } from "@/services/task/task.service";
 import type { ProjectRes } from "@/types/project";
 import type { TaskRes } from "@/types/task";
 import { ConfirmPopup } from "@/components/common/ConfirmPopup";
-
-function formatDate(date: string | null) {
-    if (!date) return "—";
-    const d = new Date(date);
-    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
-}
+import { formatDateFull } from "@/utils/date";
 
 export default function ProjectListPage() {
     const navigate = useNavigate();
@@ -228,7 +223,7 @@ export default function ProjectListPage() {
                                     <div className="flex items-center gap-2 text-xs text-primary/90">
                                         <CalendarDays size={13} />
                                         <span>
-                                            {formatDate(project.startDate)} → {formatDate(project.endDate)}
+                                            {formatDateFull(project.startDate)} → {formatDateFull(project.endDate)}
                                         </span>
                                     </div>
                                 </div>
