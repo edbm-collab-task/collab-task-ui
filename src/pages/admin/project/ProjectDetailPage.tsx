@@ -21,24 +21,13 @@ import type { Status } from "@/types/status";
 import type { Contributor } from "@/types/contributor";
 import type { UserResponse } from "@/types/user";
 import { STATUSES } from "@/types/task";
+import { toStatusListFromSeed } from "@/mappers/status.mapper";
 
 function formatDate(date: string | null) {
     if (!date) return "—";
     const d = new Date(date);
     return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 }
-
-/**
- * Convertit les statuts "en dur" (seed backend) en format Status attendu par l'UI.
- * Les statuts du seed ont des propriétés {id, name, color...} mais l'API /statuses
- * renvoie {statusId, name, sortOrder, projectId?}. On mappe pour uniformiser.
- */
-const convertSTATUSES = (): Status[] =>
-    STATUSES.map(s => ({
-        statusId: s.id,
-        name: s.name,
-        sortOrder: 0,
-    }));
 
 export default function ProjectDetailPage() {
     const { id } = useParams();
@@ -49,7 +38,7 @@ export default function ProjectDetailPage() {
     // État principal du projet et données associées
     const [project, setProject] = useState<ProjectRes | null>(null);
     const [tasks, setTasks] = useState<TaskRes[]>([]);
-    const [statuses, setStatuses] = useState<Status[]>(convertSTATUSES);
+    const [statuses, setStatuses] = useState<Status[]>(() => toStatusListFromSeed(STATUSES));
     const [contributors, setContributors] = useState<Contributor[]>([]);
     // Utilisateurs potentiels (pas encore contributeurs) pour l'assignation
     const [allUsers, setAllUsers] = useState<UserResponse[]>([]);

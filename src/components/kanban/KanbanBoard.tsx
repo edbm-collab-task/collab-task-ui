@@ -15,6 +15,7 @@ import {
     type TaskRes,
 } from "@/types/task";
 import type { Status } from "@/types/status";
+import { toStatusListFromSeed } from "@/mappers/status.mapper";
 import type { UserResponse } from "@/types/user";
 import CommentPanel from "./CommentPanel";
 import { TaskCard } from "./TaskCard";
@@ -104,11 +105,7 @@ export default function KanbanBoard({
     const getCount = (taskId: number) => commentCounts[taskId] ?? 0;
 
     // Fallback sur les statuts "en dur" si l'API ne renvoie pas de statuts personnalisés
-    const fallbackStatuses: Status[] = STATUSES.map(s => ({
-        statusId: s.id,
-        name: s.name,
-        sortOrder: 0,
-    }));
+    const fallbackStatuses: Status[] = toStatusListFromSeed(STATUSES);
 
     const availableStatuses = statuses ?? fallbackStatuses;
 

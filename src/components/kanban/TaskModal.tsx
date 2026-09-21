@@ -9,6 +9,7 @@ import {
     type TaskRes,
 } from "@/types/task";
 import type { Status } from "@/types/status";
+import { toStatusListFromSeed } from "@/mappers/status.mapper";
 import type { Contributor } from "@/types/contributor";
 import type { TaskAttachment } from "@/types/attachment";
 import { attachmentService } from "@/services/attachment/attachment.service";
@@ -165,11 +166,7 @@ export default function TaskModal({
 
     // Fallback sur les statuts "en dur" (seed backend) si l'API ne renvoie pas de statuts personnalisés
     // STATUSES = [{id:1,name:"A faire"}, {id:2,name:"En cours"}, {id:3,name:"Terminé"}]
-    const fallbackStatuses: Status[] = STATUSES.map(s => ({
-        statusId: s.id,
-        name: s.name,
-        sortOrder: 0,
-    }));
+    const fallbackStatuses: Status[] = toStatusListFromSeed(STATUSES);
 
     const availableStatuses = statuses ?? fallbackStatuses;
     const statusIdDefault = availableStatuses[0]?.statusId ?? 1;
