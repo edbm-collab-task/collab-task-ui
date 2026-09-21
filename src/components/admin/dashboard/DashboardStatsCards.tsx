@@ -19,7 +19,7 @@ export default function DashboardStatsCards({ stats, evolution = null, onOverdue
     ];
 
     return (
-        <div className={`grid gap-2 sm:grid-cols-3 ${cards.length > 4 ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
+        <div className={`grid gap-2 max-sm:grid-cols-2 max-sm:text-xs ${cards.length > 4 ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
             {cards.map(card => {
                 const Icon = card.icon;
                 const isOverdueCard = card.label === "En retard";
@@ -34,7 +34,7 @@ export default function DashboardStatsCards({ stats, evolution = null, onOverdue
                         role={isClickable ? "button" : undefined}
                         tabIndex={isClickable ? 0 : undefined}
                         onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") onOverdueClick?.(); } : undefined}
-                        className={`flex items-center gap-1 rounded-2xl border p-5 shadow-sm transition hover:shadow-md ${
+                        className={`flex items-center gap-1 rounded-2xl border sm:p-5 p-2 shadow-sm transition hover:shadow-md ${
                             isHighlighted
                                 ? "bg-white hover:bg-accent/30 border-accent"
                                 : "border-gray-200 bg-white"

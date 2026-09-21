@@ -214,7 +214,7 @@ export default function ProjectFormPage({ mode }: { mode: "create" | "edit" }) {
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary from-85% to-accent px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary from-85% to-accent px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:from-accent hover:from-50% hover:to-primary disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {submitting ? (
                                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
