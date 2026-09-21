@@ -16,84 +16,11 @@ import useAuth from "@/hooks/useAuth";
 import { authService } from "@/services/auth/auth.service";
 import { userService } from "@/services/user/user.service";
 import { getUserImageUrlWithCacheBust } from "@/utils/image";
+import UserProfileSkeleton from "@/components/user/UserProfileSkeleton";
+import ProfileFieldRow from "@/components/user/ProfileFieldRow";
 
 import type { Email } from "@/types/email";
 import type { UserProfile } from "@/types/user";
-
-function UserProfileSkeleton() {
-    return (
-        <div className="space-y-6 animate-pulse">
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                <div className="h-80 w-full bg-gray-200" />
-
-                <div className="px-6 pb-6">
-                    <div className="-mt-16 flex items-end gap-5">
-                        <div className="relative shrink-0">
-                            <div className="h-32 w-32 rounded-full border-4 border-white bg-gray-200 shadow-md" />
-
-                            <div className="absolute bottom-1 right-1 h-9 w-9 rounded-full border-2 border-white bg-gray-300" />
-                        </div>
-
-                        <div className="flex min-w-0 flex-1 items-center justify-between pb-2">
-                            <div className="min-w-0 space-y-3">
-                                <div className="h-7 w-56 rounded-md bg-gray-200" />
-
-                                <div className="h-4 w-72 rounded-md bg-gray-200" />
-                            </div>
-
-                            <div className="ml-4 h-9 w-10 shrink-0 rounded-lg bg-gray-200" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="mb-6 flex items-center justify-between">
-                    <div className="space-y-2">
-                        <div className="h-5 w-52 rounded-md bg-gray-200" />
-
-                        <div className="h-4 w-72 rounded-md bg-gray-200" />
-                    </div>
-
-                    <div className="h-9 w-10 rounded-lg bg-gray-200" />
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {Array.from({ length: 8 }).map((_, index) => (
-                        <div
-                            key={index}
-                            className="flex items-start gap-3"
-                        >
-                            <div className="h-10 w-10 shrink-0 rounded-lg bg-gray-200" />
-
-                            <div className="space-y-2">
-                                <div className="h-3 w-24 rounded bg-gray-200" />
-
-                                <div className="h-4 w-36 rounded bg-gray-200" />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="space-y-2">
-                        <div className="h-5 w-40 rounded-md bg-gray-200" />
-
-                        <div className="h-4 w-64 rounded-md bg-gray-200" />
-                    </div>
-
-                    <div className="flex gap-3">
-                        <div className="h-7 w-28 rounded-full bg-gray-200" />
-
-                        <div className="h-7 w-24 rounded-full bg-gray-200" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 export default function UserProfile() {
     const [userDetails, setUserDetails] =
@@ -351,151 +278,59 @@ export default function UserProfile() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                            <User size={19} />
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                                Nom complet
-                            </p>
-
-                            <p className="mt-1 text-sm font-medium text-gray-900">
-                                {userDetails.firstname}{" "}
-                                {userDetails.lastname}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                            <Mail size={19} />
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                                Adresse email
-                            </p>
-
-                            <p className="mt-1 text-sm font-medium text-gray-900">
-                                {userDetails.email}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                            <Phone size={19} />
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                                Numéro
-                            </p>
-
-                            <p className="mt-1 text-sm font-medium text-gray-900">
-                                {userDetails.number || "Non renseigné"}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                            <User size={19} />
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                                Genre
-                            </p>
-
-                            <p className="mt-1 text-sm font-medium text-gray-900">
-                                {userDetails.gender === "M"
-                                    ? "Masculin"
-                                    : userDetails.gender === "F"
-                                        ? "Féminin"
-                                        : "Non renseigné"}
-                            </p>
-                            {/* NOTE: L'enum Gender utilise "M"/"F" mais userDetails.tsx utilise "H" pour Homme.
-                                 Ce composant gère correctement M/F. Si le backend renvoie "H", il affichera "Non renseigné". */}
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                            <Building2 size={19} />
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                                Direction
-                            </p>
-
-                            <p className="mt-1 text-sm font-medium text-gray-900">
-                                {userDetails.direction || "Non renseignée"}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                            <BriefcaseBusiness size={19} />
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                                Poste
-                            </p>
-
-                            <p className="mt-1 text-sm font-medium text-gray-900">
-                                {userDetails.job || "Non renseigné"}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                            <ShieldCheck size={19} />
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                                Rôle
-                            </p>
-
-                            <div className="mt-1">
-                                <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                                    {userDetails.role}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                            <CalendarDays size={19} />
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                                Compte créé le
-                            </p>
-
-                            <p className="mt-1 text-sm font-medium text-gray-900">
-                                {new Date(
-                                    userDetails.createdAt
-                                ).toLocaleDateString(
-                                    "fr-FR",
-                                    {
-                                        day: "2-digit",
-                                        month: "long",
-                                        year: "numeric"
-                                    }
-                                )}
-                            </p>
-                        </div>
-                    </div>
+                    <ProfileFieldRow
+                        icon={<User size={19} />}
+                        label="Nom complet"
+                        value={`${userDetails.firstname} ${userDetails.lastname}`}
+                    />
+                    <ProfileFieldRow
+                        icon={<Mail size={19} />}
+                        label="Adresse email"
+                        value={userDetails.email}
+                    />
+                    <ProfileFieldRow
+                        icon={<Phone size={19} />}
+                        label="Numéro"
+                        value={userDetails.number}
+                    />
+                    <ProfileFieldRow
+                        icon={<User size={19} />}
+                        label="Genre"
+                        value={
+                            userDetails.gender === "M"
+                                ? "Masculin"
+                                : userDetails.gender === "F"
+                                    ? "Féminin"
+                                    : "Non renseigné"
+                        }
+                    />
+                    <ProfileFieldRow
+                        icon={<Building2 size={19} />}
+                        label="Direction"
+                        value={userDetails.direction}
+                    />
+                    <ProfileFieldRow
+                        icon={<BriefcaseBusiness size={19} />}
+                        label="Poste"
+                        value={userDetails.job}
+                    />
+                    <ProfileFieldRow
+                        icon={<ShieldCheck size={19} />}
+                        label="Rôle"
+                        value={userDetails.role}
+                        variant="badge"
+                    />
+                    <ProfileFieldRow
+                        icon={<CalendarDays size={19} />}
+                        label="Compte créé le"
+                        value={
+                            new Date(userDetails.createdAt).toLocaleDateString("fr-FR", {
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                            })
+                        }
+                    />
                 </div>
             </div>
 
