@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/api-client";
+import { API_ENDPOINTS } from "@/api/constants";
 
 import type {
     ChatUser,
@@ -12,14 +13,14 @@ export const messageService = {
     async getCurrentUser(): Promise<ChatUser> {
 
         return apiClient.get<ChatUser>(
-            "/auth/me"
+            API_ENDPOINTS.AUTH.ME
         );
     },
 
     async getUsers(): Promise<ChatUser[]> {
 
         return apiClient.get<ChatUser[]>(
-            "/conversations/users"
+            API_ENDPOINTS.CONVERSATIONS.USERS
         );
     },
 
@@ -28,7 +29,7 @@ export const messageService = {
     ): Promise<Conversation[]> {
 
         return apiClient.get<Conversation[]>(
-            "/conversations",
+            API_ENDPOINTS.CONVERSATIONS.ALL,
             {
                 archived
             }
@@ -40,7 +41,7 @@ export const messageService = {
     ): Promise<Conversation> {
 
         return apiClient.get<Conversation>(
-            `/conversations/${conversationId}`
+            `${API_ENDPOINTS.CONVERSATIONS.BY_ID}/${conversationId}`
         );
     },
 
@@ -56,7 +57,7 @@ export const messageService = {
                 userId: number;
             }
         >(
-            "/conversations/private",
+            API_ENDPOINTS.CONVERSATIONS.PRIVATE,
             data
         );
     },
@@ -75,7 +76,7 @@ export const messageService = {
                 memberIds: number[];
             }
         >(
-            "/conversations/group",
+            API_ENDPOINTS.CONVERSATIONS.GROUP,
             data
         );
     },
@@ -85,7 +86,7 @@ export const messageService = {
     ): Promise<Message[]> {
 
         return apiClient.get<Message[]>(
-            `/conversations/${conversationId}/messages`
+            API_ENDPOINTS.CONVERSATIONS.MESSAGES(conversationId)
         );
     },
 
@@ -153,7 +154,7 @@ export const messageService = {
             Message,
             FormData
         >(
-            `/conversations/${conversationId}/messages`,
+            API_ENDPOINTS.CONVERSATIONS.SEND_MESSAGE(conversationId),
             formData
         );
     },
@@ -163,7 +164,7 @@ export const messageService = {
     ): Promise<void> {
 
         await apiClient.delete<void>(
-            `/conversations/messages/${messageId}`
+            API_ENDPOINTS.CONVERSATIONS.DELETE_MESSAGE(messageId)
         );
     },
 
@@ -172,7 +173,7 @@ export const messageService = {
     ) {
 
         return apiClient.get(
-            `/conversations/${conversationId}/members`
+            API_ENDPOINTS.CONVERSATIONS.MEMBERS(conversationId)
         );
     },
 
@@ -189,7 +190,7 @@ export const messageService = {
                 memberIds: number[];
             }
         >(
-            `/conversations/${conversationId}/members`,
+            API_ENDPOINTS.CONVERSATIONS.ADD_MEMBERS(conversationId),
             data
         );
     },
@@ -200,7 +201,7 @@ export const messageService = {
     ): Promise<void> {
 
         await apiClient.delete<void>(
-            `/conversations/${conversationId}/members/${userId}`
+            API_ENDPOINTS.CONVERSATIONS.REMOVE_MEMBER(conversationId, userId)
         );
     },
 
@@ -209,7 +210,7 @@ export const messageService = {
     ): Promise<void> {
 
         await apiClient.delete<void>(
-            `/conversations/${conversationId}/leave`
+            API_ENDPOINTS.CONVERSATIONS.LEAVE(conversationId)
         );
     },
 
@@ -221,7 +222,7 @@ export const messageService = {
             void,
             Record<string, never>
         >(
-            `/conversations/${conversationId}/read`,
+            API_ENDPOINTS.CONVERSATIONS.READ(conversationId),
             {}
         );
     },
@@ -234,7 +235,7 @@ export const messageService = {
             Conversation,
             Record<string, never>
         >(
-            `/conversations/${conversationId}/pin`,
+            API_ENDPOINTS.CONVERSATIONS.PIN(conversationId),
             {}
         );
     },
@@ -247,7 +248,7 @@ export const messageService = {
             Conversation,
             Record<string, never>
         >(
-            `/conversations/${conversationId}/archive`,
+            API_ENDPOINTS.CONVERSATIONS.ARCHIVE(conversationId),
             {}
         );
     },
@@ -257,7 +258,7 @@ export const messageService = {
     ): Promise<void> {
 
         await apiClient.delete<void>(
-            `/conversations/${conversationId}`
+            API_ENDPOINTS.CONVERSATIONS.DELETE(conversationId)
         );
     },
 };

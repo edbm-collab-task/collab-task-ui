@@ -1,15 +1,20 @@
 import { api } from "@/api/axios";
 import { apiClient } from "@/api/api-client";
+import { API_ENDPOINTS } from "@/api/constants";
 import type { TaskComment, CommentReq } from "@/types/comment";
 
 export const commentService = {
 
     getByTask: async (taskId: number): Promise<TaskComment[]> => {
-        return apiClient.get<TaskComment[]>(`/tasks/${taskId}/comments`);
+        return apiClient.get<TaskComment[]>(
+            API_ENDPOINTS.COMMENTS.BY_TASK(taskId)
+        );
     },
 
     countByTask: async (taskId: number): Promise<number> => {
-        const res = await apiClient.get<{ count: number }>(`/tasks/${taskId}/comments/count`);
+        const res = await apiClient.get<{ count: number }>(
+            API_ENDPOINTS.COMMENTS.COUNT(taskId)
+        );
         return res.count;
     },
 
@@ -29,7 +34,7 @@ export const commentService = {
             form.append("file", file);
         }
         const response = await api.post<TaskComment>(
-            `/tasks/${taskId}/comments`,
+            API_ENDPOINTS.COMMENTS.BY_TASK(taskId),
             form,
             { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -37,11 +42,14 @@ export const commentService = {
     },
 
     update: async (taskId: number, commentId: number, data: CommentReq): Promise<TaskComment> => {
-        return apiClient.put<TaskComment, CommentReq>(`/tasks/${taskId}/comments/${commentId}`, data);
+        return apiClient.put<TaskComment, CommentReq>(
+            API_ENDPOINTS.COMMENTS.BY_ID(taskId, commentId),
+            data
+        );
     },
 
     delete: async (taskId: number, commentId: number): Promise<void> => {
-        await apiClient.delete(`/tasks/${taskId}/comments/${commentId}`);
+        await apiClient.delete(API_ENDPOINTS.COMMENTS.BY_ID(taskId, commentId));
     },
 
     /**
@@ -50,7 +58,7 @@ export const commentService = {
      */
     toggleReaction: async (taskId: number, commentId: number, emoji: string): Promise<TaskComment> => {
         return apiClient.post<TaskComment, null>(
-            `/tasks/${taskId}/comments/${commentId}/reactions?emoji=${encodeURIComponent(emoji)}`,
+            `${API_ENDPOINTS.COMMENTS.REACTIONS(taskId, commentId)}?emoji=${encodeURIComponent(emoji)}`,
             null
         );
     },

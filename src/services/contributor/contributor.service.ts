@@ -1,18 +1,24 @@
-import { api } from "@/api/axios";
+import { apiClient } from "@/api/api-client";
+import { API_ENDPOINTS } from "@/api/constants";
 import type { Contributor } from "@/types/contributor";
 
 export const contributorService = {
     getAll: async (projectId: number): Promise<Contributor[]> => {
-        const response = await api.get<Contributor[]>(`projects/${projectId}/contributors`);
-        return response.data;
+        return apiClient.get<Contributor[]>(
+            API_ENDPOINTS.CONTRIBUTORS.ALL(projectId)
+        );
     },
 
     add: async (projectId: number, userId: number): Promise<Contributor> => {
-        const response = await api.post<Contributor>(`projects/${projectId}/contributors`, { userId });
-        return response.data;
+        return apiClient.post<Contributor, { userId: number }>(
+            API_ENDPOINTS.CONTRIBUTORS.ALL(projectId),
+            { userId }
+        );
     },
 
     remove: async (projectId: number, userId: number): Promise<void> => {
-        await api.delete(`projects/${projectId}/contributors/${userId}`);
+        await apiClient.delete(
+            API_ENDPOINTS.CONTRIBUTORS.BY_ID(projectId, userId)
+        );
     },
 };

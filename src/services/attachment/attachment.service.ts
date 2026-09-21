@@ -1,26 +1,37 @@
 import { api } from "@/api/axios";
+import { apiClient } from "@/api/api-client";
+import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
 import type { TaskAttachment } from "@/types/attachment";
 
 export const attachmentService = {
     getAll: async (taskId: number): Promise<TaskAttachment[]> => {
-        const response = await api.get<TaskAttachment[]>(`tasks/${taskId}/attachments`);
-        return response.data;
+        return apiClient.get<TaskAttachment[]>(
+            API_ENDPOINTS.ATTACHMENTS.BY_TASK(taskId)
+        );
     },
 
+    /**
+     * L'upload multipart est conservé en axios direct : il nécessite l'en-tête
+     * explicite `Content-Type: multipart/form-data`, que `apiClient` ne gère pas.
+     */
     upload: async (taskId: number, file: File): Promise<TaskAttachment> => {
         const formData = new FormData();
         formData.append("file", file);
-        const response = await api.post<TaskAttachment>(`tasks/${taskId}/attachments`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
+        const response = await api.post<TaskAttachment>(
+            API_ENDPOINTS.ATTACHMENTS.BY_TASK(taskId),
+            formData,
+            { headers: { "Content-Type": "multipart/form-data" } }
+        );
         return response.data;
     },
 
     downloadUrl: (attachmentId: number): string => {
-        return `${import.meta.env.VITE_API_BASE_URL}/tasks/attachments/${attachmentId}/download`;
+        return `${API_CONFIG.BASE_URL}${API_ENDPOINTS.ATTACHMENTS.DOWNLOAD(attachmentId)}`;
     },
 
     delete: async (attachmentId: number): Promise<void> => {
-        await api.delete(`tasks/attachments/${attachmentId}`);
+        await apiClient.delete(
+            API_ENDPOINTS.ATTACHMENTS.BY_ID(attachmentId)
+        );
     },
 };
