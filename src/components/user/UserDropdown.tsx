@@ -5,13 +5,14 @@ import useAuth from "@/hooks/useAuth";
 import { authService } from "@/services/auth/auth.service";
 import { getUserImageUrl } from "@/utils/image";
 import { useClickOutside } from "@/hooks/useClickOutside";
+import { useToggle } from "@/hooks/useToggle";
 
 import type { Email } from "@/types/email";
 import type { UserResponse } from "@/types/user";
 import { useNavigate } from "react-router-dom";
 
 export default function UserDropdown() {
-    const [open, setOpen] = useState(false);
+    const [open, toggleOpen, setOpen] = useToggle();
     const [userDetails, setUserDetails] = useState<UserResponse | null>(null);
      const navigate = useNavigate();
 
@@ -65,7 +66,7 @@ export default function UserDropdown() {
 
             <button
                 type="button"
-                onClick={() => setOpen(!open)}
+                onClick={toggleOpen}
                 className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-secondary/30"
             >
     

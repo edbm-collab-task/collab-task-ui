@@ -1,21 +1,21 @@
-import { useState } from "react";
 import { SmilePlus } from "lucide-react";
 import { REACTION_EMOJIS } from "@/types/comment";
 import { useClickOutside } from "@/hooks/useClickOutside";
+import { useToggle } from "@/hooks/useToggle";
 
 interface Props {
     onSelect: (emoji: string) => void;
 }
 
 export default function ReactionPicker({ onSelect }: Props) {
-    const [open, setOpen] = useState(false);
+    const [open, toggleOpen, setOpen] = useToggle();
     const ref = useClickOutside<HTMLDivElement>(() => setOpen(false), open);
 
     return (
         <div className="relative" ref={ref}>
             <button
                 type="button"
-                onClick={() => setOpen(!open)}
+                onClick={toggleOpen}
                 className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
                 title="Ajouter une réaction"
             >

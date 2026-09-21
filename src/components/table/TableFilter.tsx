@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
+
+import { useToggle } from "@/hooks/useToggle";
 
 export interface FilterOption<T = string> {
     label: string;
@@ -22,7 +23,7 @@ export default function TableFilter<T = string>({
     placeholder = "Filtrer",
 }: TableFilterProps<T>) {
 
-    const [open, setOpen] = useState(false);
+    const [open, toggleOpen, setOpen] = useToggle();
 
     const selected = options.find(
         option => option.value === value
@@ -39,7 +40,7 @@ export default function TableFilter<T = string>({
 
             <button
                 type="button"
-                onClick={() => setOpen(!open)}
+                onClick={toggleOpen}
                 className="flex h-10 w-full items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-accent"
             >
                 <span className="flex items-center gap-2">

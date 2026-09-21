@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Check, Search, Users, X } from "lucide-react";
 import type { ChatUser } from "@/types/message";
+import { useMultiSelect } from "@/hooks/useMultiSelect";
 
 interface Props {
     users: ChatUser[];
@@ -11,7 +12,7 @@ interface Props {
 const CreateGroupModal = ({ users, onClose, onCreate }: Props) => {
     const [name, setName] = useState("");
     const [search, setSearch] = useState("");
-    const [selected, setSelected] = useState<number[]>([]);
+    const { selected, toggle } = useMultiSelect<number>([]);
 
     const filtered = useMemo(() => {
         const value = search.toLowerCase().trim();
@@ -21,10 +22,6 @@ const CreateGroupModal = ({ users, onClose, onCreate }: Props) => {
             return !value || `${user.firstname} ${user.lastname} ${user.email}`.toLowerCase().includes(value);
         });
     }, [users, search]);
-
-    const toggle = (id: number) => {
-        setSelected((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">

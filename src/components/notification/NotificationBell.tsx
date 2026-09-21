@@ -5,9 +5,10 @@ import { notificationService } from "@/services/notification/notification.servic
 import type { Notification } from "@/types/notification";
 import { formatRelativeTime } from "@/utils/time";
 import { useClickOutside } from "@/hooks/useClickOutside";
+import { useToggle } from "@/hooks/useToggle";
 
 export default function NotificationBell() {
-    const [open, setOpen] = useState(false);
+    const [open, toggleOpen, setOpen] = useToggle();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const navigate = useNavigate();
@@ -31,7 +32,7 @@ export default function NotificationBell() {
         return () => clearInterval(interval);
     }, [loadNotifications]);
 
-    const closeDropdown = useCallback(() => setOpen(false), []);
+    const closeDropdown = useCallback(() => setOpen(false), [setOpen]);
 
     // Hook pour fermer le dropdown au clic en dehors
     const dropdownRef = useClickOutside<HTMLDivElement>(closeDropdown, open);
@@ -79,7 +80,7 @@ export default function NotificationBell() {
         <div ref={dropdownRef} className="relative">
             <button
                 type="button"
-                onClick={() => setOpen(!open)}
+                onClick={toggleOpen}
                 className="relative rounded-xl p-2 text-secondary transition-colors duration-150 hover:bg-secondary/30 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60"
             >
                 <Bell size={20} />

@@ -3,10 +3,11 @@ import { Outlet } from "react-router-dom";
 
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import { useToggle } from "@/hooks/useToggle";
 
 export default function AdminLayout() {
 
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, toggleSidebar, setSidebarOpen] = useToggle();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     return (
@@ -33,7 +34,7 @@ export default function AdminLayout() {
 
                 {/* Navbar */}
                 <Navbar
-                    toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+                    toggleSidebar={toggleSidebar}
                 />
 
 
