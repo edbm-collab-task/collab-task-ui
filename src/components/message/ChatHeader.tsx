@@ -1,4 +1,4 @@
-import { MoreVertical, Phone, Search, UserPlus, Users, Video } from "lucide-react";
+import { MoreVertical, Search, UserPlus, Users } from "lucide-react";
 import type { Conversation, ChatUser } from "@/types/message";
 import { getInitialsFromChatUser } from "@/utils/avatar";
 import { getInitialsFromName } from "@/utils/avatar";
@@ -9,13 +9,11 @@ interface Props {
     users: ChatUser[];
     currentUserId: number;
     onSearch: () => void;
-    onAudioCall: () => void;
-    onVideoCall: () => void;
     onMembers: () => void;
     onMenu: () => void;
 }
 
-const ChatHeader = ({ conversation, users, currentUserId, onSearch, onAudioCall, onVideoCall, onMembers, onMenu }: Props) => {
+const ChatHeader = ({ conversation, users, currentUserId, onSearch, onMembers, onMenu }: Props) => {
     const user = conversation.type === "private" ? users.find((item) => conversation.memberIds.includes(item.id) && item.id !== currentUserId) : undefined;
 
     const name = conversation.type === "group" ? conversation.name || "Groupe" : user ? `${user.firstname} ${user.lastname}` : "Conversation";
@@ -63,14 +61,6 @@ const ChatHeader = ({ conversation, users, currentUserId, onSearch, onAudioCall,
                         <UserPlus size={18} />
                     </button>
                 )}
-
-                <button type="button" onClick={onAudioCall} title="Appel audio" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-                    <Phone size={18} />
-                </button>
-
-                <button type="button" onClick={onVideoCall} title="Appel vidéo" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-                    <Video size={18} />
-                </button>
 
                 <button type="button" onClick={onSearch} title="Rechercher" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
                     <Search size={18} />
