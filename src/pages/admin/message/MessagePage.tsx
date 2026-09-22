@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import { MessageCircle } from "lucide-react";
 
-import CallModal from "@/components/message/CallModal";
 import ChatHeader from "@/components/message/ChatHeader";
 import ConversationMenu from "@/components/message/ConversationMenu";
 import ConversationSidebar from "@/components/message/ConversationSidebar";
@@ -26,7 +25,6 @@ const MessagePage = () => {
     const [showCreateGroup, setShowCreateGroup] = useState(false);
     const [showMembers, setShowMembers] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
-    const [call, setCall] = useState<"audio" | "video" | null>(null);
     const [showMenu, setShowMenu] = useState(false);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -290,8 +288,6 @@ const MessagePage = () => {
                         users={users}
                         currentUserId={currentUser?.id ?? 0}
                         onSearch={() => setShowSearch(true)}
-                        onAudioCall={() => setCall("audio")}
-                        onVideoCall={() => setCall("video")}
                         onMembers={() => setShowMembers(true)}
                         onMenu={() => setShowMenu((value) => !value)}
                     />
@@ -374,15 +370,6 @@ const MessagePage = () => {
                     messages={messages}
                     users={users}
                     onClose={() => setShowSearch(false)}
-                />
-            )}
-
-            {/* Modal d'appel (UI seulement — pas de WebRTC réel) */}
-            {call && selectedConversation && (
-                <CallModal
-                    type={call}
-                    name={selectedConversation.name}
-                    onClose={() => setCall(null)}
                 />
             )}
 
