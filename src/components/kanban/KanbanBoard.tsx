@@ -1,12 +1,6 @@
 import { useState, useMemo } from "react";
 import {
-    Pencil,
-    Trash2,
-    CalendarDays,
     Plus,
-    GitBranch,
-    Users,
-    MessageSquare,
 } from "lucide-react";
 
 import {
@@ -200,13 +194,6 @@ export default function KanbanBoard({
                         setCommentCounts(prev => ({ ...prev, [commentTaskId]: count }));
                     }
                 }}
-                // NOTE: props dupliquées (task, projectId, priorityBadge, formatDate, getCount)
-                // non utilisées par CommentPanel (Props interface ne les déclare pas)
-                task={tasks.find(t => t.taskId === commentTaskId)}
-                projectId={projectId}
-                priorityBadge={priorityBadge}
-                formatDate={formatDate}
-                getCount={getCount}
             />
         </div>
     );

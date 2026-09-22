@@ -57,8 +57,7 @@ export default function AdminListPage() {
     const loadRoles = async () => {
         try {
             const rolesData = await roleService.getAll();
-            // Filtrer SUPER_ADMIN si on veut, ou le garder
-            setRoles(rolesData.filter(r => r.name !== "SUPER_ADMIN"));
+            setRoles(rolesData);
         } catch (error) {
             console.error("Erreur lors du chargement des rôles :", error);
         }
@@ -380,7 +379,7 @@ export default function AdminListPage() {
                             value: "all"
                         },
                         ...roles.map(role => ({
-                            label: role.name,
+                            label: role.codeRole,
                             value: role.codeRole
                         }))
                     ]}

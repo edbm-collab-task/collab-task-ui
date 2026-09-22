@@ -18,7 +18,6 @@ export default function AdminLayout() {
                 open={sidebarOpen}
                 close={() => setSidebarOpen(false)}
                 collapsed={sidebarCollapsed}
-                collapse={() => setSidebarCollapsed(true)}
                 expand={() => setSidebarCollapsed(false)}
             />
 

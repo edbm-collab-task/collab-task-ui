@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import AdminMenu from "./AdminMenu";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { X } from "lucide-react";
 import { menus } from "./AdminNavigation.config.ts"
 import logo from "../../assets/logo.png";
 
@@ -9,11 +9,10 @@ interface Props {
     open: boolean;
     close: () => void;
     collapsed: boolean;
-    collapse: () => void;
     expand: () => void;
 }
 
-export default function Sidebar({ open, close, collapsed, collapse, expand }: Props) {
+export default function Sidebar({ open, close, collapsed, expand }: Props) {
 
     return (
         <>
