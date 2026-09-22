@@ -249,13 +249,15 @@ export default function ProjectListPage() {
                                 </div>
 
                                 <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4">
-                                    <button
-                                        onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
-                                        title="Modifier"
-                                        className="rounded-lg p-2 text-gray-400 transition  hover:text-accent"
-                                    >
-                                        <Pencil size={16} />
-                                    </button>
+                                    {project.isOwner && (
+                                        <button
+                                            onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
+                                            title="Modifier"
+                                            className="rounded-lg p-2 text-gray-400 transition  hover:text-accent"
+                                        >
+                                            <Pencil size={16} />
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => navigate(`/admin/projects/${project.projectId}`)}
                                         className="flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary hover:text-secondary"

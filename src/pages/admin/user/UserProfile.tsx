@@ -317,7 +317,7 @@ export default function UserProfile() {
                     <ProfileFieldRow
                         icon={<ShieldCheck size={19} />}
                         label="Rôle"
-                        value={userDetails.role}
+                        value={userDetails.codeRole}
                         variant="badge"
                     />
                     <ProfileFieldRow

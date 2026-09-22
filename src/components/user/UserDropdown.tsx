@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, User, LogOut, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import useAuth from "@/hooks/useAuth";
 import { authService } from "@/services/auth/auth.service";
 import { getUserImageUrl } from "@/utils/image";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useToggle } from "@/hooks/useToggle";
-
 import type { Email } from "@/types/email";
 import type { UserResponse } from "@/types/user";
-import { useNavigate } from "react-router-dom";
 
 export default function UserDropdown() {
     const [open, toggleOpen, setOpen] = useToggle();
@@ -126,7 +125,7 @@ export default function UserDropdown() {
                         </p>
 
                         <p className="text-sm text-gray-500">
-                            {currentUser.role}
+                            {currentUser.codeRole || "—"}
                         </p>
                     </div>
 

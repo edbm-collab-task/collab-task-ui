@@ -12,10 +12,12 @@ export interface Permission {
 export interface Role {
     id: number;
     name: string;
+    codeRole: string;
     permissions: string[];
 }
 
 export interface RoleFormData {
     name: string;
+    codeRole: string;
     permissions: string[];
 }

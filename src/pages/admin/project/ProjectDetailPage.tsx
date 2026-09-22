@@ -274,13 +274,15 @@ export default function ProjectDetailPage() {
                         {showNewStatus ? "Fermer" : "Ajouter un statut"}
                     </button>
 
-                    <button
-                        onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
-                    >
-                        <Pencil size={15} />
-                        Modifier le projet
-                    </button>
+                    {project.isOwner && (
+                        <button
+                            onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
+                            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
+                        >
+                            <Pencil size={15} />
+                            Modifier le projet
+                        </button>
+                    )}
 
                     <button
                         onClick={() => navigate(`/admin/projects/${project.projectId}/history`)}

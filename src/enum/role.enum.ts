@@ -1,13 +1,5 @@
 export const RoleType = {
-
-    USER: "USER",
-
-    ADMIN: "ADMIN",
-
-    SUPER_ADMIN: "SUPER_ADMIN"
-
+    USER: "U1S",
+    ADMIN: "A1D",
+    SUPER_ADMIN: "S1ADM"
 } as const;
-
-
-export type RoleType =
-    typeof RoleType[keyof typeof RoleType];

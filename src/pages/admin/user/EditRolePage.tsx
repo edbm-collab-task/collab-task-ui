@@ -1,16 +1,29 @@
+import { useEffect, useState } from "react";
 import GlobalForms from "@/components/Form/GlobalForm";
 import { userService } from "@/services/user/user.service";
-import { useLocation,useNavigate } from "react-router";
-import type { AttacheRole } from "@/types/role";
-import { userAttachedRole } from "@/components/user/userEditRole";
+import { roleService } from "@/services/role/role.service";
+import { useLocation, useNavigate } from "react-router";
 
 export default function EditUserRolePage() {
     const navigate = useNavigate();
     const location = useLocation();
+    const [roles, setRoles] = useState<{ label: string; value: string }[]>([]);
 
     const email = location.state?.email;
 
-    const handleEdit = async (data: AttacheRole) => {
+    useEffect(() => {
+        const loadRoles = async () => {
+            try {
+                const allRoles = await roleService.getAll();
+                setRoles(allRoles.map(r => ({ label: r.name, value: r.codeRole })));
+            } catch (error) {
+                console.error("Erreur chargement rôles:", error);
+            }
+        };
+        loadRoles();
+    }, []);
+
+    const handleEdit = async (data: { role: string }) => {
         try {
             await userService.updateRole({
                 ...data,
@@ -27,9 +40,25 @@ export default function EditUserRolePage() {
     return (
         <div className="mx-auto max-w-100 mt-10">
 
-            <GlobalForms<AttacheRole>
+            <GlobalForms<{ role: string }>
                 title="Choisir un rôle"
-                fields={userAttachedRole}
+                fields={[
+                    {
+                        name: "role",
+                        label: "Rôle",
+                        type: "select",
+                        options: roles.length > 0
+                            ? roles
+                            : [
+                                { label: "Utilisateur", value: "U1S" },
+                                { label: "Administrateur", value: "A1D" },
+                                { label: "Super Administrateur", value: "S1ADM" }
+                            ],
+                        validation: {
+                            required: "Le rôle est requis"
+                        }
+                    }
+                ]}
                 onSubmit={handleEdit}
                 submitLabel="Modifier"
             />

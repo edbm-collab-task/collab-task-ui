@@ -1,27 +1,19 @@
 import type { FormField } from "@/components/Form/Forms";
 import type { AttacheRole } from "@/types/role";
-import { RoleType } from "@/enum/role.enum";
 
-export const userAttachedRole: FormField<AttacheRole>[] = [
+export const userAttachedRole = (roles: { label: string; value: string }[] = []): FormField<AttacheRole>[] => [
     {
         name: "role",
         label: "Rôle",
         type: "select",
 
-        options: [
-            {
-                label: "Utilisateur",
-                value: RoleType.USER
-            },
-            {
-                label: "Administrateur",
-                value: RoleType.ADMIN
-            },
-            {
-                label: "Super Administrateur",
-                value: RoleType.SUPER_ADMIN
-            }
-        ],
+        options: roles.length > 0
+            ? roles
+            : [
+                { label: "Utilisateur", value: "U1S" },
+                { label: "Administrateur", value: "A1D" },
+                { label: "Super Administrateur", value: "S1ADM" }
+            ],
 
         validation: {
             required: "Le rôle est requis"
