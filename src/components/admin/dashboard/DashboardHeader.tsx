@@ -94,20 +94,7 @@ export default function DashboardHeader({
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <button
-                        onClick={handleExportPdf}
-                        disabled={selectedProjectId === "all"}
-                        className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm transition ${
-                            selectedProjectId === "all"
-                                ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
-                                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md"
-                        }`}
-                        title={selectedProjectId === "all" ? "Sélectionnez un projet pour exporter" : "Exporter en PDF"}
-                    >
-                        <Download size={16} />
-                        Exporter en PDF
-                    </button>
+                <div className="flex flex-wrap items-center gap-3 max-sm:grid max-sm:grid-cols-2">
 
                     <TableFilter<DashboardPeriod>
                         value={period}
@@ -170,6 +157,19 @@ export default function DashboardHeader({
                             </div>
                         )}
                     </div>
+                    <button
+                        onClick={handleExportPdf}
+                        disabled={selectedProjectId === "all"}
+                        className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm transition max-sm:text-xs ${
+                            selectedProjectId === "all"
+                                ? "hidden!"
+                                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md"
+                        }`}
+                        title={selectedProjectId === "all" ? "Sélectionnez un projet pour exporter" : "Exporter en PDF"}
+                    >
+                        <Download size={16} />
+                        Exporter en PDF
+                    </button>
 
                 </div>
             </div>

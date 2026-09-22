@@ -12,6 +12,7 @@ import type { UserResponse } from "@/types/user";
 import { commentService } from "@/services/comment/comment.service";
 import { formatRelativeTimeWithFallback } from "@/utils/time";
 import { getInitialsFromParts } from "@/utils/avatar";
+import { API_CONFIG } from "@/api/constants";
 import ReactionPicker from "./ReactionPicker";
 import FilePreviewModal from "./FilePreviewModal";
 
@@ -125,7 +126,7 @@ export default function CommentItem({
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
                     {comment.author.imagePath ? (
                         <img
-                            src={comment.author.imagePath}
+                            src={API_CONFIG.BASE_URL ? `${API_CONFIG.BASE_URL}/users/${comment.author.userId}/image` : comment.author.imagePath}
                             alt=""
                             className="h-8 w-8 rounded-full object-cover"
                         />
