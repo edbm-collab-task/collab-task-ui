@@ -44,6 +44,12 @@ const emptyForm = (projectId: number, statusId: number): TaskReq => ({
     assigneeIds: [],
 });
 
+const ALL_TABS = [
+    { id: "details", label: "Détails", icon: Info },
+    { id: "organisation", label: "Organisation", icon: CalendarClock },
+    { id: "pieces", label: "Pièces jointes", icon: Paperclip },
+];
+
 interface AssigneePickerProps {
     contributors: Contributor[];
     selectedIds: number[];
@@ -468,7 +474,7 @@ export default function TaskModal({
                                                         <div key={att.id} className="flex items-center justify-between rounded-lg bg-primary/10 px-3 py-2">
                                                             <div className="min-w-0 flex-1">
                                                                 <p className="truncate text-sm font-medium text-primary">{att.originalName}</p>
-                                                                <p className="text-xs text-primary/60">{formatSize(att.size)}</p>
+                                                                <p className="text-xs text-primary/60">{formatFileSizeFr(att.size)}</p>
                                                             </div>
                                                             <div className="flex items-center gap-1 ml-2">
                                                                 <a
@@ -544,60 +550,6 @@ export default function TaskModal({
                             )}
                         </div>
                     </form>
-
-                    {task && (
-                        <div className="mt-4 border-t border-gray-200 pt-4">
-                            <label className={labelClass}>
-                                <Paperclip size={13} className="mr-1 inline" />
-                                Pièces jointes ({attachments.length})
-                            </label>
-                            <div className="rounded-xl border border-gray-200 p-3 space-y-2">
-                                {attachments.length > 0 && (
-                                    <div className="space-y-1">
-                                        {attachments.map(att => (
-                                            <div key={att.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium text-gray-700">{att.originalName}</p>
-                                                    <p className="text-xs text-gray-400">{formatFileSizeFr(att.size)}</p>
-                                                </div>
-                                                <div className="flex items-center gap-1 ml-2">
-                                                    <a
-                                                        href={attachmentService.downloadUrl(att.id)}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
-                                                        title="Télécharger"
-                                                    >
-                                                        <Download size={14} />
-                                                    </a>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDeleteAttachment(att.id, att.originalName)}
-                                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-accent"
-                                                        title="Supprimer"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <div>
-                                    <button
-                                        type="button"
-                                        onClick={openFilePicker}
-                                        disabled={uploading}
-                                        className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-accent hover:text-accent disabled:opacity-50"
-                                    >
-                                        <Paperclip size={13} />
-                                        {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 
