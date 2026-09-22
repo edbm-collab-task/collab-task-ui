@@ -6,7 +6,7 @@ import type { RecoverPasswordFormUI } from "@/types/user";
 import { authService } from "@/services/auth/auth.service";
 import useAuth from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, LockKeyhole, ShieldCheck } from "lucide-react";
+import { Check, LockKeyhole, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { BackButton } from "@/components/common/BackButton";
 
