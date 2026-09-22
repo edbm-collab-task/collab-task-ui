@@ -51,7 +51,7 @@ export default function CreateUserPage() {
                 const filtered = isSuperAdmin
                     ? allRoles
                     : allRoles.filter(r => r.name === "USER");
-                setRoles(filtered.map(r => ({ label: r.name, value: r.name })));
+                setRoles(filtered.map(r => ({ label: r.name, value: r.codeRole })));
             } catch (error) {
                 console.error(error);
             }

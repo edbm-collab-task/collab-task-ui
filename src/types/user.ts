@@ -62,6 +62,8 @@ export interface UserResponse {
     imagePath: string;
 
     role: RoleType;
+
+    codeRole: string;
 }
 
 export interface UserTable {
@@ -75,6 +77,8 @@ export interface UserTable {
     email: string;
 
     role: RoleType;
+
+    codeRole: string;
 
     isActive: boolean;
 }
@@ -101,6 +105,8 @@ export interface UserDetails {
     createdAt: string;
 
     role: RoleType;
+
+    codeRole: string;
 }
 
 
@@ -114,6 +120,8 @@ export const userTr = {
 
     role: "Rôle",
 
+    codeRole: "Rôle",
+
 } as const;
 
 export interface UserLoginReq{
@@ -124,6 +132,7 @@ export interface UserLoginReq{
 export interface UserLoginRes {
   userId: number;
   role: string;
+  codeRole: string;
   firstname: string;
   lastname: string;
   email: string;
@@ -172,6 +181,8 @@ export interface UserProfile {
     createdAt: string;
 
     role: RoleType;
+
+    codeRole: string;
 }
 
 export interface EditUser {

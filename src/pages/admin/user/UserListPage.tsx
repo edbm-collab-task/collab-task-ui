@@ -109,7 +109,7 @@ export default function UserListPage() {
     const columns = createColumns(
         users,
         userTr,
-        ["firstname", "lastname", "email", "role"]
+        ["firstname", "lastname", "email", "codeRole"]
     );
 
 

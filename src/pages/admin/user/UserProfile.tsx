@@ -457,7 +457,7 @@ export default function UserProfile() {
 
                             <div className="mt-1">
                                 <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                                    {userDetails.role}
+                                    {userDetails.codeRole || "—"}
                                 </span>
                             </div>
                         </div>

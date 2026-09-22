@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, User, LogOut, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import useAuth from "@/hooks/useAuth";
 import { authService } from "@/services/auth/auth.service";
 import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
-
 import type { Email } from "@/types/email";
 import type { UserResponse } from "@/types/user";
-import { useNavigate } from "react-router-dom";
 
 export default function UserDropdown() {
     const [open, setOpen] = useState(false);
@@ -144,7 +143,7 @@ export default function UserDropdown() {
                         </p>
 
                         <p className="text-sm text-gray-500">
-                            {currentUser.role}
+                            {currentUser.codeRole || "—"}
                         </p>
                     </div>
 

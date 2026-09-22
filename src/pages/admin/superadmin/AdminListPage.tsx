@@ -10,11 +10,13 @@ import TableFilter from "@/components/table/TableFilter";
 
 import { type UserTable, type UserDetails } from "@/types/user";
 import type { TableAction, HeaderAction } from "@/types/table";
+import type { Role } from "@/types/role";
 
 import { DetailModal } from "@/components/details/globalDetail";
 import { userDetailFields } from "@/components/details/userDetails";
 
 import { userService } from "@/services/user/user.service";
+import { roleService } from "@/services/role/role.service";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 
@@ -23,6 +25,7 @@ const adminTr = {
     lastname: "Nom",
     email: "Email",
     role: "Rôle",
+    codeRole: "Rôle",
 };
 
 export default function AdminListPage() {
@@ -34,8 +37,10 @@ export default function AdminListPage() {
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
 
+    const [roles, setRoles] = useState<Role[]>([]);
+
     type StatusFilter = "all" | "active" | "disable";
-    type RoleFilter = "all" | "USER" | "ADMIN" | "SUPER_ADMIN";
+    type RoleFilter = "all" | string;
 
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
     const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
@@ -45,6 +50,19 @@ export default function AdminListPage() {
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
 
+
+    /**
+     * Charge tous les rôles pour le filtre.
+     */
+    const loadRoles = async () => {
+        try {
+            const rolesData = await roleService.getAll();
+            // Filtrer SUPER_ADMIN si on veut, ou le garder
+            setRoles(rolesData.filter(r => r.name !== "SUPER_ADMIN"));
+        } catch (error) {
+            console.error("Erreur lors du chargement des rôles :", error);
+        }
+    };
 
     /**
      * Charge tous les utilisateurs pour le SUPER_ADMIN (users, admins, super_admins)
@@ -101,6 +119,13 @@ export default function AdminListPage() {
 
     }, [statusFilter]);
 
+    /**
+     * Charge les rôles au montage pour le filtre.
+     */
+    useEffect(() => {
+        loadRoles();
+    }, []);
+
 
     /**
      * Création des colonnes.
@@ -112,7 +137,7 @@ export default function AdminListPage() {
             "firstname",
             "lastname",
             "email",
-            "role"
+            "codeRole"
         ]
     );
 
@@ -297,7 +322,7 @@ export default function AdminListPage() {
 
         .filter(admin => {
             if (roleFilter === "all") return true;
-            return admin.role === roleFilter;
+            return admin.codeRole === roleFilter;
         })
 
         .filter(admin => {
@@ -406,18 +431,10 @@ export default function AdminListPage() {
                             label: "Tous les rôles",
                             value: "all"
                         },
-                        {
-                            label: "USER",
-                            value: "USER"
-                        },
-                        {
-                            label: "ADMIN",
-                            value: "ADMIN"
-                        },
-                        {
-                            label: "SUPER_ADMIN",
-                            value: "SUPER_ADMIN"
-                        }
+                        ...roles.map(role => ({
+                            label: role.name,
+                            value: role.codeRole
+                        }))
                     ]}
 
                     onChange={(value) => {
