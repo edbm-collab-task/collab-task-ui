@@ -1,7 +1,8 @@
-import { useForm, type FieldValues, type Path } from "react-hook-form";
+import { useForm, type FieldValues, type FieldError } from "react-hook-form";
 import type { FormField } from "@/components/Form/Forms";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { getRegisterOptions } from "@/components/Form/formLogic";
+import FormFieldControl from "@/components/Form/FormFieldControl";
 
 interface Props<T extends FieldValues> {
     title?: string;
@@ -36,18 +37,6 @@ export default function GlobalForms<T extends FieldValues>({
 
 
     const isTwoColumns = fields.length > 4;
-
-
-    const getRegisterOptions = (field: FormField<T>) => ({
-        ...field.validation,
-        ...(field.matchField && {
-            validate: (value: unknown) => {
-                const matchValue = getValues(field.matchField as Path<T>);
-                return value === matchValue ||
-                    `${String(field.label)} ne correspond pas`;
-            }
-        })
-    });
 
 
     const submitHandler = async (data: T) => {
@@ -98,118 +87,24 @@ export default function GlobalForms<T extends FieldValues>({
 
                             const fieldProps = register(
                                 field.name,
-                                getRegisterOptions(field)
+                                getRegisterOptions(field, getValues)
                             );
 
-                            const isEmail = field.type === "email";
-
                             return (
-                            <div
-                                key={String(field.name)}
-                                className="space-y-2"
-                            >
-
-                                <label className="text-sm font-medium text-primary/80">
-                                    {field.label}
-                                </label>
-
-
-                                {field.type === "select" ? (
-
-                                    <select
-                                        {...fieldProps}
-                                        disabled={field.disabled || loading}
-                                        className={inputClass}
-                                    >
-
-                                        <option value="">
-                                            Select...
-                                        </option>
-
-
-                                        {field.options?.map(option => (
-                                            <option
-                                                key={option.value}
-                                                value={option.value}
-                                            >
-                                                {option.label}
-                                            </option>
-                                        ))}
-
-                                    </select>
-
-
-                                ) : field.type === "textarea" ? (
-
-                                    <textarea
-                                        rows={5}
-                                        {...fieldProps}
-                                        placeholder={field.placeholder}
-                                        disabled={field.disabled || loading}
-                                        className={textareaClass}
-                                    />
-
-
-                                ) : (
-
-                                    <div className="relative">
-
-                                        <input
-                                            type={
-                                                field.type === "password" && showPassword
-                                                    ? "text"
-                                                    : field.type
-                                            }
-                                            {...fieldProps}
-                                            onChange={(e) => {
-                                                if (isEmail) {
-                                                    e.target.value = e.target.value.toLowerCase();
-                                                }
-                                                fieldProps.onChange(e);
-                                            }}
-                                            placeholder={field.placeholder}
-                                            disabled={field.disabled || loading}
-                                            className={`${inputClass} ${field.type === "password" ? "pr-12" : ""}`}
-                                        />
-
-
-                                        {field.type === "password" && (
-
-                                            <button
-                                                type="button"
-                                                disabled={loading}
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg text-primary/50 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                                            >
-
-                                                {showPassword
-                                                    ? <EyeOff size={20}/>
-                                                    : <Eye size={20}/>
-                                                }
-
-                                            </button>
-
-                                        )}
-
-                                    </div>
-
-                                )}
-
-
-                                {field.description && (
-                                    <p className="text-xs text-primary/50">
-                                        {field.description}
-                                    </p>
-                                )}
-
-
-                                {errors[field.name] && (
-                                    <p className="text-sm font-medium text-red-500">
-                                        {String(errors[field.name]?.message)}
-                                    </p>
-                                )}
-
-                            </div>
+                                <FormFieldControl
+                                    key={String(field.name)}
+                                    field={field}
+                                    fieldProps={fieldProps}
+                                    error={errors[field.name] as FieldError | undefined}
+                                    loading={loading}
+                                    showPassword={showPassword}
+                                    onTogglePassword={() => setShowPassword(!showPassword)}
+                                    inputClass={inputClass}
+                                    textareaClass={textareaClass}
+                                    labelClass="text-sm font-medium text-primary/80"
+                                    descriptionClass="text-xs text-primary/50"
+                                    passwordButtonClass="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg text-primary/50 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                />
                             );
                         })}
 

@@ -15,10 +15,12 @@ import {
 import type { Activity } from "@/types/activity";
 import type { DashboardActivityItem } from "@/types/dashboard";
 import EmptyState from "@/components/common/EmptyState";
+import { formatRelativeTime } from "@/utils/time";
 
 interface Props {
     activities: DashboardActivityItem[] | null;
 }
+
 const typeConfig: Record<Activity["type"], { Icon: typeof History; badge: string }> = {
     // Priorité critique -> Accent plein (fond solide, texte blanc = alerte maximale)
     TASK_PRIORITY_CHANGED: { Icon: AlertTriangle, badge: "bg-[var(--color-accent)] text-[var(--color-white)]" },
@@ -41,19 +43,6 @@ const typeConfig: Record<Activity["type"], { Icon: typeof History; badge: string
     TASK_UNASSIGNED: { Icon: UserX, badge: "bg-[var(--color-accent)]/10 text-[var(--color-accent)]" },
 };
 
-
-const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return "à l'instant";
-    if (minutes < 60) return `il y a ${minutes}min`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `il y a ${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `il y a ${days}j`;
-};
 
 export default function RecentActivity({ activities }: Props) {
 
@@ -93,7 +82,7 @@ export default function RecentActivity({ activities }: Props) {
                                 </div>
 
                                 <span className="whitespace-nowrap text-xs text-primary/50">
-                                    {formatTime(activity.createdAt)}
+                                    {formatRelativeTime(activity.createdAt)}
                                 </span>
                             </li>
                         );

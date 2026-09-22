@@ -9,9 +9,13 @@ import {
     type TaskRes,
 } from "@/types/task";
 import type { Status } from "@/types/status";
+import { toStatusListFromSeed } from "@/mappers/status.mapper";
 import type { Contributor } from "@/types/contributor";
 import type { TaskAttachment } from "@/types/attachment";
 import { attachmentService } from "@/services/attachment/attachment.service";
+import { getInitialsFromName } from "@/utils/avatar";
+import { formatFileSizeFr } from "@/utils/format";
+import { useClickOutside } from "@/hooks/useClickOutside";
 import { ConfirmPopup } from "../common/ConfirmPopup";
 import { CarouselTabs } from "../common/CarouselTabs";
 
@@ -28,31 +32,17 @@ interface Props {
     submitting?: boolean;
 }
 
+/** Formulaire vide pré-rempli avec le projectId et le statusId par défaut */
 const emptyForm = (projectId: number, statusId: number): TaskReq => ({
     title: "",
     description: "",
     dueDate: null,
     projectId,
-    priorityId: 2,
+    priorityId: 2, // Priorité "Moyenne" par défaut (seed backend)
     statusId,
     parentTaskId: null,
     assigneeIds: [],
 });
-
-const initialsOf = (name: string) =>
-    name
-        .trim()
-        .split(/\s+/)
-        .map(w => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2) || "?";
-
-const ALL_TABS = [
-    { id: "details", label: "Détails", icon: Info },
-    { id: "organisation", label: "Organisation", icon: CalendarClock },
-    { id: "pieces", label: "Pièces jointes", icon: Paperclip },
-];
 
 interface AssigneePickerProps {
     contributors: Contributor[];
@@ -63,21 +53,12 @@ interface AssigneePickerProps {
 function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerProps) {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useClickOutside<HTMLDivElement>(() => setOpen(false));
     const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
 
     const selected = contributors.filter(c => selectedIds.includes(c.userId));
 
+    // Filtrage côté client : exclut les déjà sélectionnés, filtre par nom/email
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
         return contributors.filter(c => {
@@ -105,7 +86,7 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
                         title={`${c.userName} — cliquer pour désassigner`}
                         className="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white ring-1 ring-accent ring-offset-1 transition hover:opacity-80"
                     >
-                        {initialsOf(c.userName)}
+                        {getInitialsFromName(c.userName)}
                     </button>
                 ))}
                 {selected.length === 0 && (
@@ -135,8 +116,8 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
                                     onClick={() => handlePick(c.userId)}
                                     className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-primary/10"
                                 >
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
-                                        {initialsOf(c.userName)}
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-primary">
+                                        {getInitialsFromName(c.userName)}
                                     </span>
                                     <span className="min-w-0">
                                         <span className="block truncate text-sm font-medium text-primary">{c.userName}</span>
@@ -167,11 +148,9 @@ export default function TaskModal({
     submitting = false,
 }: Props) {
 
-    const fallbackStatuses: Status[] = STATUSES.map(s => ({
-        statusId: s.id,
-        name: s.name,
-        sortOrder: 0,
-    }));
+    // Fallback sur les statuts "en dur" (seed backend) si l'API ne renvoie pas de statuts personnalisés
+    // STATUSES = [{id:1,name:"A faire"}, {id:2,name:"En cours"}, {id:3,name:"Terminé"}]
+    const fallbackStatuses: Status[] = toStatusListFromSeed(STATUSES);
 
     const availableStatuses = statuses ?? fallbackStatuses;
     const statusIdDefault = availableStatuses[0]?.statusId ?? 1;
@@ -188,6 +167,8 @@ export default function TaskModal({
     const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
     const [uploading, setUploading] = useState(false);
 
+    // État unique pour toutes les confirmations (suppression pièce jointe)
+    // Évite de multiplier les ConfirmPopup dans le JSX
     const [activeTab, setActiveTab] = useState("details");
 
     // --- État pour la gestion de la ConfirmPopup ---
@@ -218,6 +199,11 @@ export default function TaskModal({
         }
     }, []);
 
+    // Synchronisation du formulaire à l'ouverture de la modale :
+    // - Si édition : on pré-remplit depuis la tâche existante + on charge les pièces jointes
+    // - Si création : on réinitialise avec le statut par défaut (ou celui passé par la colonne Kanban)
+    // Déps réduites intentionnellement (eslint-disable) : on ne veut recharger que si open/taskId changent,
+    // pas à chaque changement de `task` (objet) ou `projectId` (stable)
     useEffect(() => {
         if (!open) return;
         setActiveTab("details");
@@ -249,12 +235,14 @@ export default function TaskModal({
             await attachmentService.upload(taskId, file);
             await loadAttachments(taskId);
         } catch {
-            // error handled by interceptor
+            // error handled by interceptor (toast global)
         } finally {
             setUploading(false);
         }
     };
 
+    // Création dynamique d'un input file pour déclencher le sélecteur natif
+    // Accept限定 les types bureautiques courants (pas d'images ici, gérées côté commentaires)
     const openFilePicker = () => {
         const input = document.createElement("input");
         input.type = "file";
@@ -266,6 +254,7 @@ export default function TaskModal({
         input.click();
     };
 
+    // Suppression de pièce jointe avec ConfirmPopup (cohérence avec le reste de l'app)
     const handleDeleteAttachment = (attachmentId: number, attachmentName?: string) => {
         setConfirmConfig({
             open: true,
@@ -310,11 +299,14 @@ export default function TaskModal({
         e.preventDefault();
         if (!form.title.trim()) return;
 
+        // Date d'échéance obligatoire (règle métier)
         if (!form.dueDate) {
             toast.error("La date d'échéance est obligatoire");
             return;
         }
 
+        // Validation date passée : on autorise seulement si la date n'a pas été modifiée
+        // (cas édition où la date d'origine était déjà passée)
         const today = new Date().toISOString().slice(0, 10);
         const dueDateChanged = form.dueDate !== (task?.dueDate ?? null);
         if (dueDateChanged && form.dueDate < today) {
@@ -330,13 +322,9 @@ export default function TaskModal({
 
     const today = new Date().toISOString().slice(0, 10);
     const originalDueDate = task?.dueDate ?? null;
+    // dueMin pour l'input date : si la date d'origine est dans le passé, on la garde comme min
+    // pour ne pas forcer l'utilisateur à la changer s'il ne touche pas au champ
     const dueMin = originalDueDate && originalDueDate < today ? originalDueDate : today;
-
-    const formatSize = (bytes: number) => {
-        if (bytes < 1024) return bytes + " o";
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " Ko";
-        return (bytes / (1024 * 1024)).toFixed(1) + " Mo";
-    };
 
     return (
         <>
@@ -556,6 +544,60 @@ export default function TaskModal({
                             )}
                         </div>
                     </form>
+
+                    {task && (
+                        <div className="mt-4 border-t border-gray-200 pt-4">
+                            <label className={labelClass}>
+                                <Paperclip size={13} className="mr-1 inline" />
+                                Pièces jointes ({attachments.length})
+                            </label>
+                            <div className="rounded-xl border border-gray-200 p-3 space-y-2">
+                                {attachments.length > 0 && (
+                                    <div className="space-y-1">
+                                        {attachments.map(att => (
+                                            <div key={att.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium text-gray-700">{att.originalName}</p>
+                                                    <p className="text-xs text-gray-400">{formatFileSizeFr(att.size)}</p>
+                                                </div>
+                                                <div className="flex items-center gap-1 ml-2">
+                                                    <a
+                                                        href={attachmentService.downloadUrl(att.id)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
+                                                        title="Télécharger"
+                                                    >
+                                                        <Download size={14} />
+                                                    </a>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteAttachment(att.id, att.originalName)}
+                                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-accent"
+                                                        title="Supprimer"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div>
+                                    <button
+                                        type="button"
+                                        onClick={openFilePicker}
+                                        disabled={uploading}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs font-medium text-gray-500 transition hover:border-accent hover:text-accent disabled:opacity-50"
+                                    >
+                                        <Paperclip size={13} />
+                                        {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

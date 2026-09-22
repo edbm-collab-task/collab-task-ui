@@ -28,6 +28,11 @@ export const authService = {
     },
 
 
+    /**
+     * Connexion utilisateur : stocke les tokens dans localStorage.
+     * L'intercepteur axios (api/axios.ts) les ajoutera automatiquement aux requêtes suivantes.
+     * Retourne UserLoginRes contenant userId, role, permissions, firstname, lastname, email, tokens.
+     */
     login: async (
         data: UserLoginReq
     ): Promise<UserLoginRes> => {
@@ -106,6 +111,6 @@ export const authService = {
     },
 
    recoveryMe: async (): Promise<RecoveryMeResponse> => {
-       return await apiClient.get(API_ENDPOINTS.AUTH.RECOVERY_ME);
+      return await apiClient.get(API_ENDPOINTS.AUTH.RECOVERY_ME);
    }
 };

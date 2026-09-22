@@ -6,6 +6,12 @@ interface Props {
     children: ReactNode;
 }
 
+/**
+ * Guard strict : n'autorise que les utilisateurs avec role === "SUPER_ADMIN".
+ * Différent de PermissionRoute : ne vérifie pas les permissions mais le rôle brut.
+ * Utilisé pour : /admin/dashboard-admin, /admin/admins, /admin/roles.
+ * Affiche un spinner pendant le loading (vérification session).
+ */
 export default function SuperAdminRoute({ children }: Props) {
     const { user, loading } = useAuth();
 

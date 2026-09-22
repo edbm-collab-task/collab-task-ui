@@ -7,6 +7,12 @@ interface Props {
     permission: string;
 }
 
+/**
+ * Guard de route : vérifie une permission spécifique via usePermissions.
+ * - SUPER_ADMIN bypass toutes les permissions (voir usePermissions).
+ * - Si permission manquante : redirige vers /admin (dashboard).
+ * Utilisé pour : VIEW_USERS, MANAGE_USERS, MANAGE_DIRECTIONS, MANAGE_PROJECTS, VIEW_REPORTS.
+ */
 export default function PermissionRoute({ children, permission }: Props) {
     const { hasPermission } = usePermissions();
 

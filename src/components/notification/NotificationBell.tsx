@@ -1,14 +1,16 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Bell, CheckCheck, UserPlus, ClipboardList, AlertTriangle, AlarmClock, Hourglass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { notificationService } from "@/services/notification/notification.service";
 import type { Notification } from "@/types/notification";
+import { formatRelativeTime } from "@/utils/time";
+import { useClickOutside } from "@/hooks/useClickOutside";
+import { useToggle } from "@/hooks/useToggle";
 
 export default function NotificationBell() {
-    const [open, setOpen] = useState(false);
+    const [open, toggleOpen, setOpen] = useToggle();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const dropdownRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
     const loadNotifications = useCallback(async () => {
@@ -30,15 +32,10 @@ export default function NotificationBell() {
         return () => clearInterval(interval);
     }, [loadNotifications]);
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    const closeDropdown = useCallback(() => setOpen(false), [setOpen]);
+
+    // Hook pour fermer le dropdown au clic en dehors
+    const dropdownRef = useClickOutside<HTMLDivElement>(closeDropdown, open);
 
     const handleMarkAsRead = async (id: number) => {
         try {
@@ -68,19 +65,6 @@ export default function NotificationBell() {
         }
     };
 
-    const formatTime = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-        const minutes = Math.floor(diff / 60000);
-        if (minutes < 1) return "à l'instant";
-        if (minutes < 60) return `il y a ${minutes}min`;
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `il y a ${hours}h`;
-        const days = Math.floor(hours / 24);
-        return `il y a ${days}j`;
-    };
-
     const getIcon = (type: Notification["type"]) => {
         switch (type) {
             case "CONTRIBUTOR_ADDED": return UserPlus;
@@ -96,7 +80,7 @@ export default function NotificationBell() {
         <div ref={dropdownRef} className="relative">
             <button
                 type="button"
-                onClick={() => setOpen(!open)}
+                onClick={toggleOpen}
                 className="relative rounded-xl p-2 text-secondary transition-colors duration-150 hover:bg-secondary/30 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60"
             >
                 <Bell size={20} />
@@ -144,7 +128,7 @@ export default function NotificationBell() {
                                             <p className={`text-sm leading-snug ${!notif.isRead ? "font-semibold text-primary" : "text-primary/70"}`}>
                                                 {notif.message}
                                             </p>
-                                            <p className="mt-1 text-xs text-primary/50">{formatTime(notif.createdAt)}</p>
+                                            <p className="mt-1 text-xs text-primary/50">{formatRelativeTime(notif.createdAt)}</p>
                                         </div>
                                         {!notif.isRead && (
                                             <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-accent" />

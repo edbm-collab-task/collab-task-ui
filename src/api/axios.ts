@@ -1,4 +1,4 @@
-import { API_CONFIG } from "@/api/constants";
+import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -64,7 +64,7 @@ api.interceptors.response.use(
 
             try {
                 await axios.post(
-                    `${API_CONFIG.BASE_URL}/auth/refresh`,
+                    `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
                     null,
                     { withCredentials: true }
                 );

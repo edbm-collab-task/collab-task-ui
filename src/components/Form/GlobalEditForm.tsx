@@ -3,11 +3,10 @@ import {
     useForm,
     type DefaultValues,
     type FieldValues,
-    type Path,
-    type RegisterOptions,
+    type FieldError,
 } from "react-hook-form";
-import { Eye, EyeOff } from "lucide-react";
-
+import { getRegisterOptions } from "@/components/Form/formLogic";
+import FormFieldControl from "@/components/Form/FormFieldControl";
 import type { FormField } from "@/components/Form/Forms";
 
 interface GlobalEditFormProps<T extends FieldValues> {
@@ -52,26 +51,6 @@ export default function GlobalEditForm<T extends FieldValues>({
     useEffect(() => {
         reset(initialValues as DefaultValues<T>);
     }, [initialValues, reset]);
-
-    const getRegisterOptions = (
-        field: FormField<T>
-    ): RegisterOptions<T, Path<T>> => {
-
-        if (!field.matchField) {
-            return field.validation ?? {};
-        }
-
-        return {
-            ...(field.validation ?? {}),
-            validate: (value) => {
-                const matchValue = getValues(field.matchField as Path<T>);
-
-                return value === matchValue
-                    ? true
-                    : `${String(field.label)} ne correspond pas`;
-            },
-        };
-    };
 
     const submitForm = async (data: T): Promise<void> => {
 
@@ -126,172 +105,28 @@ export default function GlobalEditForm<T extends FieldValues>({
 
                             const fieldProps = register(
                                 field.name,
-                                getRegisterOptions(field)
+                                getRegisterOptions(field, getValues)
                             );
 
-                            const isEmail = field.type === "email";
-
                             return (
-                            <div
-                                key={String(field.name)}
-                                className="space-y-2"
-                            >
-
-                                <label className="text-sm font-semibold text-gray-700">
-                                    {field.label}
-                                </label>
-
-                                {field.type === "select" && (
-
-                                    <select
-                                        {...fieldProps}
-                                        disabled={
-                                            field.disabled ||
-                                            loading
-                                        }
-                                        className={inputClass}
-                                    >
-
-                                        <option value="">
-                                            Select...
-                                        </option>
-
-                                        {field.options?.map((option) => (
-
-                                            <option
-                                                key={String(option.value)}
-                                                value={String(option.value)}
-                                            >
-                                                {option.label}
-                                            </option>
-
-                                        ))}
-
-                                    </select>
-
-                                )}
-
-                                {field.type === "textarea" && (
-
-                                    <textarea
-                                        rows={5}
-                                        {...fieldProps}
-                                        placeholder={field.placeholder}
-                                        disabled={
-                                            field.disabled ||
-                                            loading
-                                        }
-                                        className={textareaClass}
-                                    />
-
-                                )}
-
-                                {field.type === "checkbox" && (
-
-                                    <div className="flex items-center gap-3">
-
-                                        <input
-                                            type="checkbox"
-                                            {...fieldProps}
-                                            disabled={
-                                                field.disabled ||
-                                                loading
-                                            }
-                                            className="h-5 w-5 rounded border-gray-300"
-                                        />
-
-                                        {field.description && (
-                                            <span className="text-sm text-gray-600">
-                                                {field.description}
-                                            </span>
-                                        )}
-
-                                    </div>
-
-                                )}
-
-                                {![
-                                    "select",
-                                    "textarea",
-                                    "checkbox",
-                                ].includes(field.type) && (
-
-                                    <div className="relative">
-
-                                        <input
-                                            type={
-                                                field.type === "password" &&
-                                                showPassword
-                                                    ? "text"
-                                                    : field.type
-                                            }
-                                            {...fieldProps}
-                                            onChange={(e) => {
-                                                if (isEmail) {
-                                                    e.target.value = e.target.value.toLowerCase();
-                                                }
-                                                fieldProps.onChange(e);
-                                            }}
-                                            placeholder={field.placeholder}
-                                            disabled={
-                                                field.disabled ||
-                                                loading
-                                            }
-                                            className={`${inputClass} ${
-                                                field.type === "password"
-                                                    ? "pr-12"
-                                                    : ""
-                                            }`}
-                                        />
-
-                                        {field.type === "password" && (
-
-                                            <button
-                                                type="button"
-                                                disabled={loading}
-                                                onClick={() =>
-                                                    setShowPassword(
-                                                        (previous) =>
-                                                            !previous
-                                                    )
-                                                }
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-blue-600"
-                                            >
-
-                                                {showPassword ? (
-                                                    <EyeOff size={20} />
-                                                ) : (
-                                                    <Eye size={20} />
-                                                )}
-
-                                            </button>
-
-                                        )}
-
-                                    </div>
-
-                                )}
-
-                                {field.description &&
-                                    field.type !== "checkbox" && (
-
-                                    <p className="text-xs text-gray-500">
-                                        {field.description}
-                                    </p>
-
-                                )}
-
-                                {errors[field.name] && (
-
-                                    <p className="text-sm font-medium text-red-500">
-                                        {String(
-                                            errors[field.name]?.message
-                                        )}
-                                    </p>
-
-                                )}
-
-                            </div>
+                                <FormFieldControl
+                                    key={String(field.name)}
+                                    field={field}
+                                    fieldProps={fieldProps}
+                                    error={errors[field.name] as FieldError | undefined}
+                                    loading={loading}
+                                    showPassword={showPassword}
+                                    onTogglePassword={() =>
+                                        setShowPassword(
+                                            (previous) => !previous
+                                        )
+                                    }
+                                    inputClass={inputClass}
+                                    textareaClass={textareaClass}
+                                    labelClass="text-sm font-semibold text-gray-700"
+                                    descriptionClass="text-xs text-gray-500"
+                                    passwordButtonClass="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-blue-600"
+                                />
                             );
                         })}
 

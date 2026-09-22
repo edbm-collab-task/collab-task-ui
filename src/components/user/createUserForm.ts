@@ -1,6 +1,7 @@
 import type { FormField } from "@/components/Form/Forms";
 import type { DirectionRes } from "@/types/direction";
 import type { CreateUser } from "@/types/user";
+import { toDirectionOptions } from "@/mappers/direction.mapper";
 
 export const createUserFormFields = (
     directions: DirectionRes[],
@@ -49,10 +50,7 @@ export const createUserFormFields = (
         label: "Direction",
         type: "select",
         placeholder: "Choisir la direction...",
-        options: directions.map((direction) => ({
-            label: direction.name,
-            value: direction.directionId,
-        })),
+        options: toDirectionOptions(directions),
         validation: {
             required: "La direction est requise",
         },

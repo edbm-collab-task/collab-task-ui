@@ -144,6 +144,35 @@ export const API_ENDPOINTS = {
             `/conversations/messages/${messageId}`,
     },
 
+    ACTIVITIES: {
+        BY_PROJECT: (projectId: number) => `/projects/${projectId}/activities`,
+    },
+
+    ATTACHMENTS: {
+        BY_TASK: (taskId: number) => `/tasks/${taskId}/attachments`,
+        BY_ID: (attachmentId: number) => `/tasks/attachments/${attachmentId}`,
+        DOWNLOAD: (attachmentId: number) => `/tasks/attachments/${attachmentId}/download`,
+    },
+
+    COMMENTS: {
+        BY_TASK: (taskId: number) => `/tasks/${taskId}/comments`,
+        COUNT: (taskId: number) => `/tasks/${taskId}/comments/count`,
+        BY_ID: (taskId: number, commentId: number) => `/tasks/${taskId}/comments/${commentId}`,
+        REACTIONS: (taskId: number, commentId: number) => `/tasks/${taskId}/comments/${commentId}/reactions`,
+    },
+
+    CONTRIBUTORS: {
+        ALL: (projectId: number) => `/projects/${projectId}/contributors`,
+        BY_ID: (projectId: number, userId: number) => `/projects/${projectId}/contributors/${userId}`,
+    },
+
+    NOTIFICATIONS: {
+        ALL: "/notifications",
+        UNREAD_COUNT: "/notifications/unread-count",
+        READ: (id: number) => `/notifications/${id}/read`,
+        READ_ALL: "/notifications/read-all",
+    },
+
     DASHBOARD: {
         STATS: "/dashboard/stats",
         REPORT_PDF: "/dashboard/reports/pdf",

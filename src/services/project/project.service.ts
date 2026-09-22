@@ -63,7 +63,13 @@ export const projectService = {
         return statusService.getAll();
     },
 
-    // Nouvelle méthode pour exporter le PDF du rapport projet
+    /**
+     * Export PDF du rapport de projet.
+     * Construit l'URL avec query params (period, startDate, endDate) et appelle
+     * l'endpoint /projects/{id}/report/pdf avec responseType: 'blob' pour récupérer
+     * le binaire PDF directement.
+     * Utilisé par DashboardHeader (dashboard utilisateur) et ProjectDetailPage.
+     */
     exportPdf: async (projectId: number, params: {
         period: string;
         startDate?: string;

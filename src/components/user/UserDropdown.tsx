@@ -1,42 +1,24 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, User, LogOut, Settings } from "lucide-react";
 
 import useAuth from "@/hooks/useAuth";
 import { authService } from "@/services/auth/auth.service";
-import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
+import { getUserImageUrl } from "@/utils/image";
+import { useClickOutside } from "@/hooks/useClickOutside";
+import { useToggle } from "@/hooks/useToggle";
 
 import type { Email } from "@/types/email";
 import type { UserResponse } from "@/types/user";
 import { useNavigate } from "react-router-dom";
 
 export default function UserDropdown() {
-    const [open, setOpen] = useState(false);
+    const [open, toggleOpen, setOpen] = useToggle();
     const [userDetails, setUserDetails] = useState<UserResponse | null>(null);
      const navigate = useNavigate();
 
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useClickOutside<HTMLDivElement>(() => setOpen(false));
 
     const { user, logout } = useAuth();
-
-    /**
-     * Fermer le dropdown lorsqu'on clique en dehors
-     */
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                dropdownRef.current &&
-                !dropdownRef.current.contains(event.target as Node)
-            ) {
-                setOpen(false);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
 
     useEffect(() => {
         if (!user?.email) {
@@ -76,7 +58,7 @@ export default function UserDropdown() {
 
     const imageUrl =
         userDetails?.id && userDetails?.imagePath
-            ? `${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS.BASE}/${userDetails.id}/image`
+            ? getUserImageUrl(userDetails.id)
             : null;
 
     return (
@@ -84,7 +66,7 @@ export default function UserDropdown() {
 
             <button
                 type="button"
-                onClick={() => setOpen(!open)}
+                onClick={toggleOpen}
                 className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-secondary/30"
             >
     

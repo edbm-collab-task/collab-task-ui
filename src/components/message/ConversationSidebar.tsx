@@ -11,7 +11,8 @@ import {
 import DOMPurify from "dompurify";
 
 import type { Conversation, ChatUser, Message } from "@/types/message";
-import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
+import { getInitialsFromName } from "@/utils/avatar";
+import { getUserImageUrl } from "@/utils/image";
 
 interface Props {
     conversations: Conversation[];
@@ -23,26 +24,6 @@ interface Props {
     onNewConversation: () => void;
     onCreateGroup: () => void;
 }
-
-const initials = (name: string) =>
-    name
-        .split(" ")
-        .filter(Boolean)
-        .map((item) => item[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase();
-
-const getUserImageUrl = (
-    userId: number,
-    avatar: string | null | undefined
-): string | null => {
-    if (!avatar || avatar.trim() === "") {
-        return null;
-    }
-
-    return `${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS.BASE}/${userId}/image`;
-};
 
 const ConversationSidebar = ({
     conversations,
@@ -351,7 +332,7 @@ const ConversationSidebar = ({
                                                     {conversation.type ===
                                                     "group"
                                                         ? "G"
-                                                        : initials(
+                                                        : getInitialsFromName(
                                                               displayName
                                                           )}
                                                 </div>
@@ -367,7 +348,7 @@ const ConversationSidebar = ({
                                                 {conversation.type ===
                                                 "group"
                                                     ? "G"
-                                                    : initials(
+                                                    : getInitialsFromName(
                                                           displayName
                                                       )}
                                             </div>

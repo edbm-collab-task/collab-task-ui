@@ -5,7 +5,7 @@ import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
 import { createColumns } from "@/components/table/createColumns";
 import TablePagination from "@/components/table/TablePagination";
-import { confirmDelete } from "@/components/modal/confirmDelete";
+import { createAccountStatusAction } from "@/components/admin/AccountStatusAction";
 import TableFilter from "@/components/table/TableFilter";
 
 import { userTr, type UserTable, type UserDetails } from "@/types/user";
@@ -152,81 +152,12 @@ export default function UserListPage() {
         },
 
 
-        /**
-         * Activer / Désactiver.
-         *
-         * Le switch dépend maintenant de user.isActive.
-         */
-        {
+        createAccountStatusAction<UserTable, StatusFilter>({
             label: "Activer / Désactiver",
-
-            type: "delete",
-
-            icon: (user) => (
-                <div className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${user.isActive ? "bg-primary" : "bg-gray-400"}`}>
-                    <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${user.isActive ? "right-0.5" : "left-0.5"}`} />
-                </div>
-            ),
-
             roles: ["ADMIN"],
-
-            onClick: async (user) => {
-
-                /**
-                 * Le nouveau statut est l'inverse
-                 * du statut actuel.
-                 *
-                 * true  -> false : désactivation
-                 * false -> true  : activation
-                 */
-                const newStatus = !user.isActive;
-
-
-                /**
-                 * Demande de confirmation.
-                 */
-                const confirmed = await confirmDelete(
-                    newStatus
-                        ? "activer ce compte"
-                        : "desactiver ce compte"
-                );
-
-
-                /**
-                 * L'utilisateur a annulé.
-                 */
-                if (!confirmed) {
-                    return;
-                }
-
-
-                try {
-
-                    /**
-                     * Modification du statut.
-                     */
-                    await userService.updateAccountStatus(
-                        user.email,
-                        newStatus
-                    );
-
-
-                    /**
-                     * Recharge la liste actuelle.
-                     */
-                    await loadUsers(statusFilter);
-
-                } catch (error) {
-
-                    console.error(
-                        newStatus
-                            ? "Erreur lors de l'activation :"
-                            : "Erreur lors de la désactivation :",
-                        error
-                    );
-                }
-            }
-        }
+            statusFilter,
+            onReload: loadUsers,
+        })
     ];
 
 
