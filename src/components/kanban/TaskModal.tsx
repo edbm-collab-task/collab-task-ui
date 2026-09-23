@@ -296,13 +296,16 @@ export default function TaskModal({
         });
     };
 
-    const lastTabId = tabs[tabs.length - 1].id;
-    const isLastStep = activeTab === lastTabId;
+    const activeTabIndex = tabs.findIndex(t => t.id === activeTab);
 
-    const goNext = () => {
-        const index = tabs.findIndex(t => t.id === activeTab);
-        if (index >= 0 && index < tabs.length - 1) {
-            setActiveTab(tabs[index + 1].id);
+    const isFirstStep = activeTabIndex <= 0;
+    const isLastStep = activeTabIndex === tabs.length - 1;
+
+    const navigateTab = (direction: "next" | "prev") => {
+        if (direction === "next" && activeTabIndex < tabs.length - 1) {
+            setActiveTab(tabs[activeTabIndex + 1].id);
+        } else if (direction === "prev" && activeTabIndex > 0) {
+            setActiveTab(tabs[activeTabIndex - 1].id);
         }
     };
 
@@ -326,7 +329,9 @@ export default function TaskModal({
     };
 
     const inputClass = "w-full rounded-xl border border-primary/30 px-4 py-2.5 text-sm text-primary outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30";
-    const labelClass = "mb-1.5 block text-xs font-semibold tracking-wide text-primary";
+    const labelClass = "mb-1.5 block text-xs font-semibold tracking-wide text-primary/80";
+    const obliLabelCalss = labelClass + " text-accent!"
+
 
     const today = new Date().toISOString().slice(0, 10);
     const originalDueDate = task?.dueDate ?? null;
@@ -364,7 +369,7 @@ export default function TaskModal({
                                 {activeTab === "details" && (
                                     <>
                                         <div>
-                                            <label className={labelClass}>Titre *</label>
+                                            <label className={obliLabelCalss }>Titre *</label>
                                             <input
                                                 autoFocus
                                                 className={inputClass}
@@ -418,7 +423,7 @@ export default function TaskModal({
                                     <>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className={labelClass}>Échéance *</label>
+                                                <label className={obliLabelCalss}>Échéance *</label>
                                                 <input
                                                     type="date"
                                                     className={inputClass}
@@ -526,17 +531,21 @@ export default function TaskModal({
                         <div className="flex justify-end gap-3 p-6 pt-3">
                             <button
                                 type="button"
-                                onClick={onClose}
-                                className="rounded-xl px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-primary/10"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigateTab('prev');                                    
+                                }}
+                                disabled={isFirstStep}
+                                className="rounded-xl px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-primary/10 disabled:opacity-50"
                             >
-                                Annuler
+                                Précédent
                             </button>
                             {isLastStep ? (
                                 <button
                                     key="submit"
                                     type="submit"
                                     disabled={submitting || !form.title.trim()}
-                                    className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {task ? "Enregistrer" : "Créer la tâche"}
                                 </button>
@@ -546,10 +555,10 @@ export default function TaskModal({
                                     type="button"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        goNext();
+                                        navigateTab('next');
                                     }}
                                     disabled={!form.title.trim()}
-                                    className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-accent bg-primary disabled:cursor-not-allowed disabled:bg-secondary"
                                 >
                                     Suivant
                                 </button>
