@@ -96,7 +96,16 @@ export default function KanbanBoard({
         [commentTaskId, tasks]
     );
 
-    const getCount = (taskId: number) => commentCounts[taskId] ?? 0;
+    // Compteur initial de commentaires fourni par le backend (task.commentCount).
+    // Les mises à jour locales (commentCounts, via onCountChange du CommentPanel)
+    // priment sur cette valeur une fois une interaction effectuée.
+    const initialCounts = useMemo(() => {
+        const counts: Record<number, number> = {};
+        for (const t of tasks) counts[t.taskId] = t.commentCount ?? 0;
+        return counts;
+    }, [tasks]);
+
+    const getCount = (taskId: number) => commentCounts[taskId] ?? initialCounts[taskId] ?? 0;
 
     // Fallback sur les statuts "en dur" si l'API ne renvoie pas de statuts personnalisés
     const fallbackStatuses: Status[] = toStatusListFromSeed(STATUSES);
