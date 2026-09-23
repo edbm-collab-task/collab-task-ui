@@ -7,6 +7,8 @@ import { authService } from "@/services/auth/auth.service";
 
 import Logo from "@/assets/logo.png";
 
+import { BackButton } from "@/components/common/BackButton";
+
 export default function SearchUserPage() {
 
     const handleSearchAccount = async (data: Email) => {
@@ -56,6 +58,10 @@ export default function SearchUserPage() {
                 <div className="flex items-center justify-center p-10">
 
                     <div className="w-full max-w-md">
+
+                        <div className="mb-4">
+                            <BackButton />
+                        </div>
 
                         <GlobalForms<Email>
 
