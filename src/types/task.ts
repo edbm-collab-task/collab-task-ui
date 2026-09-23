@@ -31,6 +31,7 @@ export interface TaskRes {
     statusId: number;
     statusName: string;
     parentTaskId: number | null;
+    commentCount: number;
     assignees: AssigneeRes[];
     sortOrder?: number;
 }
