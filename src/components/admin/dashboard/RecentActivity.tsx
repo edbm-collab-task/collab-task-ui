@@ -61,7 +61,7 @@ export default function RecentActivity({ activities }: Props) {
 
 
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm max-w-full">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm min-w-0 max-w-full">
             <div className="mb-5 flex items-center justify-between">
                 <h3 className="font-bold text-primary">Activité récente</h3>
                 <History size={18} className="text-primary/50" />
