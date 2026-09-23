@@ -62,7 +62,7 @@ export default function OverdueTasksModal({ projectId, onClose }: Props) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 p-4">
+        <div className="fixed flex items-center justify-center inset-0 z-50 bg-black/50 p-4">
             <div className="fixed inset-0" onClick={onClose} />
             <div className="relative w-full max-w-3xl max-h-[80vh] rounded-2xl bg-white overflow-hidden shadow-xl flex flex-col">
                 {/* Header */}
