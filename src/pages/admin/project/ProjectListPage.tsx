@@ -138,36 +138,38 @@ export default function ProjectListPage() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="grid grid-cols-2 max-sm:w-full max-sm:grid-cols-1 items-stretch gap-3">
                     <div className="relative">
                         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Rechercher un projet…"
-                            className="w-64 rounded-xl border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30"
+                            className="w-64 max-sm:w-full rounded-xl border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/30"
                         />
                     </div>
+                    
+                    <div className="flex items-center justify-center max-sm:justify-between gap-2">
+                        <button
+                            onClick={() => setShowArchived(v => !v)}
+                            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                                showArchived
+                                    ? "border-primary bg-white text-primary hover:bg-primary hover:text-secondary"
+                                    : "border-gray-300 bg-white text-gray-600 hover:bg-primary hover:text-secondary"
+                            }`}
+                        >
+                            <Archive size={16} />
+                            {showArchived ? "Archivés" : "Actifs"}
+                        </button>
 
-                    <button
-                        onClick={() => setShowArchived(v => !v)}
-                        className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                            showArchived
-                                ? "border-primary bg-white text-primary hover:bg-primary hover:text-secondary"
-                                : "border-gray-300 bg-white text-gray-600 hover:bg-primary hover:text-secondary"
-                        }`}
-                    >
-                        <Archive size={16} />
-                        {showArchived ? "Archivés" : "Actifs"}
-                    </button>
-
-                    <button
-                        onClick={() => navigate("/admin/projects/create")}
-                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-accent"
-                    >
-                        <Plus size={16} />
-                        Nouveau projet
-                    </button>
+                        <button
+                            onClick={() => navigate("/admin/projects/create")}
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-[6.5px] text-sm font-semibold text-white shadow transition hover:bg-accent border border-primary hover:border-accent"
+                        >
+                            <Plus size={16} />
+                             Projet
+                        </button>
+                    </div>
                 </div>
             </div>
 
