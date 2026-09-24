@@ -214,6 +214,18 @@ export const messageService = {
         );
     },
 
+    /**
+     * Nombre total de messages non lus de l'utilisateur courant,
+     * toutes conversations confondues. Le backend retourne un entier
+     * brut (0 s'il n'y a aucun non-lu).
+     */
+    async getUnreadCount(): Promise<number> {
+
+        return apiClient.get<number>(
+            API_ENDPOINTS.CONVERSATIONS.UNREAD_COUNT
+        );
+    },
+
     async markAsRead(
         conversationId: number
     ): Promise<void> {

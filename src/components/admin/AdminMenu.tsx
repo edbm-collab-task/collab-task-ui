@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import usePermissions from "@/hooks/usePermissions";
+import { useUnreadMessageCount } from "@/hooks/useUnreadMessageCount";
 import { menus, superAdminMenus } from "./AdminNavigation.config.ts"
 
 
@@ -13,6 +14,7 @@ export default function AdminMenu({ collapsed, expand }: Props) {
     const { user } = useAuth();
     const { hasPermission } = usePermissions();
     const isSuperAdmin = user?.role === "SUPER_ADMIN";
+    const unreadMessages = useUnreadMessageCount();
 
     const visibleMenus = menus.filter(m => {
         if (m.path === "/admin/users" && isSuperAdmin) return false;
@@ -70,6 +72,18 @@ export default function AdminMenu({ collapsed, expand }: Props) {
                                 }`}>
                                     {menu.name}
                                 </span>
+
+                                {menu.path === "/admin/messages" && unreadMessages > 0 && (
+                                    <span
+                                        className={`absolute right-3 top-2.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold shadow-sm ring-2 ${
+                                            isActive
+                                                ? "bg-white text-accent ring-primary/40"
+                                                : "bg-accent text-white ring-primary"
+                                        }`}
+                                    >
+                                        {unreadMessages > 9 ? "9+" : unreadMessages}
+                                    </span>
+                                )}
                             </div>
                         )}
                     </NavLink>
