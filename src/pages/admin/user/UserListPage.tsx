@@ -126,7 +126,7 @@ export default function UserListPage() {
 
             type: "view",
 
-            icon: <Eye size={18} className="text-secondary hover:text-primary" />,
+            icon: <Eye size={18} />,
 
             roles: ["ADMIN"],
 
@@ -163,8 +163,8 @@ export default function UserListPage() {
             type: "delete",
 
             icon: (user) => (
-                <div className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${user.isActive ? "bg-primary" : "bg-gray-400"}`}>
-                    <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${user.isActive ? "right-0.5" : "left-0.5"}`} />
+                <div className={`relative w-12 h-6 max-sm:w-8 max-sm:h-4 rounded-full transition-colors duration-200 ${user.isActive ? "bg-primary" : "bg-gray-400"}`}>
+                    <div className={`absolute top-0.5 w-5 h-5 max-sm:w-3 max-sm:h-3 rounded-full bg-white shadow-md transition-all duration-200 ${user.isActive ? "right-0.5" : "left-0.5"}`} />
                 </div>
             ),
 
