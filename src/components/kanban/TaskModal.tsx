@@ -3,8 +3,10 @@ import { X, Paperclip, Trash2, Download, Users, Search, Info, CalendarClock } fr
 import toast from "react-hot-toast";
 
 import {
-    PRIORITIES,
+    defaultPriorityId,
+    extractPrioritiesFromTasks,
     STATUSES,
+    type PriorityOption,
     type TaskReq,
     type TaskRes,
 } from "@/types/task";
@@ -13,6 +15,7 @@ import { toStatusListFromSeed } from "@/mappers/status.mapper";
 import type { Contributor } from "@/types/contributor";
 import type { TaskAttachment } from "@/types/attachment";
 import { attachmentService } from "@/services/attachment/attachment.service";
+import { taskService } from "@/services/task/task.service";
 import { getInitialsFromName } from "@/utils/avatar";
 import { formatFileSizeFr } from "@/utils/format";
 import { useClickOutside } from "@/hooks/useClickOutside";
@@ -32,13 +35,13 @@ interface Props {
     submitting?: boolean;
 }
 
-/** Formulaire vide pré-rempli avec le projectId et le statusId par défaut */
-const emptyForm = (projectId: number, statusId: number): TaskReq => ({
+/** Formulaire vide pré-rempli avec le projectId, le statusId et la priorité par défaut */
+const emptyForm = (projectId: number, statusId: number, priorityId: number): TaskReq => ({
     title: "",
     description: "",
     dueDate: null,
     projectId,
-    priorityId: 2, // Priorité "Moyenne" par défaut (seed backend)
+    priorityId,
     statusId,
     parentTaskId: null,
     assigneeIds: [],
@@ -161,13 +164,44 @@ export default function TaskModal({
     const availableStatuses = statuses ?? fallbackStatuses;
     const statusIdDefault = availableStatuses[0]?.statusId ?? 1;
 
+    // Liste réelle des priorités (nom + ID + ordre). On ne suppose aucune
+    // correspondance fixe ID→nom : elle est dérivée des tâches renvoyées par
+    // l'API. On commence par les tâches du projet ; si celles-ci ne couvrent
+    // pas toutes les priorités (projet neuf/peu rempli), on les complète avec
+    // l'ensemble des tâches de l'application.
+    const projectPriorityOptions: PriorityOption[] = useMemo(
+        () => extractPrioritiesFromTasks(tasks),
+        [tasks],
+    );
+
+    const [priorityOptions, setPriorityOptions] = useState<PriorityOption[]>(projectPriorityOptions);
+
+    // Enrichit la liste des priorités depuis l'ensemble des tâches de l'application
+    // (getAll) : une priorité connue en base est toujours proposée, même si elle
+    // n'est pas utilisée dans le projet courant. La fusion concatène les deux sources ;
+    // extractPrioritiesFromTasks() déduplique par priorityId et trie par
+    // prioritySortOrder croissant (Urgente → Haute → Moyenne → Basse). Si getAll
+    // échoue, on conserve proprement les priorités du projet courant.
+    useEffect(() => {
+        let cancelled = false;
+        taskService.getAll()
+            .then((allTasks) => {
+                if (!cancelled) setPriorityOptions(extractPrioritiesFromTasks([...tasks, ...allTasks]));
+            })
+            .catch(() => {
+                if (!cancelled) setPriorityOptions(projectPriorityOptions);
+            });
+        return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [projectPriorityOptions]);
+
     const tabs = useMemo(() =>
         task ? ALL_TABS : ALL_TABS.filter(t => t.id !== "pieces"),
         [task],
     );
 
-    const [form, setForm] = useState<TaskReq>(
-        emptyForm(projectId, statusIdDefault)
+    const [form, setForm] = useState<TaskReq>(() =>
+        emptyForm(projectId, statusIdDefault, defaultPriorityId(priorityOptions))
     );
 
     const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
@@ -227,7 +261,7 @@ export default function TaskModal({
             loadAttachments(task.taskId);
         } else {
             const defaultId = defaultStatusId ?? statusIdDefault;
-            setForm(emptyForm(projectId, defaultId));
+            setForm(emptyForm(projectId, defaultId, defaultPriorityId(priorityOptions)));
             setAttachments([]);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -314,6 +348,12 @@ export default function TaskModal({
             return;
         }
 
+        // Une priorité réelle doit avoir été résolue depuis les données API
+        if (!form.priorityId) {
+            toast.error("Sélectionnez une priorité");
+            return;
+        }
+
         // Validation date passée : on autorise seulement si la date n'a pas été modifiée
         // (cas édition où la date d'origine était déjà passée)
         const today = new Date().toISOString().slice(0, 10);
@@ -391,9 +431,11 @@ export default function TaskModal({
                                                     value={form.priorityId}
                                                     onChange={(e) => setForm({ ...form, priorityId: Number(e.target.value) })}
                                                 >
-                                                    {PRIORITIES.map(p => (
-                                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                                    ))}
+                                                    {priorityOptions.length > 0 ? priorityOptions.map(p => (
+                                                        <option key={p.priorityId} value={p.priorityId}>{p.priorityName}</option>
+                                                    )) : (
+                                                        <option value={0}>Aucune priorité disponible</option>
+                                                    )}
                                                 </select>
                                             </div>
 

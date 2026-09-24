@@ -4,7 +4,7 @@ import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare } from 'l
 interface TaskCardProps {
     task: any;
     projectId: string | number;
-    priorityBadge: (priorityId: any) => { name: string; color: string };
+    priorityBadge: (priorityName: any) => { name: string; color: string };
     formatDate: (date: string | null) => string | null;
 
     getCount: (taskId: any) => number | string;
@@ -29,7 +29,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     setOverColumn,
     showActions = true,
 }) => {
-    const priority = priorityBadge(task.priorityId);
+    const priority = priorityBadge(task.priorityName);
     const commentCount = getCount(task.taskId);
 
     return (

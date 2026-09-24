@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 
 import {
-    PRIORITIES,
+    priorityColor,
     STATUSES,
     type TaskRes,
 } from "@/types/task";
@@ -26,9 +26,9 @@ interface Props {
     currentUserId: number;
 }
 
-/** Badge de priorité : mapping depuis l'ID vers l'objet PRIORITIES (seed backend) */
-function priorityBadge(priorityId: number) {
-    return PRIORITIES.find(p => p.id === priorityId) ?? PRIORITIES[0];
+/** Badge de priorité : nom réel fourni par l'API + couleur dérivée du nom */
+function priorityBadge(priorityName: string | null | undefined) {
+    return { name: priorityName ?? "—", color: priorityColor(priorityName) };
 }
 
 /** Formatage date courte pour les cartes (jour + mois abrégé) */
@@ -127,9 +127,17 @@ export default function KanbanBoard({
             {availableStatuses.map(status => {
                 // ✅ Correction : on utilise directement status.statusId
                 const id = status.statusId;
+                // Tri des tâches de la colonne : priorité d'abord (prioritySortOrder
+                // croissant = Urgente → Basse), puis l'ordre manuel sortOrder.
+                // Les priorités sans ordre connu sont placées en fin de colonne.
                 const columnTasks = tasks
                     .filter(t => t.statusId === id)
-                    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+                    .sort((a, b) => {
+                        const priorityA = a.prioritySortOrder ?? Number.MAX_SAFE_INTEGER;
+                        const priorityB = b.prioritySortOrder ?? Number.MAX_SAFE_INTEGER;
+                        if (priorityA !== priorityB) return priorityA - priorityB;
+                        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+                    });
                 const style = getStatusStyle(status);
 
                 return (

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { X, MessageSquare, Send, Paperclip } from "lucide-react";
 import type { TaskComment } from "@/types/comment";
-import type { TaskRes } from "@/types/task";
+import { priorityColor, type TaskRes } from "@/types/task";
 import type { UserResponse } from "@/types/user";
 import { commentService } from "@/services/comment/comment.service";
 import { userService } from "@/services/user/user.service";
@@ -233,12 +233,7 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
                             <p className="mt-1 whitespace-pre-wrap break-words text-xs text-gray-500">{task.description}</p>
                         )}
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                                task.priorityId === 4 ? "bg-rose-100 text-rose-700"
-                                : task.priorityId === 3 ? "bg-orange-100 text-orange-700"
-                                : task.priorityId === 2 ? "bg-sky-100 text-sky-700"
-                                : "bg-slate-100 text-slate-700"
-                            }`}>
+                            <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${priorityColor(task.priorityName)}`}>
                                 {task.priorityName}
                             </span>
                             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
