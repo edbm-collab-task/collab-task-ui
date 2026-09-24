@@ -119,6 +119,8 @@ export const API_ENDPOINTS = {
         LEAVE: (conversationId: number) =>
             `/conversations/${conversationId}/leave`,
 
+        UNREAD_COUNT: "/conversations/unread-count",
+
         READ: (conversationId: number) =>
             `/conversations/${conversationId}/read`,
 
