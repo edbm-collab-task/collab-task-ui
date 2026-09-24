@@ -6,6 +6,8 @@
     --color-secondary: #dddbff;
     --color-accent: #C22473;
 
+    --breakpoint-xs: 30rem;
+
     --font-sans: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
     --animate-fade-in: fade-in 0.2s ease-out;

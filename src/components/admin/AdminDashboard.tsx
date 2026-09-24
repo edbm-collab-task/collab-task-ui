@@ -36,24 +36,24 @@ function StatCard({ title, value, icon, color, sparklineData, trend, highlighted
                 highlighted ? "border-accent hover:bg-accent/5" : "border-secondary/60"
             } ${isClickable ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" : ""}`}
         >
-            <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-500">{title}</p>
-                    <div className="mt-2 flex items-end gap-3">
-                        <p className={`text-3xl font-bold ${highlighted ? "text-accent" : "text-primary"}`}>{value}</p>
-                        {sparklineData && sparklineData.length > 0 && (
-                            <div className="hidden h-10 w-28 flex-shrink-0 sm:block">
-                                <Sparkline data={sparklineData} color="#d07694" height={30} width={100} />
-                            </div>
-                        )}
-                    </div>
-                    {trend && (
-                        <p className="mt-1 text-sm text-emerald-600 flex items-center gap-1">
-                            <TrendingUp size={14} />
-                            +{trend.value}% {trend.label}
-                        </p>
-                    )}
-                </div>
+            <div className="flex items-start max-sm:flex-row-reverse justify-between gap-4">
+            <div className="flex-1 min-w-0 flex flex-col">
+    <p className="text-sm max-sm:text-xs font-medium text-gray-500 w-full max-xs:order-2 max-xs:mt-1">{title}</p>
+    <div className="mt-2 flex items-end gap-3 max-xs:order-1 max-xs:mt-0">
+        <p className={`text-3xl font-bold ${highlighted ? "text-accent" : "text-primary"}`}>{value}</p>
+        {sparklineData && sparklineData.length > 0 && (
+            <div className="hidden h-10 w-28 flex-shrink-0 sm:block">
+                <Sparkline data={sparklineData} color="#d07694" height={30} width={100} />
+            </div>
+        )}
+    </div>
+    {trend && (
+        <p className="mt-1 text-sm text-emerald-600 flex items-center gap-1 max-xs:order-3">
+            <TrendingUp size={14} />
+            +{trend.value}% {trend.label}
+        </p>
+    )}
+</div>
                 <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${color}`}>
                     {icon}
                 </div>
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
             )}
 
             {/* KPI Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 max-sm:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     title="Utilisateurs totaux"
                     value={data.totalUsers}
@@ -264,21 +264,23 @@ export default function AdminDashboard() {
                     <ul className="divide-y divide-gray-100">
                         {data.topUsers.map((user) => (
                             <li key={user.userId} className="py-3 transition-all duration-200 hover:bg-gray-50 hover:px-3 rounded-lg">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/50 text-primary text-xs font-bold">
+                                <div className="flex items-center justify-between gap-4 max-sm:flex-col">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1 max-sm:w-[70%]">
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/50 text-primary text-xs font-bold max-sm:hidden">
                                             {user.firstname[0]}{user.lastname[0]}
                                         </div>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <p className="truncate text-sm font-semibold text-gray-800">
+                                        <div className="min-w-0 flex-1 max-sm:w-full">
+                                            <div className="flex items-center gap-2 max-sm:flex-col">
+                                                <p className="truncate text-sm max-sm:text-xs font-semibold text-gray-800">
                                                     {user.firstname} {user.lastname}
                                                 </p>
-                                                <span className="shrink-0 rounded-full bg-secondary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
-                                                    {user.role}
-                                                </span>
+                                                <div className="flex max-sm:justify-around max-sm:w-full">
+                                                    <span className="shrink-0 rounded-full bg-secondary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
+                                                        {user.role}
+                                                    </span>
+                                                    <p className="mt-0.5 truncate text-xs text-gray-500">{user.direction}</p>
+                                                </div>
                                             </div>
-                                            <p className="mt-0.5 truncate text-xs text-gray-500">{user.direction}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 shrink-0 text-sm">
@@ -319,7 +321,7 @@ export default function AdminDashboard() {
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2">
-                                            <p className="truncate text-sm font-semibold text-gray-800">{project.title}</p>
+                                            <p className="truncate text-sm max-sm:text-xs font-semibold text-gray-800">{project.title}</p>
                                             <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
                                                 project.status === "Actif"
                                                     ? "bg-secondary/40 text-primary"
