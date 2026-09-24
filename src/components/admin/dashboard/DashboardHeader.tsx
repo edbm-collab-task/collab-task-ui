@@ -23,7 +23,7 @@ interface Props {
     onOverdueClick: () => void;
 }
 
-const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-primary/30 focus:ring-1 focus:ring-primary";
 const labelClass = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500";
 
 export default function DashboardHeader({
@@ -86,7 +86,7 @@ export default function DashboardHeader({
 
     return (
         <div>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col min-w-0 gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h2 className="text-2xl font-bold text-primary">Tableau de bord</h2>
                     <p className="mt-1 text-sm text-gray-500">
@@ -94,7 +94,7 @@ export default function DashboardHeader({
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 max-sm:grid max-sm:grid-cols-2">
+                <div className="flex flex-wrap  items-center gap-3 max-sm:grid max-sm:grid-cols-2">
 
                     <TableFilter<DashboardPeriod>
                         value={period}
@@ -110,10 +110,10 @@ export default function DashboardHeader({
                                 setShowProjectDropdown(!showProjectDropdown);
                                 setIsOpen(!isOpen);
                             }}
-                            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 hover:shadow-md"
+                            className="inline-flex items-center gap-2 max-sm:gap-0.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 hover:shadow-md"
                         >
-                            <Filter size={16} />
-                            <span className="truncate max-w-[160px]">
+                            <Filter size={16} className="max-sm:size-3.5" />
+                            <span className="truncate max-w-40 max-sm:max-w-22">
                                 {selectedProject?.title ?? "Tous les projets"}
                             </span>
                             <ChevronDown size={16} className={isOpen ? "rotate-180" : ""} />
@@ -175,7 +175,7 @@ export default function DashboardHeader({
             </div>
 
             {isCustom && (
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 px-1">
                     <div>
                         <label className={labelClass}>
                             <span className="inline-flex items-center gap-1">

@@ -63,12 +63,12 @@ export default function OverdueTasksModal({ projectId, onClose }: Props) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 p-4">
+        <div className="fixed flex items-center justify-center inset-0 z-50 bg-black/50 p-4">
             <div className="fixed inset-0" onClick={onClose} />
             <div className="relative w-full max-w-3xl max-h-[80vh] rounded-2xl bg-white overflow-hidden shadow-xl flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-                    <h3 className="text-lg font-bold text-gray-800">Tâches en retard</h3>
+                <div className="flex items-center justify-between border-b bg-primary border-gray-200 px-6 py-4">
+                    <h3 className="text-lg font-bold text-bg">Tâches en retard</h3>
                     <button
                         onClick={onClose}
                         className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 transition"
@@ -88,7 +88,7 @@ export default function OverdueTasksModal({ projectId, onClose }: Props) {
                             {tasks.map(task => (
                                 <div
                                     key={task.taskId}
-                                    className="rounded-xl border border-red-200 bg-red-50 p-4 hover:bg-red-100/50 transition cursor-pointer"
+                                    className="rounded-xl border border-accent  p-4 hover:bg-accent/20 transition cursor-pointer"
                                     onClick={() => {
                                         navigate(`/admin/projects/${task.projectId}`);
                                         onClose();

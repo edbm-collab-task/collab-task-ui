@@ -265,19 +265,19 @@ export default function ProjectDetailPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 box-border w-full max-w-full overflow-hidden">
                     <button
                         onClick={() => setShowNewStatus(!showNewStatus)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
+                        className="inline-flex min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent max-sm:text-sm"
                     >
                         <Plus size={15} />
-                        {showNewStatus ? "Fermer" : "Ajouter un statut"}
+                        {showNewStatus ? "Fermer" : "Statut"}
                     </button>
 
                     {project.isOwner && (
                         <button
                             onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
-                            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
+                            className="inline-flex 	min-w-0 max-sm:text-sm items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
                         >
                             <Pencil size={15} />
                             Modifier le projet
@@ -286,7 +286,7 @@ export default function ProjectDetailPage() {
 
                     <button
                         onClick={() => navigate(`/admin/projects/${project.projectId}/history`)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-secondary bg-secondary/40 px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
+                        className="inline-flex min-w-0 max-sm:text-sm items-center gap-2 rounded-xl border border-secondary bg-secondary/40 px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
                     >
                         <History size={15} />
                         Historique

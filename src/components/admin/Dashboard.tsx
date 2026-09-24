@@ -134,7 +134,7 @@ export default function Dashboard() {
 
     
     return (
-        <div className={`space-y-6 transition-opacity duration-150 ${refreshing ? "opacity-50" : ""}`}>
+        <div className={`space-y-6 w-full max-w-full overflow-hidden box-border transition-opacity duration-150 ${refreshing ? "opacity-50" : ""}`}>
 
             <DashboardHeader
                 period={period}
@@ -162,7 +162,7 @@ export default function Dashboard() {
                 evolution={empty ? null : data.evolution}
             />
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-2 w-full max-w-full overflow-hidden box-border">
                 <TaskDistribution
                     distribution={empty ? null : data.distribution}
                 />

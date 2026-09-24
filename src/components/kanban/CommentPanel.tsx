@@ -176,6 +176,20 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
 
     const totalComments = comments.reduce((acc, c) => acc + 1 + c.replies.length, 0);
 
+    const replyPlaceholders = ["Écrire une réponse…", "@ pour mentionner"];
+    const commentPlaceholders = ["Écrire un commentaire…", "@ pour mentionner"];
+
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+    const placeholders = replyTo ? replyPlaceholders : commentPlaceholders;
+
+    useEffect(() => {
+        setPlaceholderIndex(0);
+        const interval = setInterval(() => {
+            setPlaceholderIndex(i => (i + 1) % placeholders.length);
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [replyTo]);
     return (
         <>
             {/* Overlay */}
@@ -320,9 +334,9 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
                                 value={newComment}
                                 onChange={handleInputChange}
                                 onKeyDown={handleKeyDown}
-                                placeholder={replyTo ? "Écrire une réponse… (@ pour mentionner)" : "Écrire un commentaire… (@ pour mentionner)"}
+                                placeholder={placeholders[placeholderIndex]}
                                 rows={1}
-                                className="w-full bg-bg resize-none rounded-xl border border-gray-300 px-4 py-2.5 pr-24 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                                className="w-full bg-bg resize-none rounded-xl border border-gray-300 px-4 py-2.5 pr-24 text-sm outline-none transition placeholder:truncate focus:border-primary focus:ring-2 focus:ring-primary/30"
                                 style={{ minHeight: "42px", maxHeight: "120px" }}
                             />
                             <div className="absolute right-2 bottom-2 flex items-center gap-1 mb-1">

@@ -154,7 +154,7 @@ export default function AdminListPage() {
 
             type: "view",
 
-            icon: <Eye size={18} className="text-secondary hover:text-primary " />,
+            icon: <Eye size={18} />,
 
             roles: ["SUPER_ADMIN"],
 

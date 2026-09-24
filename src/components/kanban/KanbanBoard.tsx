@@ -164,7 +164,7 @@ export default function KanbanBoard({
                         </div>
 
                         {/* Cartes tâches */}
-                        <div className="flex flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar">
+                        <div className="flex flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar p-1">
                             {columnTasks.length === 0 && (
                                 <div className="rounded-xl border-2 border-dashed border-white/70 px-4 py-6 text-center text-xs text-gray-400">
                                     Glissez une tâche ici

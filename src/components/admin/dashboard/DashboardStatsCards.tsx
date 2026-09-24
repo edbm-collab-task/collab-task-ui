@@ -19,7 +19,7 @@ export default function DashboardStatsCards({ stats, evolution = null, onOverdue
     ];
 
     return (
-        <div className={`grid gap-2 max-sm:grid-cols-2 max-sm:text-xs ${cards.length > 4 ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
+        <div className={`grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 max-sm:text-xs ${cards.length > 4 ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
             {cards.map(card => {
                 const Icon = card.icon;
                 const isOverdueCard = card.label === "En retard";

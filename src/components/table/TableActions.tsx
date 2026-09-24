@@ -10,7 +10,7 @@ interface Props<T> {
 const actionStyles: Record<string, string> = {
     edit: "text-primary hover:bg-secondary/60 hover:text-primary",
     delete: "text-red-600 hover:bg-red-50",
-    view: "text-emerald-600 hover:bg-emerald-50",
+    view: "text-primary hover:bg-secondary",
     create: "text-accent hover:bg-accent/10",
     default: "text-primary/50 hover:bg-secondary/40 hover:text-primary"
 };
@@ -40,7 +40,7 @@ export default function TableActions<T>({
                                 key={action.label}
                                 title={action.label}
                                 onClick={() => action.onClick(row)}
-                                className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm transition-colors duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${actionStyles[action.type] ?? actionStyles.default}`}
+                                className={`flex h-9 w-9 max-sm:h-5 max-sm:w-8 items-center justify-center rounded-xl text-sm transition-colors duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${actionStyles[action.type] ?? actionStyles.default}`}
                             >
                                 {
                                     typeof icon === "function"
