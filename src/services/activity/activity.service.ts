@@ -1,9 +1,11 @@
-import { api } from "@/api/axios";
+import { apiClient } from "@/api/api-client";
+import { API_ENDPOINTS } from "@/api/constants";
 import type { Activity } from "@/types/activity";
 
 export const activityService = {
     getByProject: async (projectId: number): Promise<Activity[]> => {
-        const response = await api.get<Activity[]>(`projects/${projectId}/activities`);
-        return response.data;
+        return apiClient.get<Activity[]>(
+            API_ENDPOINTS.ACTIVITIES.BY_PROJECT(projectId)
+        );
     },
 };

@@ -1,8 +1,11 @@
 import { Copy, Download, File, FileImage, FileText, MoreHorizontal, Reply, Trash2 } from "lucide-react";
 import DOMPurify from "dompurify";
 import type { Message, ChatUser } from "@/types/message";
-import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
+import { API_CONFIG } from "@/api/constants";
 import useAuth from "@/hooks/useAuth";
+import { formatFileSizeEn } from "@/utils/format";
+import { getInitialsFromParts } from "@/utils/avatar";
+import { getUserImageUrl } from "@/utils/image";
 
 interface Props {
     message: Message;
@@ -12,14 +15,6 @@ interface Props {
     onDelete: (messageId: number) => void;
     onCopy: (content: string) => void;
 }
-
-const getUserImageUrl = (userId: number, avatar: string | null | undefined): string | null => {
-    if (!avatar || avatar.trim() === "") {
-        return null;
-    }
-
-    return `${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS.BASE}/${userId}/image`;
-};
 
 const getAttachmentUrl = (url: string): string => {
     if (!url) {
@@ -36,25 +31,6 @@ const getAttachmentUrl = (url: string): string => {
     return `${baseUrl}${cleanUrl}`;
 };
 
-const formatFileSize = (size: number): string => {
-    if (!size || size <= 0) {
-        return "0 B";
-    }
-
-    if (size < 1024) {
-        return `${size} B`;
-    }
-
-    if (size < 1024 * 1024) {
-        return `${(size / 1024).toFixed(1)} KB`;
-    }
-
-    if (size < 1024 * 1024 * 1024) {
-        return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-    }
-
-    return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-};
 
 const isImageAttachment = (attachment: Message["attachments"][number]): boolean => {
     return attachment.type?.startsWith("image/") ?? false;
@@ -86,7 +62,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
 
     const fullName = `${sender.firstname ?? ""} ${sender.lastname ?? ""}`.trim();
 
-    const initials = `${sender.firstname?.charAt(0) ?? ""}${sender.lastname?.charAt(0) ?? ""}`.toUpperCase();
+    const initials = getInitialsFromParts(sender.firstname, sender.lastname);
 
     const imageUrl = getUserImageUrl(sender.id, sender.avatar);
 
@@ -181,7 +157,7 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
                                         </p>
 
                                         <p className="text-[10px] text-gray-400">
-                                            {formatFileSize(attachment.size)}
+                                            {formatFileSizeEn(attachment.size)}
                                         </p>
                                     </div>
 
@@ -213,7 +189,7 @@ className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gra
                                 </p>
 
                                 <p className={`mt-0.5 text-[11px] ${mine ? "text-secondary" : "text-gray-400"}`}>
-                                    {formatFileSize(attachment.size)}
+                                    {formatFileSizeEn(attachment.size)}
                                 </p>
                             </div>
 

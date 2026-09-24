@@ -8,6 +8,9 @@ import { userService } from "@/services/user/user.service";
 import useAuth from "@/hooks/useAuth";
 import CommentItem from "./CommentItem";
 import MentionDropdown from "./MentionDropdown";
+import { formatDateFull } from "@/utils/date";
+import { useEscapeKey } from "@/hooks/useEscapeKey";
+import { getInitialsFromParts } from "@/utils/avatar";
 
 interface Props {
     open: boolean;
@@ -16,12 +19,6 @@ interface Props {
     availableUsers?: UserResponse[];
     onClose: () => void;
     onCountChange?: (count: number) => void;
-}
-
-function formatDate(date: string | null) {
-    if (!date) return null;
-    const d = new Date(date);
-    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 export default function CommentPanel({ open, task, currentUserId, availableUsers = [], onClose, onCountChange }: Props) {
@@ -40,7 +37,7 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
     const onCountChangeRef = useRef(onCountChange);
     onCountChangeRef.current = onCountChange;
 
-    const currentUserInitials = `${authUser?.firstname?.[0] ?? ""}${authUser?.lastname?.[0] ?? ""}`.toUpperCase();
+    const currentUserInitials = getInitialsFromParts(authUser?.firstname, authUser?.lastname);
 
     useEffect(() => {
         setUsers(availableUsers);
@@ -93,13 +90,7 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
         }
     }, [open]);
 
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === "Escape" && open) onClose();
-        };
-        document.addEventListener("keydown", handler);
-        return () => document.removeEventListener("keydown", handler);
-    }, [open, onClose]);
+    useEscapeKey(onClose, open);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
@@ -255,7 +246,7 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
                             </span>
                             {task.dueDate && (
                                 <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">
-                                    📅 {formatDate(task.dueDate)}
+                                    📅 {formatDateFull(task.dueDate)}
                                 </span>
                             )}
                             {task.assignees.length > 0 && (

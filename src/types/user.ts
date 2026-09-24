@@ -1,5 +1,5 @@
-import type { Gender } from "@/enum/gender.enum";
-import type { RoleType } from "@/enum/role.enum";
+﻿import type { Gender } from "@/enum/gender.enum";
+import type { RoleName } from "@/enum/role.enum";
 
 
 export interface UserRequest {
@@ -61,7 +61,9 @@ export interface UserResponse {
     
     imagePath: string;
 
-    role: RoleType;
+    role: RoleName;
+
+    codeRole: string;
 }
 
 export interface UserTable {
@@ -74,7 +76,9 @@ export interface UserTable {
 
     email: string;
 
-    role: RoleType;
+    role: RoleName;
+
+    codeRole: string;
 
     isActive: boolean;
 }
@@ -100,19 +104,23 @@ export interface UserDetails {
 
     createdAt: string;
 
-    role: RoleType;
+    role: RoleName;
+
+    codeRole: string;
 }
 
 
 export const userTr = {
 
-    firstname: "Prénom",
+    firstname: "PrÃ©nom",
 
     lastname: "Nom",
 
     email: "Email",
 
-    role: "Rôle",
+    role: "RÃ´le",
+
+    codeRole: "RÃ´le",
 
 } as const;
 
@@ -124,6 +132,7 @@ export interface UserLoginReq{
 export interface UserLoginRes {
   userId: number;
   role: string;
+  codeRole: string;
   firstname: string;
   lastname: string;
   email: string;
@@ -171,7 +180,9 @@ export interface UserProfile {
 
     createdAt: string;
 
-    role: RoleType;
+    role: RoleName;
+
+    codeRole: string;
 }
 
 export interface EditUser {

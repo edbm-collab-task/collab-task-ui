@@ -1,12 +1,6 @@
 import { useState, useMemo } from "react";
 import {
-    Pencil,
-    Trash2,
-    CalendarDays,
     Plus,
-    GitBranch,
-    Users,
-    MessageSquare,
 } from "lucide-react";
 
 import {
@@ -15,6 +9,7 @@ import {
     type TaskRes,
 } from "@/types/task";
 import type { Status } from "@/types/status";
+import { toStatusListFromSeed } from "@/mappers/status.mapper";
 import type { UserResponse } from "@/types/user";
 import CommentPanel from "./CommentPanel";
 import { TaskCard } from "./TaskCard";
@@ -31,16 +26,24 @@ interface Props {
     currentUserId: number;
 }
 
+/** Badge de priorité : mapping depuis l'ID vers l'objet PRIORITIES (seed backend) */
 function priorityBadge(priorityId: number) {
     return PRIORITIES.find(p => p.id === priorityId) ?? PRIORITIES[0];
 }
 
+/** Formatage date courte pour les cartes (jour + mois abrégé) */
 function formatDate(date: string | null) {
     if (!date) return null;
     const d = new Date(date);
     return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
 }
 
+/**
+ * Styles de colonne selon le statut.
+ * D'abord par ID (statuts personnalisés ont des IDs > 3), puis fallback par nom.
+ * Les IDs 1-4 correspondent aux statuts par défaut du seed backend.
+ * ATTENTION : STATUSES (constante) n'a que 3 entrées (id 1,2,3) mais styleMap en a 4.
+ */
 function getStatusStyle(status: Status): { column: string; dot: string } {
     const name = status.name.toLowerCase();
     const id = status.statusId;
@@ -58,7 +61,7 @@ function getStatusStyle(status: Status): { column: string; dot: string } {
         return { column: "bg-gray-50 border-gray-200", dot: "bg-gray-400" };
     }
     if (name.includes("progress") || name.includes("en cours")) {
-        return { column: "bg-blue-50 border-blue-200", dot: "bg-blue-400" };
+        return { column: "bg-blue-50 border-blue-200", dot: "bg-blue-400" }
     }
     if (name.includes("review") || name.includes("relecture")) {
         return { column: "bg-amber-50 border-amber-200", dot: "bg-amber-400" };
@@ -80,9 +83,12 @@ export default function KanbanBoard({
     onMoveTask,
     currentUserId,
 }: Props) {
+    // État drag & drop : tâche en cours de glissement + colonne survolée
     const [draggedTask, setDraggedTask] = useState<TaskRes | null>(null);
     const [overColumn, setOverColumn] = useState<number | null>(null);
+    // Panneau commentaires : ID de la tâche dont on affiche les commentaires
     const [commentTaskId, setCommentTaskId] = useState<number | null>(null);
+    // Compteur de commentaires par tâche (mis à jour via onCountChange du CommentPanel)
     const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
 
     const commentTask = useMemo(
@@ -90,16 +96,24 @@ export default function KanbanBoard({
         [commentTaskId, tasks]
     );
 
-    const getCount = (taskId: number) => commentCounts[taskId] ?? 0;
+    // Compteur initial de commentaires fourni par le backend (task.commentCount).
+    // Les mises à jour locales (commentCounts, via onCountChange du CommentPanel)
+    // priment sur cette valeur une fois une interaction effectuée.
+    const initialCounts = useMemo(() => {
+        const counts: Record<number, number> = {};
+        for (const t of tasks) counts[t.taskId] = t.commentCount ?? 0;
+        return counts;
+    }, [tasks]);
 
-    const fallbackStatuses: Status[] = STATUSES.map(s => ({
-        statusId: s.id,
-        name: s.name,
-        sortOrder: 0,
-    }));
+    const getCount = (taskId: number) => commentCounts[taskId] ?? initialCounts[taskId] ?? 0;
+
+    // Fallback sur les statuts "en dur" si l'API ne renvoie pas de statuts personnalisés
+    const fallbackStatuses: Status[] = toStatusListFromSeed(STATUSES);
 
     const availableStatuses = statuses ?? fallbackStatuses;
 
+    // Gestion du drop : on ne déclenche onMoveTask que si la colonne a changé
+    // La mise à jour optimiste est gérée dans le parent (ProjectDetailPage.handleMoveTask)
     const handleDrop = (statusId: number) => {
         if (draggedTask && draggedTask.statusId !== statusId) {
             onMoveTask(draggedTask, statusId);
@@ -189,11 +203,6 @@ export default function KanbanBoard({
                         setCommentCounts(prev => ({ ...prev, [commentTaskId]: count }));
                     }
                 }}
-                task={tasks.find(t => t.taskId === commentTaskId)}
-                projectId={projectId}
-                priorityBadge={priorityBadge}
-                formatDate={formatDate}
-                getCount={getCount}
             />
         </div>
     );

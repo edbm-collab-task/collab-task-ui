@@ -1,4 +1,4 @@
-import { API_CONFIG } from "@/api/constants";
+import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -63,11 +63,13 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                await axios.post(
-                    `${API_CONFIG.BASE_URL}/auth/refresh`,
+const { data } = await axios.post(
+                    `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
                     null,
                     { withCredentials: true }
                 );
+                if (data?.accessToken) localStorage.setItem("accessToken", data.accessToken);
+                if (data?.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
                 processQueue(null);
                 return api(originalRequest);
             } catch {

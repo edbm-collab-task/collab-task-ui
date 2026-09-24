@@ -5,16 +5,18 @@ import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
 import { createColumns } from "@/components/table/createColumns";
 import TablePagination from "@/components/table/TablePagination";
-import { confirmDelete } from "@/components/modal/confirmDelete";
+import { createAccountStatusAction } from "@/components/admin/AccountStatusAction";
 import TableFilter from "@/components/table/TableFilter";
 
 import { type UserTable, type UserDetails } from "@/types/user";
 import type { TableAction, HeaderAction } from "@/types/table";
+import type { Role } from "@/types/role";
 
 import { DetailModal } from "@/components/details/globalDetail";
 import { userDetailFields } from "@/components/details/userDetails";
 
 import { userService } from "@/services/user/user.service";
+import { roleService } from "@/services/role/role.service";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 
@@ -23,6 +25,7 @@ const adminTr = {
     lastname: "Nom",
     email: "Email",
     role: "Rôle",
+    codeRole: "Rôle",
 };
 
 export default function AdminListPage() {
@@ -34,8 +37,10 @@ export default function AdminListPage() {
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
 
+    const [roles, setRoles] = useState<Role[]>([]);
+
     type StatusFilter = "all" | "active" | "disable";
-    type RoleFilter = "all" | "USER" | "ADMIN" | "SUPER_ADMIN";
+    type RoleFilter = "all" | string;
 
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
     const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
@@ -45,6 +50,18 @@ export default function AdminListPage() {
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
 
+
+    /**
+     * Charge tous les rôles pour le filtre.
+     */
+    const loadRoles = async () => {
+        try {
+            const rolesData = await roleService.getAll();
+            setRoles(rolesData);
+        } catch (error) {
+            console.error("Erreur lors du chargement des rôles :", error);
+        }
+    };
 
     /**
      * Charge tous les utilisateurs pour le SUPER_ADMIN (users, admins, super_admins)
@@ -101,6 +118,13 @@ export default function AdminListPage() {
 
     }, [statusFilter]);
 
+    /**
+     * Charge les rôles au montage pour le filtre.
+     */
+    useEffect(() => {
+        loadRoles();
+    }, []);
+
 
     /**
      * Création des colonnes.
@@ -112,7 +136,7 @@ export default function AdminListPage() {
             "firstname",
             "lastname",
             "email",
-            "role"
+            "codeRole"
         ]
     );
 
@@ -187,64 +211,12 @@ export default function AdminListPage() {
         },
 
 
-        /**
-         * Activer / Désactiver.
-         */
-        {
-            label: statusFilter === "disable"
-                ? "Activer"
-                : "Désactiver",
-
-            type: "delete",
-
-            icon: (admin) => (
-                <div className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${admin.isActive ? "bg-primary" : "bg-gray-400"}`}>
-                    <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${admin.isActive ? "right-0.5" : "left-0.5"}`} />
-                </div>
-            ),
-
+        createAccountStatusAction<UserTable, StatusFilter>({
+            label: (sf) => (sf === "disable" ? "Activer" : "Désactiver"),
             roles: ["SUPER_ADMIN"],
-
-            onClick: async (admin) => {
-
-                const newStatus =
-                    !admin.isActive;
-
-
-                const confirmed =
-                    await confirmDelete(
-                        newStatus
-                            ? "activer ce compte"
-                            : "desactiver ce compte"
-                    );
-
-
-                if (!confirmed) {
-                    return;
-                }
-
-
-                try {
-
-                    await userService.updateAccountStatus(
-                        admin.email,
-                        newStatus
-                    );
-
-
-                    await loadAdmins(statusFilter);
-
-                } catch (error) {
-
-                    console.error(
-                        newStatus
-                            ? "Erreur lors de l'activation :"
-                            : "Erreur lors de la désactivation :",
-                        error
-                    );
-                }
-            }
-        }
+            statusFilter,
+            onReload: loadAdmins,
+        })
     ];
 
 
@@ -297,7 +269,7 @@ export default function AdminListPage() {
 
         .filter(admin => {
             if (roleFilter === "all") return true;
-            return admin.role === roleFilter;
+            return admin.codeRole === roleFilter;
         })
 
         .filter(admin => {
@@ -406,18 +378,10 @@ export default function AdminListPage() {
                             label: "Tous les rôles",
                             value: "all"
                         },
-                        {
-                            label: "USER",
-                            value: "USER"
-                        },
-                        {
-                            label: "ADMIN",
-                            value: "ADMIN"
-                        },
-                        {
-                            label: "SUPER_ADMIN",
-                            value: "SUPER_ADMIN"
-                        }
+                        ...roles.map(role => ({
+                            label: role.codeRole,
+                            value: role.codeRole
+                        }))
                     ]}
 
                     onChange={(value) => {

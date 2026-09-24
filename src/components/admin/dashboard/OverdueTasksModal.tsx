@@ -4,6 +4,7 @@ import { X, Clock, ArrowRight } from "lucide-react";
 import { taskService } from "@/services/task/task.service";
 import { projectService } from "@/services/project/project.service";
 import type { TaskRes } from "@/types/task";
+import { formatDateFull } from "@/utils/date";
 
 interface Props {
     projectId?: number;
@@ -105,7 +106,7 @@ export default function OverdueTasksModal({ projectId, onClose }: Props) {
                                                 <span className="flex items-center gap-1">
                                     <Clock size={12} />
                                     <span>
-                                        Échéance : {formatDate(task.dueDate)}
+                                        Échéance : {formatDateFull(task.dueDate)}
                                     </span>
                                 </span>
                                                 <span className="flex items-center gap-1">
@@ -126,8 +127,3 @@ export default function OverdueTasksModal({ projectId, onClose }: Props) {
     );
 }
 
-function formatDate(date: string | null) {
-    if (!date) return "—";
-    const d = new Date(date);
-    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
-}

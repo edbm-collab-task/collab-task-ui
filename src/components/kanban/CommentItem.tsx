@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createPortal } from "react-dom";
 import {
     Pencil,
     Trash2,
@@ -7,17 +6,15 @@ import {
     Eye,
     Download,
     FileText,
-    X,
-    ZoomIn,
-    ZoomOut,
-    Maximize,
-    ExternalLink,
 } from "lucide-react";
 import type { TaskComment } from "@/types/comment";
 import type { UserResponse } from "@/types/user";
 import { commentService } from "@/services/comment/comment.service";
+import { formatRelativeTimeWithFallback } from "@/utils/time";
+import { getInitialsFromParts } from "@/utils/avatar";
 import { API_CONFIG } from "@/api/constants";
 import ReactionPicker from "./ReactionPicker";
+import FilePreviewModal from "./FilePreviewModal";
 
 interface Props {
     comment: TaskComment;
@@ -31,20 +28,6 @@ interface Props {
     onReply: (parentId: number) => void;
 }
 
-function timeAgo(dateStr: string): string {
-    const now = new Date();
-    const date = new Date(dateStr);
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    if (seconds < 60) return "à l'instant";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `il y a ${minutes}min`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `il y a ${hours}h`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `il y a ${days}j`;
-    return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
-}
-
 function formatFileSize(size: number): string {
     if (!size || size <= 0) return "0 B";
     if (size < 1024) return `${size} B`;
@@ -54,138 +37,6 @@ function formatFileSize(size: number): string {
 
 function isImageType(ct: string | null | undefined): boolean {
     return ct?.startsWith("image/") ?? false;
-}
-
-// Modal de prévisualisation de fichier
-function FilePreviewModal({
-    onClose,
-    attachmentPath,
-    attachmentName,
-    attachmentContentType,
-}: {
-    onClose: () => void;
-    attachmentPath: string;
-    attachmentName: string;
-    attachmentContentType: string | null;
-}) {
-    const viewUrl = commentService.getAttachmentUrl(attachmentPath);
-    const isPdf = attachmentContentType === "application/pdf";
-    const [scale, setScale] = useState(1);
-    const [fit, setFit] = useState(true);
-
-    const zoomIn = () => {
-        setFit(false);
-        setScale((s) => Math.min(5, +(s + 0.25).toFixed(2)));
-    };
-    const zoomOut = () => {
-        setFit(false);
-        setScale((s) => Math.max(0.25, +(s - 0.25).toFixed(2)));
-    };
-    const resetZoom = () => {
-        setFit(true);
-        setScale(1);
-    };
-
-    const toolBtn =
-        "rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-primary";
-
-    const modal = (
-        <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
-            onClick={onClose}
-        >
-            <div
-                className="flex h-[88vh] w-[92vw] max-w-[1100px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-                    <h3
-                        className="truncate pr-3 text-sm font-semibold text-gray-800"
-                        title={attachmentName}
-                    >
-                        {attachmentName}
-                    </h3>
-                    <div className="flex shrink-0 items-center gap-1">
-                        {!isPdf && (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={zoomOut}
-                                    className={toolBtn}
-                                    title="Zoom arrière"
-                                >
-                                    <ZoomOut size={16} />
-                                </button>
-                                <span className="w-12 text-center text-xs font-medium text-gray-500">
-                                    {fit ? "Auto" : `${Math.round(scale * 100)}%`}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={zoomIn}
-                                    className={toolBtn}
-                                    title="Zoom avant"
-                                >
-                                    <ZoomIn size={16} />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={resetZoom}
-                                    className={toolBtn}
-                                    title="Ajuster à l'écran"
-                                >
-                                    <Maximize size={16} />
-                                </button>
-                            </>
-                        )}
-                        <a
-                            href={viewUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={toolBtn}
-                            title="Ouvrir dans un nouvel onglet"
-                        >
-                            <ExternalLink size={16} />
-                        </a>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className={toolBtn}
-                            title="Fermer"
-                        >
-                            <X size={18} />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Body */}
-                <div className="flex flex-1 items-center justify-center overflow-auto bg-slate-100 p-4">
-                    {isPdf ? (
-                        <iframe
-                            src={viewUrl}
-                            className="h-full w-full rounded-lg border-none bg-white"
-                            title={attachmentName}
-                        />
-                    ) : (
-                        <img
-                            src={viewUrl}
-                            alt={attachmentName}
-                            onDoubleClick={resetZoom}
-                            className="select-none"
-                            style={{
-                                maxWidth: fit ? "100%" : "none",
-                                maxHeight: fit ? "100%" : "none",
-                                transform: `scale(${fit ? 1 : scale})`,
-                                transition: "transform 0.15s ease-out",
-                            }}
-                        />
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-
-    return createPortal(modal, document.body);
 }
 
 export default function CommentItem({
@@ -202,9 +53,10 @@ export default function CommentItem({
     const [editing, setEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
     const [showPreview, setShowPreview] = useState(false);
+    // Seul l'auteur peut modifier/supprimer son commentaire
     const isAuthor = comment.author.userId === currentUserId;
 
-    const initials = (comment.author.firstname?.[0] ?? "") + (comment.author.lastname?.[0] ?? "");
+    const initials = getInitialsFromParts(comment.author.firstname, comment.author.lastname);
     const isModified = comment.updatedAt != null;
     const attachment = comment.attachment;
     const viewUrl = attachment ? commentService.getAttachmentUrl(attachment.path) : "";
@@ -216,6 +68,12 @@ export default function CommentItem({
         setEditing(false);
     };
 
+    /**
+     * Rendu du contenu avec détection des mentions @Prénom Nom
+     * On trie les utilisateurs par nom décroissant pour matcher les noms longs en premier
+     * (ex: @Jean Dupont avant @Jean). Vérification de limites de mots pour éviter
+     * les faux positifs dans d'autres mots.
+     */
     const renderContent = (text: string) => {
         const parts: React.ReactNode[] = [];
         let lastIndex = 0;
@@ -282,7 +140,7 @@ export default function CommentItem({
                         <span className="text-sm font-semibold text-gray-800">
                             {comment.author.firstname} {comment.author.lastname}
                         </span>
-                        <span className="text-xs text-gray-400">{timeAgo(comment.createdAt)}</span>
+                        <span className="text-xs text-gray-400">{formatRelativeTimeWithFallback(comment.createdAt)}</span>
                         {isModified && (
                             <span className="text-xs text-gray-400 italic">Modifié</span>
                         )}
@@ -331,7 +189,7 @@ export default function CommentItem({
                         </p>
                     )}
 
-                    {/* Attachment */}
+                    {/* Attachment : affichage différencié image vs PDF/autre + preview modal */}
                     {!editing && attachment && (
                         <div className="mt-2">
                             {isImageType(attachment.contentType) ? (
@@ -421,7 +279,8 @@ export default function CommentItem({
                         </div>
                     )}
 
-                    {/* Réactions */}
+                    {/* Réactions : badges avec compteur + picker pour ajouter.
+                         La réaction de l'utilisateur courant est surlignée (bg-blue-50). */}
                     {!editing && comment.reactions.length > 0 && (
                         <div className="mt-1.5 flex flex-wrap gap-1">
                             {comment.reactions.map((r) => (
@@ -445,6 +304,7 @@ export default function CommentItem({
                         </div>
                     )}
 
+                    {/* Picker affiché au survol du commentaire (group-hover) s'il n'y a pas encore de réaction */}
                     {!editing && comment.reactions.length === 0 && (
                         <div className="mt-1 opacity-0 transition group-hover:opacity-100">
                             <ReactionPicker
@@ -453,7 +313,8 @@ export default function CommentItem({
                         </div>
                     )}
 
-                    {/* Actions */}
+                    {/* Actions : répondre (pas sur les réponses), modifier/supprimer (auteur uniquement).
+                         Suppression via window.confirm natif (différent de ConfirmPopup utilisé ailleurs). */}
                     {!editing && (
                         <div className="mt-1 flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
                             {!isReply && (
@@ -491,7 +352,8 @@ export default function CommentItem({
                 </div>
             </div>
 
-            {/* Réponses */}
+            {/* Réponses récursives : même composant avec isReply=true pour indentation
+                 et masquage du bouton "Répondre" sur les réponses. */}
             {!editing && comment.replies.length > 0 && (
                 <div className="mt-3 space-y-3 border-l-2 border-gray-100 pl-3">
                     {comment.replies.map((reply) => (

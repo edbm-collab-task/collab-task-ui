@@ -125,7 +125,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         title="Commentaires"
                     >
                         <MessageSquare size={11} />
-                        {commentCount || ""}
+                        {commentCount}
                     </button>
                 )}
             </div>

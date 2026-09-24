@@ -6,6 +6,14 @@ import type { Conversation, Message } from "@/types/message";
 /**
  * Hook centralisant la gestion des messages (chargement, envoi,
  * suppression, copie, synchronisation WebSocket).
+ * 
+ * WebSocket : connexion STOMP singleton (messageSocket) par conversation.
+ * À chaque changement de selectedConversation, on déconnecte l'ancien et connecte le nouveau.
+ * Les messages reçus sont ajoutés à l'état local (déduplication par ID).
+ * 
+ * IMPORTANT : Ce hook ne met PAS à jour la liste des conversations (unreadCount, lastMessage).
+ * Cette responsabilité incombe à useConversations qui doit recharger via loadConversations().
+ * La fonction synchronizeConversation de useConversations existe pour ça mais n'est pas appelée.
  */
 export function useMessages(selectedConversation: Conversation | null) {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -21,6 +29,7 @@ export function useMessages(selectedConversation: Conversation | null) {
         }
     }, []);
 
+    // Cycle de vie WebSocket : connect/disconnect selon selectedConversation
     useEffect(() => {
         if (!selectedConversation?.id) {
             messageSocket.disconnect();
@@ -28,6 +37,8 @@ export function useMessages(selectedConversation: Conversation | null) {
         }
 
         const handleSocketMessage = (incomingMessage: Message) => {
+            // Le message WS peut ne pas avoir conversationId (dépend du backend)
+            // On fallback sur selectedConversation.id
             const messageConversationId = Number(
                 (incomingMessage as Message & { conversationId?: number }).conversationId ?? selectedConversation.id
             );
@@ -58,6 +69,8 @@ export function useMessages(selectedConversation: Conversation | null) {
                 attachments: files,
             });
 
+            // Optimistic-like : on ajoute le message retourné par l'API (avec ID serveur)
+            // Pas d'optimistic pur car on attend la réponse HTTP avant d'afficher
             setMessages((previous) => {
                 const exists = previous.some((item) => item.id === message.id);
                 if (exists) return previous;

@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash, Check } from "lucide-react";
+import { Plus, Pencil, Check } from "lucide-react";
 import toast from "react-hot-toast";
 
 import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
 import { createColumns } from "@/components/table/createColumns";
 import TablePagination from "@/components/table/TablePagination";
-import { confirmDelete } from "@/components/modal/confirmDelete";
 
 import type { TableAction, HeaderAction } from "@/types/table";
 import type { Role, Permission } from "@/types/role";
@@ -14,12 +13,14 @@ import { roleService } from "@/services/role/role.service";
 
 const roleTr = {
     name: "Nom",
+    codeRole: "Code rôle",
     permissions: "Permissions",
 };
 
 interface RoleTable {
     id: number;
     name: string;
+    codeRole: string;
     permissions: string;
 }
 
@@ -34,6 +35,7 @@ export default function RoleListPage() {
     const [editingRole, setEditingRole] = useState<Role | null>(null);
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
     const [roleName, setRoleName] = useState("");
+    const [codeRole, setCodeRole] = useState(""); // Nouveau : code du rôle
     const pageSize = 5;
 
     const loadData = async () => {
@@ -48,6 +50,7 @@ export default function RoleListPage() {
             const tableData: RoleTable[] = filtered.map(r => ({
                 id: r.id,
                 name: r.name,
+                codeRole: r.codeRole || "—",
                 permissions: r.permissions.length > 0
                     ? r.permissions.join(", ")
                     : "Aucune permission"
@@ -74,12 +77,14 @@ export default function RoleListPage() {
             if (editingRole) {
                 await roleService.update(editingRole.id, {
                     name: editingRole.name,
+                    codeRole,
                     permissions: selectedPermissions
                 });
                 toast.success("Rôle mis à jour avec succès");
             } else {
                 await roleService.create({
                     name: roleName,
+                    codeRole,
                     permissions: selectedPermissions
                 });
                 toast.success("Rôle créé avec succès");
@@ -87,6 +92,7 @@ export default function RoleListPage() {
             setShowForm(false);
             setEditingRole(null);
             setRoleName("");
+            setCodeRole(""); // Nouveau : reset codeRole
             setSelectedPermissions([]);
             loadData();
         } catch (error) {
@@ -99,26 +105,11 @@ export default function RoleListPage() {
             const fullRole = await roleService.getById(role.id);
             setEditingRole(fullRole);
             setRoleName(fullRole.name);
+            setCodeRole(fullRole.codeRole || "");
             setSelectedPermissions(fullRole.permissions);
             setShowForm(true);
         } catch (error) {
             toast.error("Erreur lors du chargement du rôle");
-        }
-    };
-
-    const handleDelete = async (role: RoleTable) => {
-        if (role.name === "SUPER_ADMIN" || role.name === "ADMIN" || role.name === "USER") {
-            toast.error("Impossible de supprimer un rôle système");
-            return;
-        }
-        const confirmed = await confirmDelete("rôle");
-        if (!confirmed) return;
-        try {
-            await roleService.delete(role.id);
-            toast.success("Rôle supprimé");
-            loadData();
-        } catch (error) {
-            toast.error("Erreur lors de la suppression");
         }
     };
 
@@ -132,6 +123,7 @@ export default function RoleListPage() {
 
     const columns = createColumns(roles, roleTr, [
         "name",
+        "codeRole",
         "permissions"
     ]);
 
@@ -142,13 +134,6 @@ export default function RoleListPage() {
             icon: <Pencil size={18} />,
             roles: ["SUPER_ADMIN"],
             onClick: (role) => handleEdit(role)
-        },
-        {
-            label: "Supprimer",
-            type: "delete",
-            icon: <Trash size={18} />,
-            roles: ["SUPER_ADMIN"],
-            onClick: (role) => handleDelete(role)
         }
     ];
 
@@ -161,6 +146,7 @@ export default function RoleListPage() {
             onClick: () => {
                 setEditingRole(null);
                 setRoleName("");
+                setCodeRole("");
                 setSelectedPermissions([]);
                 setShowForm(true);
             }
@@ -207,6 +193,20 @@ export default function RoleListPage() {
                             disabled={editingRole !== null}
                             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none disabled:bg-gray-100"
                             placeholder="Ex: MANAGER"
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Code du rôle
+                        </label>
+                        <input
+                            type="text"
+                            value={codeRole}
+                            onChange={(e) => setCodeRole(e.target.value)}
+                            disabled={editingRole !== null}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none disabled:bg-gray-100"
+                            placeholder="Ex: U1S, A1D, S1ADM"
                         />
                     </div>
 

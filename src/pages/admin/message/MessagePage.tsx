@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import { MessageCircle } from "lucide-react";
 
-import CallModal from "@/components/message/CallModal";
 import ChatHeader from "@/components/message/ChatHeader";
 import ConversationMenu from "@/components/message/ConversationMenu";
 import ConversationSidebar from "@/components/message/ConversationSidebar";
@@ -21,11 +20,11 @@ import type { ChatUser } from "@/types/message";
 const MessagePage = () => {
     const [currentUser, setCurrentUser] = useState<ChatUser | null>(null);
     const [users, setUsers] = useState<ChatUser[]>([]);
+    // États d'affichage des modales (toutes mutuellement exclusives via la logique)
     const [showNewConversation, setShowNewConversation] = useState(false);
     const [showCreateGroup, setShowCreateGroup] = useState(false);
     const [showMembers, setShowMembers] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
-    const [call, setCall] = useState<"audio" | "video" | null>(null);
     const [showMenu, setShowMenu] = useState(false);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -58,6 +57,10 @@ const MessagePage = () => {
         clearReply,
     } = useMessages(selectedConversation);
 
+    // Initialisation complète au montage : user courant + liste users + conversations
+    // Puis auto-sélection de la première conversation non archivée
+    // Séquence : selectConversation → loadMessages → markAsRead → reloadConversations (pour sync unreadCount)
+    // Le flag `mounted` évite les mises à jour d'état après démontage (nettoyage dans return)
     useEffect(() => {
         let mounted = true;
 
@@ -125,6 +128,8 @@ const MessagePage = () => {
             await newConversation(user);
             setShowNewConversation(false);
 
+            // Recharge les messages de la conversation actuelle si elle existe
+            // (newConversation met déjà à jour selectedConversation via le hook)
             const loadedMessages = selectedConversation
                 ? await messageService.getMessages(selectedConversation.id)
                 : [];
@@ -166,6 +171,8 @@ const MessagePage = () => {
             setActionLoading(true);
             await sendMessage(content, files);
 
+            // Après envoi, on recharge la liste des conversations pour mettre à jour
+            // lastMessage/unreadCount dans la sidebar (le WS ne met pas à jour la liste)
             if (selectedConversation) {
                 const loadedConversations = await messageService.getConversations(true);
                 const updated = loadedConversations.find(
@@ -203,6 +210,7 @@ const MessagePage = () => {
     const handleArchive = async () => {
         try {
             setActionLoading(true);
+            // archive reçoit loadMessages pour basculer sur la conversation suivante
             await archive(loadMessages);
             setShowMenu(false);
         } finally {
@@ -242,6 +250,7 @@ const MessagePage = () => {
 
             await messageService.markAsRead(conversation.id);
 
+            // Recharge pour synchroniser unreadCount/pinned dans la sidebar
             const loadedConversations = await messageService.getConversations(true);
             const updated = loadedConversations.find((item) => item.id === conversation.id);
             if (updated) {
@@ -259,6 +268,7 @@ const MessagePage = () => {
     return (
         <div className="h-full overflow-hidden bg-bg p-3 sm:p-4">
             <div className="flex h-full min-h-0 overflow-hidden rounded-xl bg-white shadow-sm sm:rounded-2xl">
+            {/* Sidebar conversations : liste + recherche + actions nouvelle conversation/groupe */}
             <ConversationSidebar
                 conversations={conversations}
                 users={users}
@@ -272,17 +282,17 @@ const MessagePage = () => {
 
             {selectedConversation ? (
                 <main className="flex min-w-0 flex-1 flex-col">
+                    {/* Header : infos conversation + actions (appel, membres, menu) */}
                     <ChatHeader
                         conversation={selectedConversation}
                         users={users}
                         currentUserId={currentUser?.id ?? 0}
                         onSearch={() => setShowSearch(true)}
-                        onAudioCall={() => setCall("audio")}
-                        onVideoCall={() => setCall("video")}
                         onMembers={() => setShowMembers(true)}
                         onMenu={() => setShowMenu((value) => !value)}
                     />
 
+                    {/* Liste des messages avec scroll auto */}
                     <MessageList
                         messages={messages}
                         users={users}
@@ -292,6 +302,7 @@ const MessagePage = () => {
                         onCopy={copyMessage}
                     />
 
+                    {/* Zone de saisie + pièces jointes + mentions + emojis */}
                     <MessageComposer
                         users={users.filter((user) =>
                             selectedConversation.memberIds.includes(user.id)
@@ -327,6 +338,7 @@ const MessagePage = () => {
                 </main>
             )}
 
+            {/* Modales conditionnelles - rendues dans le même arbre pour le portail/z-index */}
             {showNewConversation && (
                 <NewConversationModal
                     users={users.filter((user) => user.id !== currentUser?.id)}
@@ -352,6 +364,7 @@ const MessagePage = () => {
                 />
             )}
 
+            {/* Recherche dans les messages déjà chargés (côté client uniquement) */}
             {showSearch && selectedConversation && (
                 <MessageSearchModal
                     messages={messages}
@@ -360,14 +373,7 @@ const MessagePage = () => {
                 />
             )}
 
-            {call && selectedConversation && (
-                <CallModal
-                    type={call}
-                    name={selectedConversation.name}
-                    onClose={() => setCall(null)}
-                />
-            )}
-
+            {/* Menu contextuel conversation : marquer lu, épingler, archiver, supprimer, quitter */}
             {showMenu && selectedConversation && (
                 <ConversationMenu
                     pinned={selectedConversation.pinned}
