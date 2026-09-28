@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Pencil, Check } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -7,6 +7,10 @@ import TableHeader from "@/components/table/TableHeader";
 import { createColumns } from "@/components/table/createColumns";
 import TablePagination from "@/components/table/TablePagination";
 
+import {
+    FALLBACK_PERMISSION_CATEGORY,
+    getPermissionCategoryLabel
+} from "@/constants/permissionCategoryLabels";
 import type { TableAction, HeaderAction } from "@/types/table";
 import type { Role, Permission } from "@/types/role";
 import { roleService } from "@/services/role/role.service";
@@ -52,7 +56,7 @@ export default function RoleListPage() {
                 name: r.name,
                 codeRole: r.codeRole || "—",
                 permissions: r.permissions.length > 0
-                    ? r.permissions.join(", ")
+                    ? r.permissions.map(p => p.name).join(", ")
                     : "Aucune permission"
             }));
 
@@ -106,7 +110,7 @@ export default function RoleListPage() {
             setEditingRole(fullRole);
             setRoleName(fullRole.name);
             setCodeRole(fullRole.codeRole || "");
-            setSelectedPermissions(fullRole.permissions);
+            setSelectedPermissions(fullRole.permissions.map(p => p.name));
             setShowForm(true);
         } catch (error) {
             toast.error("Erreur lors du chargement du rôle");
@@ -120,6 +124,26 @@ export default function RoleListPage() {
                 : [...prev, permName]
         );
     };
+
+    /**
+     * Permissions regroupées par catégorie pour l'affichage du formulaire.
+     * L'API renvoie déjà la liste triée par catégorie puis par nom, l'ordre des
+     * groupes est donc celui du premier élément de chaque catégorie.
+     * Les permissions sans catégorie (base non migrée) retombent dans « Autres ».
+     */
+    const permissionsByCategory = useMemo(() => {
+        const groups = new Map<string, Permission[]>();
+        for (const perm of allPermissions) {
+            const key = perm.categoryPermission ?? FALLBACK_PERMISSION_CATEGORY;
+            const bucket = groups.get(key);
+            if (bucket) {
+                bucket.push(perm);
+            } else {
+                groups.set(key, [perm]);
+            }
+        }
+        return Array.from(groups.entries());
+    }, [allPermissions]);
 
     const columns = createColumns(roles, roleTr, [
         "name",
@@ -214,40 +238,47 @@ export default function RoleListPage() {
                         <label className="mb-2 block text-sm font-medium text-gray-700">
                             Permissions
                         </label>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                            {allPermissions.map((perm) => (
-                                <label
-                                    key={perm.id}
-                                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all ${
-                                        selectedPermissions.includes(perm.name)
-                                            ? "border-accent bg-accent/10"
-                                            : "border-gray-200 hover:border-accent"
-                                    }`}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedPermissions.includes(perm.name)}
-                                        onChange={() => togglePermission(perm.name)}
-                                        className="hidden"
-                                    />
-                                    <div
-                                        className={`flex h-5 w-5 items-center justify-center rounded border ${
-                                            selectedPermissions.includes(perm.name)
-                                                ? "bg-primary"
-                                                : "border-gray-300"
-                                        }`}
-                                    >
-                                        {selectedPermissions.includes(perm.name) && (
-                                            <Check size={12} className="text-white" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-700">{perm.name}</p>
-                                        <p className="text-xs text-gray-500">{perm.description}</p>
-                                    </div>
-                                </label>
-                            ))}
-                        </div>
+                        {permissionsByCategory.map(([category, perms]) => (
+                            <div key={category} className="mb-4 last:mb-0">
+                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                    {getPermissionCategoryLabel(category)}
+                                </p>
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    {perms.map((perm) => (
+                                        <label
+                                            key={perm.id}
+                                            className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all ${
+                                                selectedPermissions.includes(perm.name)
+                                                    ? "border-accent bg-accent/10"
+                                                    : "border-gray-200 hover:border-accent"
+                                            }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedPermissions.includes(perm.name)}
+                                                onChange={() => togglePermission(perm.name)}
+                                                className="hidden"
+                                            />
+                                            <div
+                                                className={`flex h-5 w-5 items-center justify-center rounded border ${
+                                                    selectedPermissions.includes(perm.name)
+                                                        ? "bg-primary"
+                                                        : "border-gray-300"
+                                                }`}
+                                            >
+                                                {selectedPermissions.includes(perm.name) && (
+                                                    <Check size={12} className="text-white" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-700">{perm.name}</p>
+                                                <p className="text-xs text-gray-500">{perm.description}</p>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     <div className="flex justify-end gap-2">
