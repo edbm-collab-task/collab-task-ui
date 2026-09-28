@@ -56,15 +56,6 @@ export default function DirectionsListPage() {
     const actions: TableAction<DirectionRes>[] = [
 
 
-        {
-            label: "Modifier",
-            type: "edit",
-            icon: <Pencil size={18} />,
-            roles: ["ADMIN"],
-
-            onClick: (_user) => {}
-
-        },
 
         {
             label: "Supprimer",
