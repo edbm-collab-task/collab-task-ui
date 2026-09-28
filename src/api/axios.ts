@@ -38,7 +38,9 @@ const processQueue = (error: unknown) => {
 
 const shouldRefresh = (status: number, url: string): boolean => {
     if (url.includes("/auth/")) return false;
-    return status === 401;
+    if (status !== 401) return false;
+    if (!localStorage.getItem("accessToken")) return false;
+    return true;
 };
 
 api.interceptors.response.use(
@@ -72,9 +74,10 @@ const { data } = await axios.post(
                 if (data?.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
                 processQueue(null);
                 return api(originalRequest);
-            } catch {
-                processQueue(null);
-                localStorage.removeItem("user");
+            } catch (refreshError) {
+                processQueue(refreshError);
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
                 window.location.href = "/login";
                 return Promise.reject(error);
             } finally {
@@ -90,6 +93,7 @@ const { data } = await axios.post(
                     toast.error(message);
                     break;
                 case 401:
+                    if (!originalRequest.url.includes("/auth/")) toast.error(message);
                     break;
                 case 403:
                     toast.error("Accès refusé.");
