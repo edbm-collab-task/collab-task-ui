@@ -10,9 +10,10 @@ import {
 } from "@/types/task";
 import type { Status } from "@/types/status";
 import { toStatusListFromSeed } from "@/mappers/status.mapper";
+import { buildColumnTaskTrees, countColumnNodes } from "@/utils/taskTree";
 import type { UserResponse } from "@/types/user";
 import CommentPanel from "./CommentPanel";
-import { TaskCard } from "./TaskCard";
+import { TaskTreeItem } from "./TaskTreeItem";
 
 interface Props {
     projectId: number;
@@ -112,6 +113,18 @@ export default function KanbanBoard({
 
     const availableStatuses = statuses ?? fallbackStatuses;
 
+    // Arbre des sous-tâches par colonne : chaque sous-tâche est rendue sous son
+    // parent (décalage + filet vertical). Si le parent est dans une autre colonne,
+    // la sous-tâche est précédée d'une carte fantôme avec le titre du parent.
+    const columnTrees = useMemo(
+        () =>
+            buildColumnTaskTrees(
+                tasks,
+                availableStatuses.map(status => status.statusId)
+            ),
+        [tasks, availableStatuses]
+    );
+
     // Gestion du drop : on ne déclenche onMoveTask que si la colonne a changé
     // La mise à jour optimiste est gérée dans le parent (ProjectDetailPage.handleMoveTask)
     const handleDrop = (statusId: number) => {
@@ -127,17 +140,9 @@ export default function KanbanBoard({
             {availableStatuses.map(status => {
                 // ✅ Correction : on utilise directement status.statusId
                 const id = status.statusId;
-                // Tri des tâches de la colonne : priorité d'abord (prioritySortOrder
-                // croissant = Urgente → Basse), puis l'ordre manuel sortOrder.
-                // Les priorités sans ordre connu sont placées en fin de colonne.
-                const columnTasks = tasks
-                    .filter(t => t.statusId === id)
-                    .sort((a, b) => {
-                        const priorityA = a.prioritySortOrder ?? Number.MAX_SAFE_INTEGER;
-                        const priorityB = b.prioritySortOrder ?? Number.MAX_SAFE_INTEGER;
-                        if (priorityA !== priorityB) return priorityA - priorityB;
-                        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-                    });
+                // Tâches de la colonne, triées par priorité puis ordre manuel
+                // (voir compareTasks) et groupées par parent TaskTreeItem.
+                const columnNodes = columnTrees.get(id) ?? [];
                 const style = getStatusStyle(status);
 
                 return (
@@ -159,7 +164,7 @@ export default function KanbanBoard({
                                 <span className={`h-2.5 w-2.5 rounded-full ${style.dot}`} />
                                 <h3 className="text-sm font-bold uppercase tracking-wide text-gray-700">{status.name}</h3>
                                 <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold text-gray-600 shadow-sm">
-                                    {columnTasks.length}
+                                    {countColumnNodes(columnNodes)}
                                 </span>
                             </div>
                             <button
@@ -171,18 +176,18 @@ export default function KanbanBoard({
                             </button>
                         </div>
 
-                        {/* Cartes tâches */}
+                        {/* Cartes tâches (sous-tâches imbriquées sous leur parent) */}
                         <div className="flex flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar p-1">
-                            {columnTasks.length === 0 && (
+                            {columnNodes.length === 0 && (
                                 <div className="rounded-xl border-2 border-dashed border-white/70 px-4 py-6 text-center text-xs text-gray-400">
                                     Glissez une tâche ici
                                 </div>
                             )}
 
-                            {columnTasks.map(task => (
-                                <TaskCard
-                                    key={`${projectId}-${task.taskId}`}
-                                    task={task}
+                            {columnNodes.map(node => (
+                                <TaskTreeItem
+                                    key={`${projectId}-${node.task.taskId}`}
+                                    node={node}
                                     projectId={projectId}
                                     priorityBadge={priorityBadge}
                                     formatDate={formatDate}
