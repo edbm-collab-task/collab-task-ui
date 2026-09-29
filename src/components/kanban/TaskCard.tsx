@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare } from 'lucide-react';
+import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree } from 'lucide-react';
 
 interface TaskCardProps {
     task: any;
@@ -14,6 +14,12 @@ interface TaskCardProps {
     setDraggedTask?: (task: any) => void;
     setOverColumn?: (column: any) => void;
     showActions?: boolean;
+    /** Profondeur dans l'arbre des sous-tâches : > 0 = carte imbriquée (version compacte) */
+    depth?: number;
+    /** Nombre de sous-tâches rendues directement en dessous de la carte */
+    childrenCount?: number;
+    /** Titre du parent direct quand il est rendu en carte fantôme au-dessus */
+    parentTitle?: string | null;
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -28,9 +34,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     setDraggedTask,
     setOverColumn,
     showActions = true,
+    depth = 0,
+    childrenCount = 0,
+    parentTitle = null,
 }) => {
     const priority = priorityBadge(task.priorityName);
     const commentCount = getCount(task.taskId);
+    const isNested = depth > 0;
+    // Le parent est soit juste au-dessus (imbriqué), soit rendu en carte fantôme :
+    // dans les deux cas le badge "Sous-tâche" est inutile.
+    const showSubtaskBadge = Boolean(task.parentTaskId) && !isNested && !parentTitle;
 
     return (
         <div
@@ -41,10 +54,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 setDraggedTask?.(null);
                 setOverColumn?.(null);
             }}
-            className="group cursor-grab rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md hover:ring-primary active:cursor-grabbing"
+            className={`group cursor-grab rounded-xl bg-white shadow-sm ring-1 transition hover:shadow-md hover:ring-primary active:cursor-grabbing ${
+                isNested ? 'p-3 ring-violet-100' : 'p-4 ring-gray-100'
+            }`}
         >
             <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-gray-800">{task.title}</p>
+                <p className={`font-semibold text-gray-800 ${isNested ? 'text-[13px]' : 'text-sm'}`}>{task.title}</p>
                 
                 {showActions && (
                     <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
@@ -108,10 +123,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     </span>
                 )}
 
-                {task.parentTaskId && (
+                {showSubtaskBadge && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700">
                         <GitBranch size={11} />
                         Sous-tâche
+                    </span>
+                )}
+
+                {childrenCount > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-gray-600">
+                        <ListTree size={11} />
+                        {childrenCount} sous-tâche{childrenCount > 1 ? "s" : ""}
                     </span>
                 )}
 
