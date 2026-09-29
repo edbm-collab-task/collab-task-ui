@@ -161,7 +161,7 @@ const ConversationSidebar = ({
     };
 
     return (
-        <aside className="flex h-full w-[300px] shrink-0 flex-col border-r border-secondary/60 bg-bg sm:w-[320px]">
+        <aside className="flex h-full w-full shrink-0 flex-col border-r border-secondary/60 bg-bg md:w-[300px] lg:w-[320px]">
             {/* Header */}
             <div className="flex h-[72px] items-center justify-between border-b border-secondary/60 px-3 sm:px-4">
                 <div>

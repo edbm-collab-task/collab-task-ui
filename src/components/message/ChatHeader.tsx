@@ -1,4 +1,4 @@
-import { MoreVertical, Search, UserPlus, Users } from "lucide-react";
+import { ChevronLeft, MoreVertical, Search, UserPlus, Users } from "lucide-react";
 import type { Conversation, ChatUser } from "@/types/message";
 import { getInitialsFromChatUser } from "@/utils/avatar";
 import { getInitialsFromName } from "@/utils/avatar";
@@ -11,9 +11,10 @@ interface Props {
     onSearch: () => void;
     onMembers: () => void;
     onMenu: () => void;
+    onBack: () => void;
 }
 
-const ChatHeader = ({ conversation, users, currentUserId, onSearch, onMembers, onMenu }: Props) => {
+const ChatHeader = ({ conversation, users, currentUserId, onSearch, onMembers, onMenu, onBack }: Props) => {
     const user = conversation.type === "private" ? users.find((item) => conversation.memberIds.includes(item.id) && item.id !== currentUserId) : undefined;
 
     const name = conversation.type === "group" ? conversation.name || "Groupe" : user ? `${user.firstname} ${user.lastname}` : "Conversation";
@@ -33,6 +34,11 @@ const ChatHeader = ({ conversation, users, currentUserId, onSearch, onMembers, o
     return (
         <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-secondary/60 bg-white px-4 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
+                {/* Retour à la liste des discussions : visible uniquement en dessous de md */}
+                <button type="button" onClick={onBack} title="Retour aux discussions" className="-ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:hidden">
+                    <ChevronLeft size={20} />
+                </button>
+
                 <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
                     {imageUrl ? <img src={imageUrl} alt={name} className="h-full w-full object-cover" onError={handleImageError} /> : null}
                     <div className={`h-full w-full items-center justify-center bg-secondary/70 text-sm font-semibold text-primary ${imageUrl ? "hidden" : "flex"}`}>{initials || "U"}</div>

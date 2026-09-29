@@ -13,6 +13,7 @@ import MessageSearchModal from "@/components/message/MessageSearchModal";
 import NewConversationModal from "@/components/message/NewConversationModal";
 import { messageService } from "@/services/message/message.service";
 import { useConversations } from "@/hooks/useConversations";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMessages } from "@/hooks/useMessages";
 
 import type { ChatUser } from "@/types/message";
@@ -28,6 +29,10 @@ const MessagePage = () => {
     const [showMenu, setShowMenu] = useState(false);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    // En dessous de md, une seule vue est affichée à la fois : la liste des discussions
+    // par défaut, puis la conversation ouverte (mobileChatOpen) jusqu'au retour arrière.
+    const isMobile = useIsMobile();
+    const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
     const {
         conversations,
@@ -127,6 +132,7 @@ const MessagePage = () => {
             setActionLoading(true);
             await newConversation(user);
             setShowNewConversation(false);
+            setMobileChatOpen(true);
 
             // Recharge les messages de la conversation actuelle si elle existe
             // (newConversation met déjà à jour selectedConversation via le hook)
@@ -147,6 +153,7 @@ const MessagePage = () => {
             setActionLoading(true);
             const conversation = await createGroup(name, memberIds);
             setShowCreateGroup(false);
+            setMobileChatOpen(true);
 
             if (conversation) {
                 setMessages([]);
@@ -213,6 +220,8 @@ const MessagePage = () => {
             // archive reçoit loadMessages pour basculer sur la conversation suivante
             await archive(loadMessages);
             setShowMenu(false);
+            // Sur mobile, l'action renvoie à la liste des discussions
+            setMobileChatOpen(false);
         } finally {
             setActionLoading(false);
         }
@@ -223,6 +232,7 @@ const MessagePage = () => {
             setActionLoading(true);
             await deleteConversation(loadMessages);
             setShowMenu(false);
+            setMobileChatOpen(false);
         } finally {
             setActionLoading(false);
         }
@@ -233,6 +243,7 @@ const MessagePage = () => {
             setActionLoading(true);
             await leaveGroup(loadMessages);
             setShowMenu(false);
+            setMobileChatOpen(false);
         } finally {
             setActionLoading(false);
         }
@@ -244,6 +255,7 @@ const MessagePage = () => {
             setReplyMessage(null);
             setShowMenu(false);
             setShowSearch(false);
+            setMobileChatOpen(true);
 
             const loadedMessages = await messageService.getMessages(conversation.id);
             setMessages(loadedMessages);
@@ -261,28 +273,36 @@ const MessagePage = () => {
         }
     }, [selectConversation, setMessages, setSelectedConversation]);
 
+    // En dessous de md, une seule vue est montée à la fois :
+    // la liste par défaut, la conversation après sélection (retour via le bouton du header)
+    const showList = !isMobile || !mobileChatOpen;
+    const showChat = Boolean(selectedConversation) && (!isMobile || mobileChatOpen);
+
     if (loading) {
         return <MessagePageSkeleton />;
     }
 
     return (
-        <div className="h-full overflow-hidden bg-bg p-3 sm:p-4">
+        <div className="h-full overflow-hidden bg-bg p-0 sm:p-4">
             <div className="flex h-full min-h-0 overflow-hidden rounded-xl bg-white shadow-sm sm:rounded-2xl">
             {/* Sidebar conversations : liste + recherche + actions nouvelle conversation/groupe */}
-            <ConversationSidebar
-                conversations={conversations}
-                users={users}
-                messages={messages}
-                selectedId={selectedConversation?.id ?? null}
-                currentUserId={currentUser?.id ?? 0}
-                onSelect={handleSelectConversation}
-                onNewConversation={() => setShowNewConversation(true)}
-                onCreateGroup={() => setShowCreateGroup(true)}
-            />
+            {showList && (
+                <ConversationSidebar
+                    conversations={conversations}
+                    users={users}
+                    messages={messages}
+                    selectedId={selectedConversation?.id ?? null}
+                    currentUserId={currentUser?.id ?? 0}
+                    onSelect={handleSelectConversation}
+                    onNewConversation={() => setShowNewConversation(true)}
+                    onCreateGroup={() => setShowCreateGroup(true)}
+                />
+            )}
 
             {selectedConversation ? (
+                showChat && (
                 <main className="flex min-w-0 flex-1 flex-col">
-                    {/* Header : infos conversation + actions (appel, membres, menu) */}
+                    {/* Header : infos conversation + actions (retour mobile, recherche, membres, menu) */}
                     <ChatHeader
                         conversation={selectedConversation}
                         users={users}
@@ -290,6 +310,7 @@ const MessagePage = () => {
                         onSearch={() => setShowSearch(true)}
                         onMembers={() => setShowMembers(true)}
                         onMenu={() => setShowMenu((value) => !value)}
+                        onBack={() => setMobileChatOpen(false)}
                     />
 
                     {/* Liste des messages avec scroll auto */}
@@ -312,7 +333,10 @@ const MessagePage = () => {
                         onSend={handleSendMessage}
                     />
                 </main>
+                )
             ) : (
+                // Écran vide : utile uniquement en ≥ md, sur mobile la liste occupe l'écran
+                !isMobile && (
                 <main className="flex flex-1 items-center justify-center bg-bg">
                     <div className="text-center">
                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-primary">
@@ -336,6 +360,7 @@ const MessagePage = () => {
                         </button>
                     </div>
                 </main>
+                )
             )}
 
             {/* Modales conditionnelles - rendues dans le même arbre pour le portail/z-index */}
@@ -400,9 +425,9 @@ const MessagePage = () => {
 
 const MessagePageSkeleton = () => {
     return (
-        <div className="h-full overflow-hidden bg-bg p-3 sm:p-4">
+        <div className="h-full overflow-hidden bg-bg p-0 sm:p-4">
             <div className="flex h-full min-h-0 overflow-hidden rounded-xl bg-white shadow-sm sm:rounded-2xl">
-            <aside className="flex w-[300px] shrink-0 flex-col border-r border-gray-200 bg-white sm:w-[320px]">
+            <aside className="flex w-full shrink-0 flex-col border-r border-gray-200 bg-white md:w-[300px] lg:w-[320px]">
                 <div className="flex h-[72px] items-center justify-between border-b border-gray-200 px-4">
                     <div className="h-6 w-32 animate-pulse rounded-md bg-secondary" />
 
