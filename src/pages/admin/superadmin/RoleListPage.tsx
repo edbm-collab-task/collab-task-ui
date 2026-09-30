@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Pencil, Check, ChevronDown } from "lucide-react";
+import { Plus, Pencil, Check, ChevronDown, RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 
 import GlobalTable from "@/components/table/GlobalTable";
@@ -15,12 +15,26 @@ import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
 import type { TableAction, HeaderAction } from "@/types/table";
 import type { Role, Permission } from "@/types/role";
 import { roleService } from "@/services/role/role.service";
+import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
+import {
+    ROLE_CODE_PATTERN,
+    generateRoleCode,
+    isRoleCodeTaken,
+    normalizeRoleCode
+} from "@/utils/roleCode";
 
 const roleTr = {
     name: "Nom",
     codeRole: "Code rôle",
     permissions: "Permissions",
 };
+
+const codeRoleMessages = {
+    required: "Le code du rôle est requis",
+    format: "Le code ne peut contenir que des lettres, des chiffres et des tirets bas",
+    reserved: "Ce code est réservé aux rôles système",
+    duplicate: "Ce code de rôle existe déjà"
+} as const;
 
 interface RoleTable {
     id: number;
@@ -41,6 +55,17 @@ export default function RoleListPage() {
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
     const [roleName, setRoleName] = useState("");
     const [codeRole, setCodeRole] = useState(""); // Nouveau : code du rôle
+    /**
+     * Codes de tous les rôles renvoyés par l'API, y compris ceux masqués au
+     * tableau (SUPER_ADMIN). Ils servent de liste de codes pris : un rôle
+     * filtré de l'affichage n'a pas moins de code à protéger.
+     */
+    const [allRoleCodes, setAllRoleCodes] = useState<{ id: number; codeRole: string }[]>([]);
+    /**
+     * Passe à true dès que le code est saisi à la main : l'auto-remplissage
+     * déclenché par le nom est alors figé jusqu'au clic sur « Régénérer ».
+     */
+    const [codeTouched, setCodeTouched] = useState(false);
     /**
      * Catégories dépliées dans le formulaire. Volontairement synchronisé à
      * chaque ouverture du formulaire plutôt que dérivé de `selectedPermissions` :
@@ -70,6 +95,9 @@ export default function RoleListPage() {
 
             setRoles(tableData);
             setAllPermissions(permsData);
+            setAllRoleCodes(
+                rolesData.map(r => ({ id: r.id, codeRole: r.codeRole ?? "" }))
+            );
         } catch (error) {
             console.error("Erreur lors du chargement :", error);
         } finally {
@@ -79,24 +107,69 @@ export default function RoleListPage() {
 
     useEffect(() => { loadData(); }, []);
 
+    /**
+     * Codes indisponibles : ceux renvoyés par l'API, plus les codes système
+     * réservés, moins ceux du rôle en cours d'édition — sans cette exclusion,
+     * ouvrir un rôle existant le déclarerait en collision avec lui-même.
+     */
+    const takenCodes = useMemo(() => {
+        const fromApi = allRoleCodes
+            .filter(role => role.id !== editingRole?.id)
+            .map(role => role.codeRole);
+        const reserved = RESERVED_ROLE_CODES.filter(
+            code => code !== normalizeRoleCode(editingRole?.codeRole ?? "")
+        );
+
+        return [...fromApi, ...reserved];
+    }, [allRoleCodes, editingRole]);
+
+    const ownCode = normalizeRoleCode(editingRole?.codeRole ?? "");
+
+    /**
+     * Message d'erreur du champ code, ou null s'il est valide. `force` sert à
+     * la soumission : sans lui, un code vide ne serait signalé qu'une fois
+     * touché, et le formulaire pourrait partir avec un code manquant.
+     */
+    const validateCode = (force = false): string | null => {
+        if (!codeRole) {
+            return force || codeTouched ? codeRoleMessages.required : null;
+        }
+        if (!ROLE_CODE_PATTERN.test(codeRole)) return codeRoleMessages.format;
+        if (codeRole === ownCode) return null;
+        if (isRoleCodeTaken(codeRole, RESERVED_ROLE_CODES)) return codeRoleMessages.reserved;
+        if (isRoleCodeTaken(codeRole, takenCodes)) return codeRoleMessages.duplicate;
+
+        return null;
+    };
+
+    const codeError = validateCode();
+
     const handleSave = async () => {
         if (!roleName.trim()) {
             toast.error("Le nom du rôle est requis");
             return;
         }
 
+        const codeIssue = validateCode(true);
+        if (codeIssue) {
+            toast.error(codeIssue);
+            return;
+        }
+
+        const submittedCode = normalizeRoleCode(codeRole);
+
         try {
             if (editingRole) {
                 await roleService.update(editingRole.id, {
                     name: roleName,
-                    codeRole,
+                    codeRole: submittedCode,
                     permissions: selectedPermissions
                 });
                 toast.success("Rôle mis à jour avec succès");
             } else {
                 await roleService.create({
                     name: roleName,
-                    codeRole,
+                    codeRole: submittedCode,
                     permissions: selectedPermissions
                 });
                 toast.success("Rôle créé avec succès");
@@ -105,6 +178,7 @@ export default function RoleListPage() {
             setEditingRole(null);
             setRoleName("");
             setCodeRole(""); // Nouveau : reset codeRole
+            setCodeTouched(false);
             setSelectedPermissions([]);
             loadData();
         } catch (error) {
@@ -239,6 +313,7 @@ export default function RoleListPage() {
                 setEditingRole(null);
                 setRoleName("");
                 setCodeRole("");
+                setCodeTouched(false);
                 setSelectedPermissions([]);
                 setShowForm(true);
             }
@@ -281,7 +356,12 @@ export default function RoleListPage() {
                         <input
                             type="text"
                             value={roleName}
-                            onChange={(e) => setRoleName(e.target.value)}
+                            onChange={(e) => {
+                                setRoleName(e.target.value);
+                                if (!codeTouched) {
+                                    setCodeRole(generateRoleCode(e.target.value, takenCodes));
+                                }
+                            }}
                             disabled={editingRole !== null}
                             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none disabled:bg-gray-100"
                             placeholder="Ex: MANAGER"
@@ -289,17 +369,45 @@ export default function RoleListPage() {
                     </div>
 
                     <div className="mb-4">
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Code du rôle
-                        </label>
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Code du rôle
+                            </label>
+                            {editingRole === null && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setCodeRole(generateRoleCode(roleName, takenCodes));
+                                        setCodeTouched(false);
+                                    }}
+                                    className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                                >
+                                    <RefreshCw size={14} />
+                                    Régénérer
+                                </button>
+                            )}
+                        </div>
                         <input
                             type="text"
                             value={codeRole}
-                            onChange={(e) => setCodeRole(e.target.value)}
+                            onChange={(e) => {
+                                setCodeRole(normalizeRoleCode(e.target.value));
+                                setCodeTouched(true);
+                            }}
                             disabled={editingRole !== null}
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none disabled:bg-gray-100"
-                            placeholder="Ex: U1S, A1D, S1ADM"
+                            aria-invalid={codeError !== null}
+                            className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none disabled:bg-gray-100 ${
+                                codeError
+                                    ? "border-red-400 focus:border-red-500"
+                                    : "border-gray-300 focus:border-primary"
+                            }`}
+                            placeholder="Généré automatiquement depuis le nom du rôle"
                         />
+                        {codeError && (
+                            <p className="mt-1 text-sm font-medium text-red-500">
+                                {codeError}
+                            </p>
+                        )}
                     </div>
 
                     <div className="mb-4">
