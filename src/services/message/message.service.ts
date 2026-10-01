@@ -5,8 +5,14 @@ import type {
     ChatUser,
     Conversation,
     Message,
+    MessagePage,
     SendMessageRequest,
 } from "@/types/message";
+
+export interface MessagePageParams extends Record<string, unknown> {
+    limit?: number;
+    before?: number | null;
+}
 
 export const messageService = {
 
@@ -82,11 +88,25 @@ export const messageService = {
     },
 
     async getMessages(
-        conversationId: number
-    ): Promise<Message[]> {
+        conversationId: number,
+        params: MessagePageParams = {}
+    ): Promise<MessagePage> {
 
-        return apiClient.get<Message[]>(
-            API_ENDPOINTS.CONVERSATIONS.MESSAGES(conversationId)
+        return apiClient.get<MessagePage>(
+            API_ENDPOINTS.CONVERSATIONS.MESSAGES(conversationId),
+            params
+        );
+    },
+
+    async searchMessages(
+        conversationId: number,
+        query: string,
+        params: MessagePageParams = {}
+    ): Promise<MessagePage> {
+
+        return apiClient.get<MessagePage>(
+            API_ENDPOINTS.CONVERSATIONS.MESSAGES_SEARCH(conversationId),
+            { ...params, query }
         );
     },
 

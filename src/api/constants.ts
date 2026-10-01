@@ -136,6 +136,9 @@ export const API_ENDPOINTS = {
         MESSAGES: (conversationId: number) =>
             `/conversations/${conversationId}/messages`,
 
+        MESSAGES_SEARCH: (conversationId: number) =>
+            `/conversations/${conversationId}/messages/search`,
+
         SEND_MESSAGE: (conversationId: number) =>
             `/conversations/${conversationId}/messages`,
 

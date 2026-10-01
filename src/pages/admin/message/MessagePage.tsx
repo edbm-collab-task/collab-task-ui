@@ -95,7 +95,7 @@ const MessagePage = () => {
 
                     if (!mounted) return;
 
-                    setMessages(loadedMessages);
+                    setMessages(loadedMessages.items);
 
                     await messageService.markAsRead(firstConversation.id);
 
@@ -138,10 +138,10 @@ const MessagePage = () => {
             // (newConversation met déjà à jour selectedConversation via le hook)
             const loadedMessages = selectedConversation
                 ? await messageService.getMessages(selectedConversation.id)
-                : [];
+                : null;
 
-            if (loadedMessages.length > 0) {
-                setMessages(loadedMessages);
+            if (loadedMessages && loadedMessages.items.length > 0) {
+                setMessages(loadedMessages.items);
             }
         } finally {
             setActionLoading(false);
@@ -258,7 +258,7 @@ const MessagePage = () => {
             setMobileChatOpen(true);
 
             const loadedMessages = await messageService.getMessages(conversation.id);
-            setMessages(loadedMessages);
+            setMessages(loadedMessages.items);
 
             await messageService.markAsRead(conversation.id);
 

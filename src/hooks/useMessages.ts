@@ -21,8 +21,8 @@ export function useMessages(selectedConversation: Conversation | null) {
 
     const loadMessages = useCallback(async (conversationId: number) => {
         try {
-            const data = await messageService.getMessages(conversationId);
-            setMessages(data);
+            const page = await messageService.getMessages(conversationId);
+            setMessages(page.items);
         } catch (error) {
             console.error("Erreur lors du chargement des messages :", error);
             setMessages([]);
