@@ -396,11 +396,11 @@ const MessagePage = () => {
 
             {/* Recherche dans les messages déjà chargés (côté client uniquement) */}
             {showSearch && selectedConversation && (
-                <MessageSearchModal
-                    messages={messages}
-                    users={users}
-                    onClose={() => setShowSearch(false)}
-                />
+<MessageSearchModal
+                        conversationId={selectedConversation.id}
+                        users={users}
+                        onClose={() => setShowSearch(false)}
+                    />
             )}
 
             {/* Menu contextuel conversation : marquer lu, épingler, archiver, supprimer, quitter */}

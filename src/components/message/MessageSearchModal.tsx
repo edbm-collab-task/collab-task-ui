@@ -1,41 +1,92 @@
-import { useMemo, useState } from "react";
-import { Search, X, Paperclip } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, X, Paperclip, LoaderCircle } from "lucide-react";
 
 import type { Message, ChatUser } from "@/types/message";
 
+import { messageService } from "@/services/message/message.service";
+import { useDebounce } from "@/hooks/useDebounce";
+
+// En deçà de ce nombre de caractères la requête est jugée trop large.
+const MIN_QUERY_LENGTH = 2;
+
+const SEARCH_PAGE_SIZE = 20;
+
 interface Props {
-    messages: Message[];
+    conversationId: number;
     users: ChatUser[];
     onClose: () => void;
 }
 
 const MessageSearchModal = ({
-    messages,
+    conversationId,
     users,
     onClose,
 }: Props) => {
     const [search, setSearch] = useState("");
 
-    const results = useMemo(() => {
-        const value = search.trim().toLowerCase();
+    const [results, setResults] = useState<Message[]>([]);
 
-        if (!value) {
-            return [];
+    const [isSearching, setIsSearching] = useState(false);
+
+    const debouncedSearch = useDebounce(search);
+
+    const trimmedSearch = search.trim();
+    const isTooShort = trimmedSearch.length < MIN_QUERY_LENGTH;
+
+    useEffect(() => {
+        /*
+         * La requête est annulée si le champ change avant la fin de
+         * l'appel, afin d'éviter qu'une réponse tardive n'écrase les
+         * résultats d'une frappe plus récente.
+         */
+        let cancelled = false;
+
+        if (debouncedSearch.trim().length < MIN_QUERY_LENGTH) {
+            setResults([]);
+            setIsSearching(false);
+
+            return;
         }
 
-        return messages.filter(
-            (message) =>
-                message.content
-                    ?.toLowerCase()
-                    .includes(value) ||
-                message.attachments?.some(
-                    (attachment) =>
-                        attachment.name
-                            ?.toLowerCase()
-                            .includes(value)
-                )
-        );
-    }, [messages, search]);
+        const loadResults = async () => {
+            setIsSearching(true);
+
+            try {
+                const page = await messageService.searchMessages(
+                    conversationId,
+                    debouncedSearch.trim(),
+                    { limit: SEARCH_PAGE_SIZE }
+                );
+
+                if (cancelled) {
+                    return;
+                }
+
+                setResults(page.items);
+            } catch (error) {
+                if (cancelled) {
+                    return;
+                }
+
+                console.error(
+                    "Erreur lors de la recherche de messages :",
+                    error
+                );
+
+                setResults([]);
+            } finally {
+                if (!cancelled) {
+                    setIsSearching(false);
+                }
+            }
+        };
+
+        loadResults();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [conversationId, debouncedSearch]);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
@@ -71,10 +122,20 @@ const MessageSearchModal = ({
                 </div>
 
                 <div className="max-h-[400px] overflow-y-auto px-4 pb-4">
-                    {!search.trim() ? (
+                    {isTooShort ? (
                         <p className="py-8 text-center text-sm text-primary/40">
-                            Saisissez un terme.
+                            Saisissez au moins{" "}
+                            {MIN_QUERY_LENGTH} caractères.
                         </p>
+                    ) : isSearching && results.length === 0 ? (
+                        <div className="flex items-center justify-center gap-2 py-8 text-sm text-primary/40">
+                            <LoaderCircle
+                                size={15}
+                                className="animate-spin"
+                            />
+
+                            Recherche en cours...
+                        </div>
                     ) : results.length === 0 ? (
                         <p className="py-8 text-center text-sm text-primary/40">
                             Aucun résultat.
@@ -87,6 +148,9 @@ const MessageSearchModal = ({
                                     message.senderId
                             );
 
+                            const hasContent =
+                                message.content?.trim();
+
                             return (
                                 <div
                                     key={message.id}
@@ -97,7 +161,7 @@ const MessageSearchModal = ({
                                         {sender?.lastname ?? ""}
                                     </p>
 
-                                    {message.content && (
+                                    {hasContent && (
                                         <p className="mt-1 text-sm text-primary">
                                             {message.content}
                                         </p>
