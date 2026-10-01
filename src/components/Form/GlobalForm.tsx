@@ -3,6 +3,7 @@ import type { FormField } from "@/components/Form/Forms";
 import { useState } from "react";
 import { getRegisterOptions } from "@/components/Form/formLogic";
 import FormFieldControl from "@/components/Form/FormFieldControl";
+import { BackButton } from "../common/BackButton";
 
 interface Props<T extends FieldValues> {
     title?: string;
@@ -59,6 +60,7 @@ export default function GlobalForms<T extends FieldValues>({
     return (
         <div className="mx-auto max-w-5xl">
 
+                <BackButton/>
             <div className="overflow-hidden rounded-2xl border border-secondary/60 bg-white shadow-sm">
 
                 <div className="border-b border-secondary/60 bg-secondary/30 py-8 text-center">
