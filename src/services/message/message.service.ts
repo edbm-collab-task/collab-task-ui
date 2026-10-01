@@ -5,8 +5,42 @@ import type {
     ChatUser,
     Conversation,
     Message,
+    MessagePage,
     SendMessageRequest,
 } from "@/types/message";
+
+export interface MessagePageParams extends Record<string, unknown> {
+    limit?: number;
+    before?: number | null;
+}
+
+/**
+ * Normalise la réponse de l'API en page.
+ *
+ * <p>Le backend paginé renvoie `{ items, hasMore }`. Une API plus ancienne,
+ * ou un proxy qui renvoie encore la liste brute, répond avec un simple
+ * tableau. Sans cette garde, `page.items` vaudrait `undefined` et le
+ * `.map` de la liste de messages ferait tomber la page entière sur
+ * l'ErrorBoundary. Le tableau est donc traité comme une page unique et
+ * complète.
+ */
+const normalizePage = (data: MessagePage | Message[] | null | undefined): MessagePage => {
+    if (Array.isArray(data)) {
+        return {
+            items: data,
+            hasMore: false,
+        };
+    }
+
+    if (!data || !Array.isArray(data.items)) {
+        return {
+            items: [],
+            hasMore: false,
+        };
+    }
+
+    return data;
+};
 
 export const messageService = {
 
@@ -82,11 +116,29 @@ export const messageService = {
     },
 
     async getMessages(
-        conversationId: number
-    ): Promise<Message[]> {
+        conversationId: number,
+        params: MessagePageParams = {}
+    ): Promise<MessagePage> {
 
-        return apiClient.get<Message[]>(
-            API_ENDPOINTS.CONVERSATIONS.MESSAGES(conversationId)
+        return normalizePage(
+            await apiClient.get<MessagePage | Message[]>(
+                API_ENDPOINTS.CONVERSATIONS.MESSAGES(conversationId),
+                params
+            )
+        );
+    },
+
+    async searchMessages(
+        conversationId: number,
+        query: string,
+        params: MessagePageParams = {}
+    ): Promise<MessagePage> {
+
+        return normalizePage(
+            await apiClient.get<MessagePage | Message[]>(
+                API_ENDPOINTS.CONVERSATIONS.MESSAGES_SEARCH(conversationId),
+                { ...params, query }
+            )
         );
     },
 

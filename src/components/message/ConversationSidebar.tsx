@@ -17,7 +17,6 @@ import { getUserImageUrl } from "@/utils/image";
 interface Props {
     conversations: Conversation[];
     users: ChatUser[];
-    messages: Message[];
     currentUserId: number;
     selectedId: number | null;
     onSelect: (conversation: Conversation) => void;
@@ -28,7 +27,6 @@ interface Props {
 const ConversationSidebar = ({
     conversations,
     users,
-    messages: _messages,
     currentUserId,
     selectedId,
     onSelect,

@@ -33,6 +33,7 @@ const MessagePage = () => {
     // par défaut, puis la conversation ouverte (mobileChatOpen) jusqu'au retour arrière.
     const isMobile = useIsMobile();
     const [mobileChatOpen, setMobileChatOpen] = useState(false);
+    const [scrollToBottomSignal, setScrollToBottomSignal] = useState(0);
 
     const {
         conversations,
@@ -53,6 +54,9 @@ const MessagePage = () => {
     const {
         messages,
         setMessages,
+        hasMore,
+        isLoadingMore,
+        loadOlderMessages,
         replyMessage,
         setReplyMessage,
         loadMessages,
@@ -91,11 +95,9 @@ const MessagePage = () => {
 
                     setSelectedConversation(firstConversation);
 
-                    const loadedMessages = await messageService.getMessages(firstConversation.id);
+                    await loadMessages(firstConversation.id);
 
                     if (!mounted) return;
-
-                    setMessages(loadedMessages);
 
                     await messageService.markAsRead(firstConversation.id);
 
@@ -136,12 +138,8 @@ const MessagePage = () => {
 
             // Recharge les messages de la conversation actuelle si elle existe
             // (newConversation met déjà à jour selectedConversation via le hook)
-            const loadedMessages = selectedConversation
-                ? await messageService.getMessages(selectedConversation.id)
-                : [];
-
-            if (loadedMessages.length > 0) {
-                setMessages(loadedMessages);
+            if (selectedConversation) {
+                await loadMessages(selectedConversation.id);
             }
         } finally {
             setActionLoading(false);
@@ -177,6 +175,10 @@ const MessagePage = () => {
         try {
             setActionLoading(true);
             await sendMessage(content, files);
+
+            // Le message peut avoir été envoyé depuis une position de
+            // défilement haute : on force alors le retour en bas.
+            setScrollToBottomSignal((value) => value + 1);
 
             // Après envoi, on recharge la liste des conversations pour mettre à jour
             // lastMessage/unreadCount dans la sidebar (le WS ne met pas à jour la liste)
@@ -257,8 +259,7 @@ const MessagePage = () => {
             setShowSearch(false);
             setMobileChatOpen(true);
 
-            const loadedMessages = await messageService.getMessages(conversation.id);
-            setMessages(loadedMessages);
+            await loadMessages(conversation.id);
 
             await messageService.markAsRead(conversation.id);
 
@@ -271,7 +272,7 @@ const MessagePage = () => {
         } catch (error) {
             console.error("Erreur lors de la sélection de la conversation :", error);
         }
-    }, [selectConversation, setMessages, setSelectedConversation]);
+    }, [selectConversation, loadMessages, setSelectedConversation]);
 
     // En dessous de md, une seule vue est montée à la fois :
     // la liste par défaut, la conversation après sélection (retour via le bouton du header)
@@ -290,7 +291,6 @@ const MessagePage = () => {
                 <ConversationSidebar
                     conversations={conversations}
                     users={users}
-                    messages={messages}
                     selectedId={selectedConversation?.id ?? null}
                     currentUserId={currentUser?.id ?? 0}
                     onSelect={handleSelectConversation}
@@ -318,6 +318,10 @@ const MessagePage = () => {
                         messages={messages}
                         users={users}
                         currentUserId={currentUser?.id ?? 0}
+                        hasMore={hasMore}
+                        isLoadingMore={isLoadingMore}
+                        onLoadOlder={loadOlderMessages}
+                        scrollToBottomSignal={scrollToBottomSignal}
                         onReply={setReplyMessage}
                         onDelete={handleDeleteMessage}
                         onCopy={copyMessage}
@@ -391,11 +395,11 @@ const MessagePage = () => {
 
             {/* Recherche dans les messages déjà chargés (côté client uniquement) */}
             {showSearch && selectedConversation && (
-                <MessageSearchModal
-                    messages={messages}
-                    users={users}
-                    onClose={() => setShowSearch(false)}
-                />
+<MessageSearchModal
+                        conversationId={selectedConversation.id}
+                        users={users}
+                        onClose={() => setShowSearch(false)}
+                    />
             )}
 
             {/* Menu contextuel conversation : marquer lu, épingler, archiver, supprimer, quitter */}
