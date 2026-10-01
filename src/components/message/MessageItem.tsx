@@ -254,7 +254,14 @@ className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gra
                                 </p>
 
                                 <p className="mt-0.5 truncate">
-                                    {replyMessage.content || "Pièce jointe"}
+                                    {replyMessage.deleted ? (
+                                        <span className="italic text-gray-400">
+                                            Message supprimé
+                                        </span>
+                                    ) : (
+                                        replyMessage.content ||
+                                        "Pièce jointe"
+                                    )}
                                 </p>
                             </div>
                         )}
