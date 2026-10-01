@@ -60,7 +60,7 @@ export default function GlobalForms<T extends FieldValues>({
     return (
         <div className="mx-auto max-w-5xl">
 
-                <BackButton/>
+            <BackButton/>
             <div className="overflow-hidden rounded-2xl border border-secondary/60 bg-white shadow-sm">
 
                 <div className="border-b border-secondary/60 bg-secondary/30 py-8 text-center">
