@@ -29,6 +29,11 @@ export interface Message {
     deleted: boolean;
 }
 
+export interface MessagePage {
+    items: Message[];
+    hasMore: boolean;
+}
+
 export interface Conversation {
     id: number;
     type: ConversationType;
