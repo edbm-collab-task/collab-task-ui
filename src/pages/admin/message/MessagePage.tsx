@@ -291,7 +291,6 @@ const MessagePage = () => {
                 <ConversationSidebar
                     conversations={conversations}
                     users={users}
-                    messages={messages}
                     selectedId={selectedConversation?.id ?? null}
                     currentUserId={currentUser?.id ?? 0}
                     onSelect={handleSelectConversation}
