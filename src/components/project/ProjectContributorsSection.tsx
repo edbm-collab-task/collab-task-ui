@@ -14,7 +14,9 @@ interface ProjectContributorsSectionProps {
     contributors: Contributor[];
     users: UserResponse[];
     onContributorsChange: () => Promise<void>;
-    onUsersChange: () => Promise<void>;
+    onContributorAdded: (contributor: Contributor) => void;
+    onContributorRemoved: (userId: number) => void;
+    onContributorAddFailed: (userId: number) => void;
     onProjectChange: (project: ProjectRes) => void;
     openConfirm: (config: ConfirmConfig) => void;
 }
@@ -24,7 +26,9 @@ export default function ProjectContributorsSection({
     contributors,
     users,
     onContributorsChange,
-    onUsersChange,
+    onContributorAdded,
+    onContributorRemoved,
+    onContributorAddFailed,
     onProjectChange,
     openConfirm,
 }: ProjectContributorsSectionProps) {
@@ -34,26 +38,29 @@ export default function ProjectContributorsSection({
     const [transferTargetId, setTransferTargetId] = useState<number | null>(null);
     const [transferring, setTransferring] = useState(false);
 
-    // Ajout d'un contributeur : on rafraîchit ensuite la liste des contributeurs
-    // et la liste des utilisateurs potentiels (car l'utilisateur n'est plus potentiel)
+    // Ajout d'un contributeur : le POST renvoie l'entité créée, on l'affiche
+    // immédiatement. Pas de rechargement de la liste des contributeurs ni de la
+    // liste des utilisateurs — le filtre du sélecteur exclut déjà les
+    // contributeurs, l'utilisateur ajouté en sort donc de lui-même.
     const handleAddContributor = async () => {
         if (!selectedUserId) return;
+        const userId = selectedUserId;
         try {
             setAddingContributor(true);
-            await contributorService.add(project.projectId, selectedUserId);
+            const created = await contributorService.add(project.projectId, userId);
+            onContributorAdded(created);
             setSelectedUserId(null);
-            await Promise.all([onContributorsChange(), onUsersChange()]);
-            setTimeout(() => toast.success("Contributeur ajouté"));
+            toast.success("Contributeur ajouté");
         } catch (error) {
             console.error(error);
-            setTimeout(() => toast.error("Impossible d'ajouter le contributeur"));
+            onContributorAddFailed(userId);
+            toast.error("Impossible d'ajouter le contributeur");
         } finally {
             setAddingContributor(false);
         }
     };
 
     // Retrait d'un contributeur avec confirmation
-    // Le rechargement des deux listes maintient l'UI cohérente
     const handleRemoveContributor = (userId: number, userName: string) => {
         openConfirm({
             open: true,
@@ -64,11 +71,11 @@ export default function ProjectContributorsSection({
             onConfirm: async () => {
                 try {
                     await contributorService.remove(project.projectId, userId);
-                    await Promise.all([onContributorsChange(), onUsersChange()]);
-                    setTimeout(() => toast.success("Contributeur retiré"), 0);
+                    onContributorRemoved(userId);
+                    toast.success("Contributeur retiré");
                 } catch (error) {
                     console.error(error);
-                    setTimeout(() => toast.error("Impossible de retirer le contributeur"), 0);
+                    toast.error("Impossible de retirer le contributeur");
                 }
             },
         });

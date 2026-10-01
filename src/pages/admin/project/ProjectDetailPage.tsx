@@ -117,6 +117,25 @@ export default function ProjectDetailPage() {
         }
     }, [projectId]);
 
+    // L'endpoint POST renvoie déjà le contributeur créé : on l'insère
+    // directement dans l'état plutôt que de recharger la liste. Idem au retrait.
+    // Le sélecteur de la section filtre déjà sur `contributors`, l'utilisateur
+    // ajouté ou retiré disparaît donc du picker sans recharger `allUsers`.
+    const addContributorOptimistic = useCallback((contributor: Contributor) => {
+        setContributors(prev =>
+            prev.some(c => c.userId === contributor.userId) ? prev : [contributor, ...prev]
+        );
+    }, []);
+
+    const removeContributorOptimistic = useCallback((userId: number) => {
+        setContributors(prev => prev.filter(c => c.userId !== userId));
+    }, []);
+
+    // Annule l'insertion optimiste si la contribution n'a finalement pas abouti.
+    const rollbackContributor = useCallback((userId: number) => {
+        setContributors(prev => prev.filter(c => c.userId !== userId));
+    }, []);
+
     // Chargement initial : projet d'abord, puis données dépendantes en parallèle
     // On ne charge les users potentiels que si l'utilisateur est propriétaire
     useEffect(() => {
@@ -310,7 +329,9 @@ export default function ProjectDetailPage() {
                 contributors={contributors}
                 users={allUsers}
                 onContributorsChange={loadContributors}
-                onUsersChange={loadUsers}
+                onContributorAdded={addContributorOptimistic}
+                onContributorRemoved={removeContributorOptimistic}
+                onContributorAddFailed={rollbackContributor}
                 onProjectChange={setProject}
                 openConfirm={openConfirm}
             />
