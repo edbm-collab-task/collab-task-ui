@@ -167,11 +167,9 @@ export default function TaskModal({
     const availableStatuses = statuses ?? fallbackStatuses;
     const statusIdDefault = availableStatuses[0]?.statusId ?? 1;
 
-    // Liste réelle des priorités (nom + ID + ordre). On ne suppose aucune
-    // correspondance fixe ID→nom : elle est dérivée des tâches renvoyées par
-    // l'API. On commence par les tâches du projet ; si celles-ci ne couvrent
-    // pas toutes les priorités (projet neuf/peu rempli), on les complète avec
-    // l'ensemble des tâches de l'application.
+    // Point de départ temporaire : priorités dérivées des tâches du projet déjà
+    // chargées (ordre de tri identique à celui du référentiel). Le chemin
+    // nominal ci-dessous les remplace ensuite par le référentiel réel.
     const projectPriorityOptions: PriorityOption[] = useMemo(
         () => extractPrioritiesFromTasks(tasks),
         [tasks],
@@ -179,17 +177,17 @@ export default function TaskModal({
 
     const [priorityOptions, setPriorityOptions] = useState<PriorityOption[]>(projectPriorityOptions);
 
-    // Enrichit la liste des priorités depuis l'ensemble des tâches de l'application
-    // (getAll) : une priorité connue en base est toujours proposée, même si elle
-    // n'est pas utilisée dans le projet courant. La fusion concatène les deux sources ;
-    // extractPrioritiesFromTasks() déduplique par priorityId et trie par
-    // prioritySortOrder croissant (Urgente → Haute → Moyenne → Basse). Si getAll
-    // échoue, on conserve proprement les priorités du projet courant.
+    // Chemin nominal : les priorités sont chargées depuis leur RÉFÉRENTIEL
+    // (GET /priorities), jamais déduites des tâches existantes. Cela garantit
+    // que les 4 priorités (Urgente/Haute/Moyenne/Basse) sont toujours proposées,
+    // même avec 0 tâche ou si aucune tâche n'utilise une priorité donnée.
+    // extractPrioritiesFromTasks n'est conservé que comme FALLBACK si l'endpoint
+    // échoue : on ne déclenche plus taskService.getAll() pour bâtir cette liste.
     useEffect(() => {
         let cancelled = false;
-        taskService.getAll()
-            .then((allTasks) => {
-                if (!cancelled) setPriorityOptions(extractPrioritiesFromTasks([...tasks, ...allTasks]));
+        taskService.getPriorities()
+            .then((priorities) => {
+                if (!cancelled) setPriorityOptions(priorities);
             })
             .catch(() => {
                 if (!cancelled) setPriorityOptions(projectPriorityOptions);
@@ -198,13 +196,27 @@ export default function TaskModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectPriorityOptions]);
 
+    // En modification : si la priorité actuelle de la tâche est absente du
+    // référentiel (base importée désynchronisée), on la reconstitue depuis la
+    // tâche pour ne jamais casser le <select> — sa valeur reste sélectionnable.
+    const allPriorityOptions: PriorityOption[] = useMemo(() => {
+        if (!task || task.priorityId == null) return priorityOptions;
+        return priorityOptions.some(p => p.priorityId === task.priorityId)
+            ? priorityOptions
+            : [...priorityOptions, {
+                priorityId: task.priorityId,
+                priorityName: task.priorityName,
+                prioritySortOrder: task.prioritySortOrder,
+            }];
+    }, [priorityOptions, task]);
+
     const tabs = useMemo(() =>
         task ? ALL_TABS : ALL_TABS.filter(t => t.id !== "pieces"),
         [task],
     );
 
     const [form, setForm] = useState<TaskReq>(() =>
-        emptyForm(projectId, statusIdDefault, defaultPriorityId(priorityOptions))
+        emptyForm(projectId, statusIdDefault, defaultPriorityId(allPriorityOptions))
     );
 
     const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
@@ -264,11 +276,22 @@ export default function TaskModal({
             loadAttachments(task.taskId);
         } else {
             const defaultId = defaultStatusId ?? statusIdDefault;
-            setForm(emptyForm(projectId, defaultId, defaultPriorityId(priorityOptions)));
+            setForm(emptyForm(projectId, defaultId, defaultPriorityId(allPriorityOptions)));
             setAttachments([]);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, task?.taskId, projectId, defaultStatusId]);
+
+    // Sécurité async (création sur projet neuf, 0 tâche) : quand le référentiel
+    // (GET /priorities) arrive enfin, on applique la priorité par défaut à un
+    // formulaire de création encore vide (le cas nominal est déjà couvert par
+    // l'effet ci-dessus, boosté par allPriorityOptions).
+    useEffect(() => {
+        if (open && !task && allPriorityOptions.length > 0 && !form.priorityId) {
+            setForm(f => ({ ...f, priorityId: defaultPriorityId(allPriorityOptions) }));
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allPriorityOptions]);
 
     const handleFileUpload = async (file: File) => {
         if (!task) return;
@@ -441,7 +464,7 @@ export default function TaskModal({
                                                     value={form.priorityId}
                                                     onChange={(e) => setForm({ ...form, priorityId: Number(e.target.value) })}
                                                 >
-                                                    {priorityOptions.length > 0 ? priorityOptions.map(p => (
+                                                    {allPriorityOptions.length > 0 ? allPriorityOptions.map(p => (
                                                         <option key={p.priorityId} value={p.priorityId}>{p.priorityName}</option>
                                                     )) : (
                                                         <option value={0}>Aucune priorité disponible</option>

@@ -82,6 +82,12 @@ export const API_ENDPOINTS = {
 
     },
 
+    PRIORITIES: {
+
+        ALL: "/priorities"
+
+    },
+
     ROLES: {
         ALL: "/roles",
         BY_ID: "/roles",
