@@ -1,10 +1,33 @@
 import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
 
-import type { TaskReq, TaskRes } from "@/types/task";
+import type { PriorityOption, TaskReq, TaskRes } from "@/types/task";
 
 
 export const taskService = {
+
+    /**
+     * Référentiel des priorités (GET /priorities) : toutes les priorités du
+     * système, indépendamment des tâches existantes, triées par sortOrder
+     * croissant (Urgente → Haute → Moyenne → Basse). Mappées vers le type
+     * déjà utilisé par le sélecteur de priorité (PriorityOption).
+     */
+    getPriorities: async (): Promise<PriorityOption[]> => {
+
+        type PriorityRes = { priorityId: number; name: string; sortOrder: number | null };
+
+        const data = await apiClient.get<PriorityRes[]>(
+            API_ENDPOINTS.PRIORITIES.ALL
+        );
+
+        return data.map((p) => ({
+            priorityId: p.priorityId,
+            priorityName: p.name,
+            prioritySortOrder: p.sortOrder,
+        }));
+
+    },
+
 
     getAll: async (): Promise<TaskRes[]> => {
 
