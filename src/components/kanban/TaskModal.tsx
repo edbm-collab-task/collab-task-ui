@@ -25,6 +25,8 @@ import { CarouselTabs } from "../common/CarouselTabs";
 interface Props {
     open: boolean;
     projectId: number;
+    /** Deadline (date de fin) du projet : date maximale autorisée pour la tâche. */
+    projectEndDate?: string | null;
     task?: TaskRes | null;
     defaultStatusId?: number | null;
     tasks: TaskRes[];
@@ -147,6 +149,7 @@ function AssigneePicker({ contributors, selectedIds, onToggle }: AssigneePickerP
 export default function TaskModal({
     open,
     projectId,
+    projectEndDate = null,
     task = null,
     defaultStatusId = null,
     tasks,
@@ -360,6 +363,13 @@ export default function TaskModal({
         const dueDateChanged = form.dueDate !== (task?.dueDate ?? null);
         if (dueDateChanged && form.dueDate < today) {
             toast.error("La date d'échéance ne peut pas être dans le passé");
+            return;
+        }
+
+        // Règle métier : l'échéance de la tâche ne peut pas dépasser la date de
+        // fin (deadline) du projet. Comparaison lexicographique ISO (YYYY-MM-DD).
+        if (projectEndDate && form.dueDate > projectEndDate) {
+            toast.error("La date d'échéance de la tâche ne peut pas dépasser la date de fin du projet");
             return;
         }
 

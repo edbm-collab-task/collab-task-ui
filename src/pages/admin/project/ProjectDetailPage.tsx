@@ -334,6 +334,7 @@ export default function ProjectDetailPage() {
             <TaskModal
                 open={modalOpen}
                 projectId={projectId}
+                projectEndDate={project?.endDate ? project.endDate.slice(0, 10) : null}
                 task={editingTask}
                 defaultStatusId={defaultStatusId}
                 tasks={tasks}
