@@ -21,16 +21,7 @@ import OverdueTasksModal from "./dashboard/OverdueTasksModal";
 export default function Dashboard() {
 
     const { hasPermission } = usePermissions();
-
-    if (!hasPermission("VIEW_REPORTS")) {
-        return (
-            <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <ShieldAlert size={32} className="text-gray-400" />
-                <p className="text-sm font-medium text-gray-600">Accès refusé</p>
-                <p className="text-xs text-gray-400">Vous n'avez pas la permission d'accéder au tableau de bord.</p>
-            </div>
-        );
-    }
+    const canView = hasPermission("VIEW_REPORTS");
 
     const { period, setPeriod, startDate, setStartDate, endDate, setEndDate, shouldFetch, periodParams } = useDashboardPeriod();
     const [data, setData] = useState<DashboardData | null>(null);
@@ -38,6 +29,7 @@ export default function Dashboard() {
     const [refreshing, setRefreshing] = useState(false);
     const [statsUnavailable, setStatsUnavailable] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [reloadKey, setReloadKey] = useState(0);
 
     // Project filter
     const [projects, setProjects] = useState<ProjectRes[]>([]);
@@ -49,15 +41,22 @@ export default function Dashboard() {
 
     // Load projects for filter
     useEffect(() => {
+        if (!canView) return;
+
         projectService.getAllIncludingArchived()
             .then(setProjects)
             .catch(console.error);
-    }, []);
+    }, [canView]);
 
     useEffect(() => {
         let cancelled = false;
 
-        if (!shouldFetch) return;
+        if (!canView) return;
+
+        if (!shouldFetch) {
+            setRefreshing(false);
+            return;
+        }
 
         setRefreshing(true);
         setError(null);
@@ -87,7 +86,17 @@ export default function Dashboard() {
             });
 
         return () => { cancelled = true; };
-    }, [period, startDate, endDate, selectedProjectId]);
+    }, [canView, period, startDate, endDate, selectedProjectId, reloadKey]);
+
+    if (!canView) {
+        return (
+            <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <ShieldAlert size={32} className="text-gray-400" />
+                <p className="text-sm font-medium text-gray-600">Accès refusé</p>
+                <p className="text-xs text-gray-400">Vous n'avez pas la permission d'accéder au tableau de bord.</p>
+            </div>
+        );
+    }
 
     if (loading) {
         return (
@@ -119,7 +128,7 @@ export default function Dashboard() {
                     <AlertTriangle size={24} className="text-red-400" />
                     <p className="text-sm text-gray-500">{error}</p>
                     <button
-                        onClick={() => { setError(null); setLoading(true); setPeriod(p => p); }}
+                        onClick={() => { setError(null); setLoading(true); setReloadKey(k => k + 1); }}
                         className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
                     >
                         Réessayer
