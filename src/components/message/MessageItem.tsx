@@ -138,8 +138,8 @@ const MessageItem = ({ message, sender, replyMessage, onReply, onDelete, onCopy 
 
                     if (isImageAttachment(attachment)) {
                         return (
-                            <div key={attachment.id ?? `${attachment.name}-${attachment.url}`} className="overflow-hidden rounded-xl border border-black/10 bg-white">
-                                <a href={url} target="_blank" rel="noopener noreferrer" title={attachment.name}>
+                            <div key={attachment.id ?? `${attachment.name}-${attachment.url}`} className="overflow-hidden max-w-full rounded-xl border border-black/10 bg-bg">
+                                <a href={url} target="_blank" rel="noopener noreferrer" title={attachment.name} className="flex">
                                     <img
                                         src={url}
                                         alt={attachment.name}
