@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getRegisterOptions } from "@/components/Form/formLogic";
 import FormFieldControl from "@/components/Form/FormFieldControl";
 import { BackButton } from "../common/BackButton";
+import { useLocation } from "react-router-dom";
 
 interface Props<T extends FieldValues> {
     title?: string;
@@ -39,6 +40,9 @@ export default function GlobalForms<T extends FieldValues>({
 
     const isTwoColumns = fields.length > 4;
 
+    const routeUrl = useLocation().pathname
+    
+
 
     const submitHandler = async (data: T) => {
 
@@ -60,7 +64,11 @@ export default function GlobalForms<T extends FieldValues>({
     return (
         <div className="mx-auto max-w-5xl">
 
-            <BackButton/>
+            {
+                (routeUrl != "/reccuperation-comptes" && routeUrl != "/login")
+                &&
+                <BackButton/>
+            }
             <div className="overflow-hidden rounded-2xl border border-secondary/60 bg-white shadow-sm">
 
                 <div className="border-b border-secondary/60 bg-secondary/30 py-8 text-center">
