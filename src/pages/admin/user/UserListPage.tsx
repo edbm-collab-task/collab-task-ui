@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Eye, Plus } from "lucide-react";
 
 import GlobalTable from "@/components/table/GlobalTable";
@@ -18,6 +18,20 @@ import { userService } from "@/services/user/user.service";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 
+type StatusFilter = "all" | "active" | "disable";
+
+const PAGE_SIZE = 5;
+
+/**
+ * Champs affichés, utilisés pour la recherche.
+ */
+const SEARCH_FIELDS: (keyof UserTable)[] = [
+    "firstname",
+    "lastname",
+    "email",
+    "codeRole"
+];
+
 export default function UserListPage() {
 
     const [users, setUsers] = useState<UserTable[]>([]);
@@ -26,12 +40,12 @@ export default function UserListPage() {
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-
-    type StatusFilter = "all" | "active" | "disable";
-
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
 
-    const pageSize = 5;
+    /**
+     * Identifiant de la dernière requête, pour ignorer les réponses obsolètes.
+     */
+    const requestId = useRef(0);
 
     const navigate = useNavigate();
 
@@ -43,15 +57,13 @@ export default function UserListPage() {
         }
     }, [currentUser, navigate]);
 
-    if (currentUser?.role === "SUPER_ADMIN") {
-        return null;
-    }
-
 
     /**
      * Charge les utilisateurs selon le filtre sélectionné.
      */
     const loadUsers = async (status: StatusFilter) => {
+
+        const id = ++requestId.current;
 
         try {
 
@@ -75,9 +87,13 @@ export default function UserListPage() {
                     break;
             }
 
+            if (id !== requestId.current) return;
+
             setUsers(response);
 
         } catch (error) {
+
+            if (id !== requestId.current) return;
 
             console.error(
                 "Erreur lors du chargement des utilisateurs :",
@@ -88,7 +104,9 @@ export default function UserListPage() {
 
         } finally {
 
-            setLoading(false);
+            if (id === requestId.current) {
+                setLoading(false);
+            }
         }
     };
 
@@ -200,8 +218,8 @@ export default function UserListPage() {
             const value =
                 search.toLowerCase();
 
-            return Object.values(item).some(field =>
-                String(field)
+            return SEARCH_FIELDS.some(field =>
+                String(item[field])
                     .toLowerCase()
                     .includes(value)
             );
@@ -212,7 +230,7 @@ export default function UserListPage() {
      * Nombre total de pages.
      */
     const totalPages = Math.ceil(
-        filteredUsers.length / pageSize
+        filteredUsers.length / PAGE_SIZE
     );
 
 
@@ -220,9 +238,17 @@ export default function UserListPage() {
      * Utilisateurs de la page actuelle.
      */
     const paginatedUsers = filteredUsers.slice(
-        (page - 1) * pageSize,
-        page * pageSize
+        (page - 1) * PAGE_SIZE,
+        page * PAGE_SIZE
     );
+
+
+    /**
+     * Après tous les hooks : jamais de return avant un hook.
+     */
+    if (currentUser?.role === "SUPER_ADMIN") {
+        return null;
+    }
 
 
     return (
@@ -258,7 +284,12 @@ export default function UserListPage() {
 
                 search={search}
 
-                onSearch={setSearch}
+                onSearch={(value) => {
+
+                    setSearch(value);
+
+                    setPage(1);
+                }}
 
                 actions={headerActions}
             />

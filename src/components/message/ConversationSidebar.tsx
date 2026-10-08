@@ -14,6 +14,22 @@ import type { Conversation, ChatUser, Message } from "@/types/message";
 import { getInitialsFromName } from "@/utils/avatar";
 import { getUserImageUrl } from "@/utils/image";
 
+/**
+ * Convertit le contenu HTML d'un message en texte brut pour l'aperçu.
+ */
+const toPlainText = (html: string): string => {
+    const withSpaces = html.replace(/<br\s*\/?>/gi, " ");
+
+    const body = DOMPurify.sanitize(withSpaces, {
+        ALLOWED_TAGS: [],
+        ALLOWED_ATTR: [],
+        RETURN_DOM: true,
+    });
+
+    return (body.textContent ?? "").trim();
+};
+
+
 interface Props {
     conversations: Conversation[];
     users: ChatUser[];
@@ -96,67 +112,48 @@ const ConversationSidebar = ({
     };
 
     /**
-     * Même logique que MessageItem :
-     * on autorise uniquement les balises nécessaires au formatage.
+         * Aperçu en texte brut : aucun HTML n'est injecté dans le DOM.
      */
-    const renderLastMessage = (message: Message | null | undefined) => {
-        if (!message) {
-            return (
-                <span className="text-xs text-gray-400">
-                    Commencez à discuter...
-                </span>
-            );
-        }
-
-        if (message.deleted) {
-            return (
-                <span className="text-xs italic text-gray-400">
-                    Message supprimé
-                </span>
-            );
-        }
-
-        if (
-            !message.content &&
-            message.attachments &&
-            message.attachments.length > 0
-        ) {
-            return (
-                <span className="flex items-center gap-1 text-xs text-gray-500">
-                    <Paperclip size={12} className="shrink-0" />
-                    Pièce jointe
-                </span>
-            );
-        }
-
-        if (!message.content) {
-            return null;
-        }
-
-        const sanitizedContent = DOMPurify.sanitize(
-            message.content,
-            {
-                ALLOWED_TAGS: [
-                    "b",
-                    "strong",
-                    "i",
-                    "em",
-                    "u",
-                    "br",
-                ],
-                ALLOWED_ATTR: [],
+        const renderLastMessage = (message: Message | null | undefined) => {
+            if (!message) {
+                return (
+                    <span className="text-xs text-gray-400">
+                        Commencez à discuter...
+                    </span>
+                );
             }
-        );
-
-        return (
-            <span
-                className="truncate text-xs text-gray-500 [&_b]:font-bold [&_strong]:font-bold [&_i]:italic [&_em]:italic [&_u]:underline"
-                dangerouslySetInnerHTML={{
-                    __html: sanitizedContent,
-                }}
-            />
-        );
-    };
+    
+            if (message.deleted) {
+                return (
+                    <span className="text-xs italic text-gray-400">
+                        Message supprimé
+                    </span>
+                );
+            }
+    
+            if (
+                !message.content &&
+                message.attachments &&
+                message.attachments.length > 0
+            ) {
+                return (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                        <Paperclip size={12} className="shrink-0" />
+                        Pièce jointe
+                    </span>
+                );
+            }
+    
+            if (!message.content) {
+                return null;
+            }
+    
+            return (
+                <span className="truncate text-xs text-gray-500">
+                    {toPlainText(message.content)}
+                </span>
+            );
+        };
 
     return (
         <aside className="flex h-full w-full shrink-0 flex-col border-r border-secondary/60 bg-bg md:w-[300px] lg:w-[320px]">
