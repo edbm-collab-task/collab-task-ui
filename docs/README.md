@@ -32,15 +32,10 @@ Documentation d'ingénierie du frontend `collab-task-ui`. Elle est **extraite du
 2. `couche-api.md` (ou `etat-et-formulaires.md`, `composants-et-styles.md`) — la couche concernée
 3. `outillage-qualite.md` — vérifier avant de pousser
 
-**Comprendre un bug ou un comportement surprenant**
-1. `connus-problemes-et-FAQ.md` — il est peut-être déjà répertorié
-2. Le document de la couche concernée
-3. Le code source lui-même — **dernière autorité**
 
 **Contribuer / faire relire**
 1. `git-et-contribution.md`
 2. `outillage-qualite.md` (checklist locale)
-3. `connus-problemes-et-FAQ.md` (état des vérifications actuelles)
 
 ## Conventions de lecture
 
@@ -81,6 +76,6 @@ Ce kit couvre le **développement frontend**. Il ne traite pas de l'API Spring B
 
 ## Maintenance
 
-- Une page doit être mise à jour dès que le comportement du code change, surtout dans `connus-problemes-et-FAQ.md` et `outillage-qualite.md`.
+- Une page doit être mise à jour dès que le comportement du code change, surtout dan `outillage-qualite.md`.
 - Une page ajoutée doit être référencée dans l'index ci-dessus.
 - Un document qui ne correspond plus au code doit être corrigé, pas complété par une note : c'est l'origine des divergences du `README.md` historique.
