@@ -65,7 +65,7 @@ export default function GlobalForms<T extends FieldValues>({
         <div className="mx-auto max-w-5xl">
 
             {
-                (routeUrl != "/reccuperation-comptes" && routeUrl != "/")
+                (routeUrl != "/reccuperation-comptes" && routeUrl != "/" && routeUrl != "/login")
                 &&
                 <BackButton/>
             }

@@ -1,614 +1,215 @@
-# 🚀 CollaB Tasks - Frontend
+# CollaB Tasks - Frontend
 
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-7.x-purple?logo=vite)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.x-38B2AC?logo=tailwind-css)
-![License](https://img.shields.io/badge/license-MIT-green)
 
----
+## Présentation
 
-# 📖 Présentation
+CollaB Tasks est une application web collaborative de gestion de projets et de tâches. Elle permet aux équipes d'organiser, de suivre et de collaborer efficacement autour de leurs activités.
 
-**CollaB Tasks** est une application web collaborative de gestion de projets et de tâches permettant aux équipes d'organiser, suivre et collaborer efficacement autour de leurs activités.
-
-Le frontend officiel est développé avec **React**, **TypeScript** et **Vite**.
-
-L'application communique avec une API REST développée avec **Spring Boot**.
+Le frontend est développé avec React 19, TypeScript et Vite. Il communique avec une API REST développée avec Spring Boot.
 
 ## Fonctionnalités principales
 
-- 🔐 Authentification sécurisée par cookies HttpOnly
-- 👤 Gestion des utilisateurs
-- 🛡️ Gestion des rôles et permissions
-- 📁 Gestion des projets
-- ✅ Gestion des tâches
-- 👥 Attribution des tâches aux utilisateurs
-- 📊 Tableau de bord et statistiques
-- 🔔 Notifications
-- 🔎 Recherche et filtrage
-- 👤 Gestion du profil utilisateur
-- 📱 Interface responsive
+- Authentification sécurisée par cookies HttpOnly et JWT
+- Gestion des utilisateurs et attribution de rôles
+- Contrôle d'accès basé sur les rôles (RBAC)
+- Gestion des projets
+- Gestion des tâches (création, attribution, statuts et priorités)
+- Tableau de bord avec statistiques et KPI
+- Notifications
+- Recherche, filtrage et tri
+- Gestion du profil utilisateur
+- Interface responsive (desktop, tablette, mobile)
 
----
-
-# 🛠️ Stack technique
+## Stack technique
 
 | Technologie | Description |
 |---|---|
-| React 19 | Bibliothèque frontend |
-| TypeScript | Typage statique |
-| Vite | Build tool moderne |
-| React Router | Gestion de navigation |
-| Axios | Client HTTP |
-| Tailwind CSS | Framework CSS |
-| React Hook Form | Gestion des formulaires |
-| Zod | Validation des données |
-| ESLint | Analyse qualité du code |
+| [React 19](https://react.dev/) | Bibliothèque frontend |
+| [TypeScript](https://www.typescriptlang.org/) | Typage statique |
+| [Vite](https://vitejs.dev/) | Outil de build moderne |
+| [React Router](https://reactrouter.com/) | Gestion de la navigation |
+| [Axios](https://axios-http.com/) | Client HTTP |
+| [Tailwind CSS](https://tailwindcss.com/) | Framework CSS utilitaire |
+| [React Hook Form](https://react-hook-form.com/) | Gestion des formulaires |
+| [Zod](https://zod.dev/) | Validation des schémas de données |
+| [ESLint](https://eslint.org/) | Analyse statique du code |
 
----
+## Structure du projet
 
-# 📂 Structure du projet
-
-```
+```text
 src/
-│
-├── assets/                   
-│   └── Images, logos, icônes
-│
-├── components/               
-│   ├── common/               
-│   ├── forms/                
-│   ├── layout/               
-│   ├── tables/               
-│   └── ui/                   
-│
-├── pages/                    
-│   ├── Auth/
-│   ├── Dashboard/
-│   ├── Projects/
-│   ├── Tasks/
-│   ├── Users/
-│   ├── Profile/
-│   └── Settings/
-│
-├── routes/                   
-│   ├── AppRoutes.tsx
-│   └── ProtectedRoute.tsx
-│
-├── services/                 
-│   ├── api.ts
-│   ├── auth.service.ts
-│   ├── user.service.ts
-│   ├── task.service.ts
-│   └── project.service.ts
-│
-├── hooks/                    
-│   ├── useAuth.ts
-│   ├── useTask.ts
-│   └── useProject.ts
-│
-├── context/                  
-│   └── AuthContext.tsx
-│
-├── store/                    
-│   └── Global state
-│
-├── types/                    
-│   └── Interfaces TypeScript
-│
-├── utils/                    
-│   └── Fonctions utilitaires
-│
-├── constants/                
-│   └── Constantes globales
-│
-├── layouts/                  
-│   ├── MainLayout.tsx
-│   └── AuthLayout.tsx
-│
-├── styles/                   
-│   └── CSS global
-│
+├── assets/              # Images, logos et icônes
+├── components/
+│   ├── common/           # Composants réutilisables
+│   ├── forms/            # Formulaires
+│   ├── layout/           # Composants de mise en page
+│   ├── tables/           # Tableaux
+│   └── ui/               # Composants UI atomiques
+├── pages/
+│   ├── Auth/             # Pages d'authentification
+│   ├── Dashboard/        # Tableau de bord
+│   ├── Projects/         # Gestion des projets
+│   ├── Tasks/            # Gestion des tâches
+│   ├── Users/            # Gestion des utilisateurs
+│   ├── Profile/          # Profil utilisateur
+│   └── Settings/         # Paramètres
+├── routes/
+│   ├── AppRoutes.tsx     # Définition des routes
+│   └── ProtectedRoute.tsx # Routes protégées
+├── services/
+│   ├── api.ts            # Instance Axios
+│   ├── auth.service.ts   # Service d'authentification
+│   ├── user.service.ts   # Service utilisateurs
+│   ├── task.service.ts   # Service tâches
+│   └── project.service.ts # Service projets
+├── hooks/                # Hooks personnalisés
+├── context/              # Contexts React
+├── store/                # État global
+├── types/                # Types et interfaces TypeScript
+├── utils/                # Fonctions utilitaires
+├── constants/            # Constantes globales
+├── layouts/              # Layouts principaux
+├── styles/               # Styles globaux
 ├── App.tsx
 ├── main.tsx
 └── vite-env.d.ts
 ```
 
----
+## Installation
 
-# ⚙️ Installation
+### Prérequis
 
-## Prérequis
+- [Node.js](https://nodejs.org/) >= 20
+- [npm](https://www.npmjs.com/) >= 10
+- [Git](https://git-scm.com/)
 
-Avant de commencer, installer :
-
-- Node.js >= 20
-- npm >= 10
-- Git
-
-
-Vérification :
+Vérifier l'installation :
 
 ```bash
 node -v
-
 npm -v
 ```
 
----
-
-# 📥 Cloner le projet
+### 1. Cloner le projet
 
 ```bash
 git clone https://github.com/edbm-collab-task/collab-task-ui.git
-
 cd collab-task-ui
 ```
 
----
-
-# 📦 Installation des dépendances
+### 2. Installer les dépendances
 
 ```bash
 npm install
 ```
 
----
+### 3. Configurer les variables d'environnement
 
-# 🔐 Configuration des variables d'environnement
-
-Créer un fichier :
-
-```
-.env
-```
-
-Ajouter :
+Créer un fichier `.env` à la racine :
 
 ```env
 VITE_API_URL=http://localhost:8090/api
 VITE_APP_NAME=CollaB Tasks
 ```
 
----
+## Lancer le projet
 
-# ▶️ Lancer le projet
-
-Démarrer le serveur de développement :
+### Mode développement
 
 ```bash
 npm run dev
 ```
 
-Application disponible :
+L'application est disponible sur [http://localhost:5173](http://localhost:5173).
 
-```
-http://localhost:5173
-```
+## Scripts disponibles
 
----
+| Script | Description |
+|---|---|
+| `npm run dev` | Lance le serveur de développement |
+| `npm run build` | Génère un build optimisé pour la production |
+| `npm run preview` | Prévisualise le build de production localement |
+| `npm run lint` | Vérifie la qualité du code avec ESLint |
 
-# 📜 Scripts disponibles
+## Communication avec le backend
 
-## Développement
-
-```bash
-npm run dev
-```
-
-Lancer le serveur frontend.
-
----
-
-## Production
-
-```bash
-npm run build
-```
-
-Créer la version optimisée de production.
-
----
-
-## Preview
-
-```bash
-npm run preview
-```
-
-Tester le build localement.
-
----
-
-## Vérification du code
-
-```bash
-npm run lint
-```
-
----
-
-# 🌐 Communication avec le Backend
-
-Toutes les requêtes HTTP passent par :
-
-```
-src/services
-```
-
-Configuration Axios :
+Toutes les requêtes HTTP sont centralisées dans `src/services/` via une instance Axios utilisant les cookies :
 
 ```typescript
 import axios from "axios";
 
-
 export const api = axios.create({
-
-    baseURL: import.meta.env.VITE_API_URL,
-
-    withCredentials: true
-
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
 });
 ```
 
----
+## Authentification
 
-# 🔐 Authentification
+L'authentification repose sur :
+- Cookies HttpOnly pour protéger les tokens
+- JWT générés côté serveur
+- Refresh token pour le renouvellement automatique de session
+- RBAC pour le contrôle d'accès
 
-CollaB Tasks utilise une authentification sécurisée basée sur :
+Les tokens ne sont jamais stockés dans `localStorage`, `sessionStorage` ou dans des variables JavaScript accessibles. Ils sont uniquement présents dans des cookies HttpOnly.
 
-- 🍪 Cookies HttpOnly
-- 🔑 JWT côté serveur
-- 🔄 Refresh Token
-- 🛡️ RBAC (Role Based Access Control)
+## Routes protégées
 
+Les pages nécessitant une authentification sont encapsulées par le composant `ProtectedRoute`. Un utilisateur non connecté est redirigé vers la page de connexion.
 
-## Fonctionnement
+## Gestion des rôles
 
-```
-Utilisateur
-
-      │
-
-      ▼
-
-Frontend React
-
-      │
-
-      ▼
-
-API Spring Boot
-
-      │
-
-      ▼
-
-Création JWT
-
-      │
-
-      ▼
-
-Cookie HttpOnly
-
-      │
-
-      ▼
-
-Requêtes sécurisées
-```
-
----
-
-# 🍪 Gestion des Cookies
-
-Les tokens d'authentification ne sont jamais stockés dans :
-
-❌ localStorage
-
-❌ sessionStorage
-
-❌ variables JavaScript accessibles
-
-
-Ils sont stockés uniquement dans :
-
-```
-HttpOnly Cookies
-```
-
-Avantages :
-
-- Protection contre certaines attaques XSS
-- Gestion automatique par le navigateur
-- Sécurité renforcée
-
----
-
-# 🛡️ Routes protégées
-
-Les pages nécessitant une authentification utilisent :
-
-```
-ProtectedRoute
-```
-
-
-Exemples :
-
-```
-/dashboard
-
-/projects
-
-/tasks
-
-/profile
-```
-
-Fonctionnement :
-
-```
-Utilisateur connecté ?
-
-        │
-
-   Oui ─────────> Accès autorisé
-
-        │
-
-        Non
-
-        │
-
-        ▼
-
-     Login
-```
-
----
-
-# 👥 Gestion des rôles (RBAC)
-
-L'application possède plusieurs niveaux d'accès :
-
-| Rôle | Description |
+| Rôle | Permissions |
 |---|---|
 | SUPER_ADMIN | Administration complète |
-| ADMIN | Gestion utilisateurs et projets |
-| USER | Utilisateur standard |
+| ADMIN | Gestion des utilisateurs, projets et tâches |
+| USER | Accès aux projets et tâches qui lui sont attribués |
 
-Les permissions sont contrôlées côté backend.
+Les permissions sont vérifiées côté backend.
 
----
+## Tests
 
-# 🎨 Interface utilisateur
+Les tests sont implémentés avec [Vitest](https://vitest.dev/) et [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/), dans `src/tests/`.
 
-L'application utilise une interface :
+## Conventions de nommage
 
-- Moderne
-- Responsive
-- Accessible
-- Compatible multi-écrans
+| Type | Convention | Exemples |
+|---|---|---|
+| Composants | PascalCase | `TaskCard.tsx`, `ProjectTable.tsx` |
+| Hooks | `use` + PascalCase/camelCase | `useAuth.ts`, `useTasks.ts` |
+| Services | kebab-case + `.service.ts` | `auth.service.ts`, `task.service.ts` |
+| Types/Interfaces | PascalCase | `User.ts`, `Task.ts`, `Project.ts` |
 
-
-Support :
-
-- 💻 Desktop
-- 📱 Mobile
-- 📟 Tablette
-
----
-
-# 📋 Fonctionnalités
-
-
-## 🔐 Authentification
-
-- Connexion
-- Déconnexion
-- Gestion session utilisateur
-- Refresh automatique
-- Gestion erreurs
-
-
-## 📁 Projets
-
-- Création projet
-- Modification projet
-- Suppression projet
-- Liste projets
-- Détails projet
-
-
-## ✅ Tâches
-
-- Création tâche
-- Modification tâche
-- Suppression tâche
-- Attribution utilisateur
-- Gestion statut
-- Gestion priorité
-
-
-## 📊 Dashboard
-
-- Statistiques globales
-- Suivi progression
-- Indicateurs KPI
-
-
-## 👥 Utilisateurs
-
-- Liste utilisateurs
-- Gestion profils
-- Gestion rôles
-
-
-## 🔎 Recherche
-
-- Recherche dynamique
-- Filtrage
-- Tri
-
----
-
-# 🧪 Tests
-
-Technologies utilisées :
-
-- Vitest
-- React Testing Library
-
-
-Structure :
-
-```
-src/
-└── tests/
-
-    ├── auth.test.tsx
-    ├── task.test.tsx
-    └── project.test.tsx
-```
-
----
-
-# 🧹 Convention de nommage
-
-
-## Composants
-
-```
-TaskCard.tsx
-
-ProjectTable.tsx
-
-UserProfile.tsx
-```
-
-
-## Hooks
-
-```
-useAuth.ts
-
-useTasks.ts
-
-useProjects.ts
-```
-
-
-## Services
-
-```
-auth.service.ts
-
-task.service.ts
-
-project.service.ts
-```
-
-
-## Types
-
-```
-User.ts
-
-Task.ts
-
-Project.ts
-```
-
----
-
-# 🚀 Déploiement
-
-
-Créer le build :
+## Déploiement
 
 ```bash
 npm run build
 ```
 
+Le build est généré dans `dist/`. Il peut être déployé sur Vercel, Netlify, Docker ou avec Nginx.
 
-Résultat :
-
-```
-dist/
-```
-
-
-Déploiement possible :
-
-- Vercel
-- Netlify
-- Docker
-- Nginx
-
-
----
-
-# 🐳 Docker
-
-
-Exemple Dockerfile :
+## Docker
 
 ```dockerfile
 FROM nginx:alpine
-
 COPY dist /usr/share/nginx/html
-
 EXPOSE 80
 ```
 
-
-Build :
-
 ```bash
 docker build -t collab-tasks-frontend .
-```
-
-
-Run :
-
-```bash
 docker run -p 80:80 collab-tasks-frontend
 ```
 
----
-
-# 🔄 Workflow Git
-
-
-Créer une branche :
+## Workflow Git
 
 ```bash
-git checkout -b feature/nouvelle-fonctionnalite
+git checkout -b feature/ma-fonctionnalite
+git commit -m "feat: ajout d'une nouvelle fonctionnalité"
+git push origin feature/ma-fonctionnalite
 ```
-
-
-Commit :
-
-```bash
-git commit -m "Ajout nouvelle fonctionnalité"
-```
-
-
-Push :
-
-```bash
-git push origin feature/nouvelle-fonctionnalite
-```
-
----
-
-# 📄 Licence
-
-Projet développé dans le cadre de **CollaB Tasks**.
-
-Licence MIT.
-
-© 2026 CollaB Tasks
