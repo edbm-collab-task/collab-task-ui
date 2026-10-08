@@ -30,7 +30,7 @@ export default function VerificationPage() {
 
                 {/* Partie gauche */}
 
-                <div className="hidden bg-gradient-to-br from-blue-700 to-indigo-900 p-12 text-white md:flex md:flex-col md:items-center md:justify-center">
+                <div className="hidden bg-gradient-to-br from-primary from-75% to-accent p-12 text-white md:flex md:flex-col md:items-center md:justify-center">
 
                     <img
                         src={Logo}
