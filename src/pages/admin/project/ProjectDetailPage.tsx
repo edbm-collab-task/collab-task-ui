@@ -208,17 +208,51 @@ export default function ProjectDetailPage() {
     // Déplacement de tâche (drag & drop) : mise à jour optimiste + rollback si échec
     // On met à jour l'état local immédiatement pour un feedback instantané,
     // puis on appelle l'API. Si l'API échoue, on restaure l'état précédent.
-    const handleMoveTask = async (task: TaskRes, statusId: number) => {
+    // beforeTaskId optionnel : relâcher sur un marqueur d'insertion déclenche
+    // PATCH /move (statut + priorité héritée + ordre), sinon simple changement
+    // de statut (dépôt sur la zone vide d'une colonne).
+    const handleMoveTask = async (task: TaskRes, statusId: number, beforeTaskId: number | null = null) => {
         const previous = tasks;
-        setTasks(prev => prev.map(t => (t.taskId === task.taskId ? { ...t, statusId } : t)));
+        const optimistic = buildOptimisticMove(task, statusId, beforeTaskId);
+        setTasks(prev => prev.map(t => (t.taskId === task.taskId ? optimistic : t)));
         try {
-            const updated = await taskService.changeStatus(task.taskId, statusId);
+            const updated =
+                beforeTaskId != null
+                    ? await taskService.moveTask(task.taskId, { statusId, beforeTaskId })
+                    : await taskService.changeStatus(task.taskId, statusId);
             setTasks(prev => prev.map(t => (t.taskId === task.taskId ? updated : t)));
         } catch (error) {
             console.error(error);
             setTasks(previous);
             setTimeout(() => toast.error("Impossible de déplacer la tâche"));
         }
+    };
+
+    // Version provisoire de la tâche pendant le drag & drop : applique statut +
+    // priorité de la carte de référence (comme le backend) et calcule un sortOrder
+    // fractionnaire entre le voisin précédent et la carte de référence. La réponse
+    // de l'API renumérote ensuite 1..N le groupe (elle remplace ce provisoire).
+    const buildOptimisticMove = (task: TaskRes, statusId: number, beforeTaskId: number | null): TaskRes => {
+        if (beforeTaskId == null) {
+            return { ...task, statusId };
+        }
+        const before = tasks.find(t => t.taskId === beforeTaskId);
+        const target = {
+            ...task,
+            statusId,
+            priorityId: before?.priorityId ?? task.priorityId,
+            priorityName: before?.priorityName ?? task.priorityName,
+            prioritySortOrder: before?.prioritySortOrder ?? task.prioritySortOrder,
+        };
+        const beforeSort = before?.sortOrder ?? Number.MAX_SAFE_INTEGER;
+        const prevInGroup = tasks
+            .filter(t => t.taskId !== task.taskId && t.statusId === statusId && t.priorityId === target.priorityId)
+            .filter(t => (t.sortOrder ?? 0) < beforeSort)
+            .sort((a, b) => (b.sortOrder ?? 0) - (a.sortOrder ?? 0))[0];
+        target.sortOrder = prevInGroup
+            ? ((prevInGroup.sortOrder ?? 0) + beforeSort) / 2
+            : (before ? (before.sortOrder ?? 0) - 1 : beforeSort + 1);
+        return target;
     };
 
     // Archivage d'une tâche (soft delete) avec confirmation

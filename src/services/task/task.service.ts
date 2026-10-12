@@ -1,7 +1,7 @@
 import { apiClient } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
 
-import type { PriorityOption, TaskReq, TaskRes } from "@/types/task";
+import type { MoveTaskReq, PriorityOption, TaskReq, TaskRes } from "@/types/task";
 
 
 export const taskService = {
@@ -81,6 +81,16 @@ export const taskService = {
         return apiClient.patch<TaskRes, Record<string, never>>(
             `${API_ENDPOINTS.TASKS.CHANGE_STATUS}/${taskId}/status?statusId=${statusId}`,
             {}
+        );
+
+    },
+
+
+    moveTask: async (taskId: number, data: MoveTaskReq): Promise<TaskRes> => {
+
+        return apiClient.patch<TaskRes, MoveTaskReq>(
+            `${API_ENDPOINTS.TASKS.MOVE}/${taskId}/move`,
+            data
         );
 
     },

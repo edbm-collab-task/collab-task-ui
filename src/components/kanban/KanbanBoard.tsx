@@ -23,7 +23,7 @@ interface Props {
     onEditTask: (task: TaskRes) => void;
     onCreateTask: (statusId: number) => void;
     onDeleteTask: (task: TaskRes) => void;
-    onMoveTask: (task: TaskRes, statusId: number) => void;
+    onMoveTask: (task: TaskRes, statusId: number, beforeTaskId: number | null) => void;
     currentUserId: number;
 }
 
@@ -87,6 +87,10 @@ export default function KanbanBoard({
     // État drag & drop : tâche en cours de glissement + colonne survolée
     const [draggedTask, setDraggedTask] = useState<TaskRes | null>(null);
     const [overColumn, setOverColumn] = useState<number | null>(null);
+    // Zone d'insertion survolée (filet bleu) : choisie à l'approche, mais la
+    // position d'insertion est TOUJOURS recalculée au moment du drop (voir
+    // wrapper ci-dessous) pour éviter les faux départs du drag HTML5.
+    const [dropTarget, setDropTarget] = useState<{ key: number; anchor: "before" | "after" } | null>(null);
     // Panneau commentaires : ID de la tâche dont on affiche les commentaires
     const [commentTaskId, setCommentTaskId] = useState<number | null>(null);
     // Compteur de commentaires par tâche (mis à jour via onCountChange du CommentPanel)
@@ -125,14 +129,30 @@ export default function KanbanBoard({
         [tasks, availableStatuses]
     );
 
-    // Gestion du drop : on ne déclenche onMoveTask que si la colonne a changé
-    // La mise à jour optimiste est gérée dans le parent (ProjectDetailPage.handleMoveTask)
+    // Gestion du drop sur la zone vide d'une colonne : on ne déclenche onMoveTask
+    // que si la colonne a changé. La mise à jour optimiste est gérée dans le
+    // parent (ProjectDetailPage.handleMoveTask).
     const handleDrop = (statusId: number) => {
         if (draggedTask && draggedTask.statusId !== statusId) {
-            onMoveTask(draggedTask, statusId);
+            onMoveTask(draggedTask, statusId, null);
         }
         setDraggedTask(null);
         setOverColumn(null);
+    };
+
+    // Déplacement inséré dans le fil : relâcher sur la moitié supérieure d'une
+    // carte insère la tâche AVANT cette carte (elle en hérite la priorité),
+    // sur la moitié inférieure APRÈS (c'est-à-dire avant la carte suivante, ou
+    // fin de colonne si c'était la dernière). La position est recalculée au
+    // moment du drop (bounding rect) : le feedback visuel pendant le drag ne
+    // sert que d'indication.
+    const computeBeforeTaskId = (statusId: number, nodeId: number, clientY: number, target: HTMLDivElement): number | null => {
+        const rect = target.getBoundingClientRect();
+        const before = clientY < rect.top + rect.height / 2;
+        if (before) return nodeId;
+        const nodes = columnTrees.get(statusId) ?? [];
+        const index = nodes.findIndex(n => n.task.taskId === nodeId);
+        return index >= 0 && index < nodes.length - 1 ? nodes[index + 1].task.taskId : null;
     };
 
     return (
@@ -184,22 +204,68 @@ export default function KanbanBoard({
                                 </div>
                             )}
 
-                            {columnNodes.map(node => (
-                                <TaskTreeItem
-                                    key={`${projectId}-${node.task.taskId}`}
-                                    node={node}
-                                    projectId={projectId}
-                                    priorityBadge={priorityBadge}
-                                    formatDate={formatDate}
-                                    getCount={getCount}
-                                    onEditTask={onEditTask}
-                                    onDeleteTask={onDeleteTask}
-                                    setCommentTaskId={setCommentTaskId}
-                                    setDraggedTask={setDraggedTask}
-                                    setOverColumn={setOverColumn}
-                                    showActions={true}
-                                />
-                            ))}
+                            {columnNodes.map(node => {
+                                const active = dropTarget?.key === node.task.taskId;
+                                return (
+                                    <div
+                                        key={`${projectId}-${node.task.taskId}`}
+                                        className="relative"
+                                        onDragOver={e => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const rect = e.currentTarget.getBoundingClientRect();
+                                            setDropTarget({
+                                                key: node.task.taskId,
+                                                anchor: e.clientY < rect.top + rect.height / 2 ? "before" : "after",
+                                            });
+                                            setOverColumn(id);
+                                        }}
+                                        onDragLeave={() => {
+                                            if (dropTarget?.key === node.task.taskId) {
+                                                setDropTarget(null);
+                                            }
+                                        }}
+                                        onDrop={e => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const beforeTaskId = computeBeforeTaskId(
+                                                id,
+                                                node.task.taskId,
+                                                e.clientY,
+                                                e.currentTarget
+                                            );
+                                            if (draggedTask && beforeTaskId !== draggedTask.taskId) {
+                                                onMoveTask(draggedTask, id, beforeTaskId);
+                                            }
+                                            setDraggedTask(null);
+                                            setOverColumn(null);
+                                            setDropTarget(null);
+                                        }}
+                                    >
+                                        {active && dropTarget?.anchor === "before" && (
+                                            <div className="pointer-events-none absolute -top-[3px] left-0 right-0 h-0.5 rounded bg-blue-500" />
+                                        )}
+
+                                        <TaskTreeItem
+                                            node={node}
+                                            projectId={projectId}
+                                            priorityBadge={priorityBadge}
+                                            formatDate={formatDate}
+                                            getCount={getCount}
+                                            onEditTask={onEditTask}
+                                            onDeleteTask={onDeleteTask}
+                                            setCommentTaskId={setCommentTaskId}
+                                            setDraggedTask={setDraggedTask}
+                                            setOverColumn={setOverColumn}
+                                            showActions={true}
+                                        />
+
+                                        {active && dropTarget?.anchor === "after" && (
+                                            <div className="pointer-events-none absolute -bottom-[3px] left-0 right-0 h-0.5 rounded bg-blue-500" />
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 );

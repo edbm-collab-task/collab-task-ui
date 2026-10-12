@@ -98,6 +98,16 @@ export interface TaskReq {
     assigneeIds: number[];
 }
 
+// Corps de PATCH /tasks/{taskId}/move (drag & drop) : la tâche change de statut
+// et s'insère juste avant beforeTaskId dans son groupe (statut + priorité) en
+// adoptant la priorité de la carte de référence. beforeTaskId = null place la
+// tâche en fin de colonne : elle garde sa priorité et rejoint le bas de son
+// groupe de priorité dans le nouveau statut.
+export interface MoveTaskReq {
+    statusId: number;
+    beforeTaskId: number | null;
+}
+
 // Type Status minimal : utilisé par l'API /api/statuses pour les statuts personnalisés.
 // Ces champs (statusId, name, sortOrder) sont ceux échangés avec le backend.
 export type Status = {

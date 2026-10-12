@@ -72,6 +72,8 @@ export const API_ENDPOINTS = {
 
         CHANGE_STATUS: "/tasks",
 
+        MOVE: "/tasks",
+
         DELETE: "/tasks"
 
     },

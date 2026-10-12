@@ -439,6 +439,7 @@ export default function TaskModal({
                                             <label className={obliLabelCalss }>Titre *</label>
                                             <input
                                                 autoFocus
+                                                maxLength={255}
                                                 className={inputClass}
                                                 value={form.title}
                                                 onChange={(e) => setForm({ ...form, title: e.target.value })}
