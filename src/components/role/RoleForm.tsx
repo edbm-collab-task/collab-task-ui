@@ -12,7 +12,7 @@ import type { RoleFormProps } from "@/components/role/roleForm.types";
 import { getPermissionCategoryLabel } from "@/constants/permissionCategoryLabels";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
-import type { Permission } from "@/types/role";
+import type { PermissionWithActions } from "@/types/role";
 import { roleService } from "@/services/role/role.service";
 import {
     ROLE_CODE_PATTERN,
@@ -53,6 +53,12 @@ export default function RoleForm({
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
         editingRole?.permissions.map((p) => p.name) ?? []
     );
+    /**
+     * Actions cochées par permission. La clé est le nom de la permission, la
+     * valeur la liste des actions accordées. Une permission sans action
+     * sélectionnée est absente de la map.
+     */
+    const [selectedActions, setSelectedActions] = useState<Record<string, string[]>>({});
     /** Identifiant du rôle modèle choisi, ou `null` pour une création vierge. */
     const [templateRoleId, setTemplateRoleId] = useState<number | null>(null);
     const [loadingTemplate, setLoadingTemplate] = useState(false);
@@ -99,6 +105,34 @@ export default function RoleForm({
     }, []);
 
     /**
+     * En édition, charge les actions déjà accordées au rôle pour pré-remplir
+     * les cases à cocher. Les dépendances sont volontairement omises :
+     * l'identifiant du rôle édité ne change pas pendant la vie du formulaire.
+     */
+    useEffect(() => {
+        if (editingRole === null) return;
+
+        let cancelled = false;
+
+        roleService
+            .getActions(editingRole.id)
+            .then((roleActions) => {
+                if (!cancelled) {
+                    setSelectedActions(roleActions.permissions ?? {});
+                }
+            })
+            .catch((error) => {
+                console.error("Erreur lors du chargement des actions :", error);
+                toast.error("Erreur lors du chargement des actions");
+            });
+
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    /**
      * Message d'erreur du champ code, ou null s'il est valide. `force` sert à
      * la soumission : sans lui, un code vide ne serait signalé qu'une fois
      * touché, et le formulaire pourrait partir avec un code manquant.
@@ -126,13 +160,16 @@ export default function RoleForm({
 
         if (id === null) {
             setSelectedPermissions([]);
+            setSelectedActions({});
             return;
         }
 
         try {
             setLoadingTemplate(true);
             const template = await roleService.getById(id);
+            const templateActions = await roleService.getActions(id);
             setSelectedPermissions(template.permissions.map((p) => p.name));
+            setSelectedActions(templateActions.permissions ?? {});
             setOpenCategories(
                 getCategoriesWithSelection(
                     permissionsByCategory,
@@ -153,6 +190,29 @@ export default function RoleForm({
                 ? prev.filter((p) => p !== permName)
                 : [...prev, permName]
         );
+    };
+
+    /**
+     * Coche / décoche une action pour une permission donnée.
+     *
+     * La permission est retirée de la map dès qu'elle ne porte plus aucune
+     * action, pour ne jamais transmettre d'entrée vide à `setActions`.
+     */
+    const toggleAction = (permName: string, action: string) => {
+        setSelectedActions((prev) => {
+            const current = prev[permName] ?? [];
+            const next = current.includes(action)
+                ? current.filter((a) => a !== action)
+                : [...current, action];
+
+            if (next.length === 0) {
+                const rest = { ...prev };
+                delete rest[permName];
+                return rest;
+            }
+
+            return { ...prev, [permName]: next };
+        });
     };
 
     /**
@@ -182,10 +242,22 @@ export default function RoleForm({
 
         try {
             setSaving(true);
+            /**
+             * Seules les actions des permissions effectivement accordées sont
+             * transmises : une action cochée sous une permission décochée n'a
+             * pas de sens pour le rôle.
+             */
+            const actionsForSelection = Object.fromEntries(
+                Object.entries(selectedActions).filter(([permName]) =>
+                    selectedPermissions.includes(permName)
+                )
+            );
+
             await onSubmit({
                 name: roleName,
                 codeRole: normalizeRoleCode(codeRole),
                 permissions: selectedPermissions,
+                actions: actionsForSelection,
             });
         } finally {
             setSaving(false);
@@ -325,36 +397,73 @@ export default function RoleForm({
                                     aria-label={label}
                                     className="grid grid-cols-1 gap-2"
                                 >
-                                    {perms.map((perm: Permission) => {
+                                    {perms.map((perm: PermissionWithActions) => {
                                         const isChecked = selectedPermissions.includes(perm.name);
+                                        const selectedForPerm = selectedActions[perm.name] ?? [];
 
                                         return (
-                                            <label
+                                            <div
                                                 key={perm.id}
-                                                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all ${
-                                                    isChecked
-                                                        ? "border-0 bg-accent/10"
-                                                        : "border-0 hover:border hover:border-accent"
+                                                className={`rounded-lg p-3 transition-all ${
+                                                    isChecked ? "bg-accent/10" : ""
                                                 }`}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isChecked}
-                                                    onChange={() => togglePermission(perm.name)}
-                                                    className="hidden"
-                                                />
-                                                <div
-                                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-                                                        isChecked ? "bg-primary" : "border-gray-300"
-                                                    }`}
-                                                >
-                                                    {isChecked && <Check size={12} className="text-white" />}
+                                                <label className="flex cursor-pointer items-center gap-3">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={() => togglePermission(perm.name)}
+                                                        className="hidden"
+                                                    />
+                                                    <div
+                                                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+                                                            isChecked ? "bg-primary" : "border-gray-300"
+                                                        }`}
+                                                    >
+                                                        {isChecked && <Check size={12} className="text-white" />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-700">{perm.name}</p>
+                                                        <p className="text-xs text-gray-500">{perm.description}</p>
+                                                    </div>
+                                                </label>
+
+                                                {/*
+                                                    Actions offertes par la permission : 3 lignes
+                                                    et autant de colonnes que nécessaire (flux par
+                                                    colonne). Sous le breakpoint `sm`, bascule sur
+                                                    2 colonnes et autant de lignes que nécessaire.
+                                                */}
+                                                <div className="mt-2 grid grid-flow-col grid-rows-3 gap-1.5 pl-8 max-sm:grid-flow-row max-sm:grid-rows-none max-sm:grid-cols-2">
+                                                    {(perm.actions ?? []).map((action) => {
+                                                        const isActionChecked = selectedForPerm.includes(action);
+
+                                                        return (
+                                                            <label
+                                                                key={action}
+                                                                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors hover:bg-secondary/40"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isActionChecked}
+                                                                    onChange={() => toggleAction(perm.name, action)}
+                                                                    className="hidden"
+                                                                />
+                                                                <span
+                                                                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                                                        isActionChecked ? "bg-primary" : "border-gray-300"
+                                                                    }`}
+                                                                >
+                                                                    {isActionChecked && (
+                                                                        <Check size={10} className="text-white" />
+                                                                    )}
+                                                                </span>
+                                                                <span className="text-gray-600">{action}</span>
+                                                            </label>
+                                                        );
+                                                    })}
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-700">{perm.name}</p>
-                                                    <p className="text-xs text-gray-500">{perm.description}</p>
-                                                </div>
-                                            </label>
+                                            </div>
                                         );
                                     })}
                                 </div>
