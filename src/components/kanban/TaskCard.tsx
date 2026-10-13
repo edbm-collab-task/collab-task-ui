@@ -106,7 +106,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <div className="flex items-start justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-1.5">
                     {number && (
-                        <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold leading-none text-bg">
+                        <span className="rounded-full bg-secondary p-1 px-2 text-xs font-bold leading-none text-accent">
                             {number}
                         </span>
                     )}
