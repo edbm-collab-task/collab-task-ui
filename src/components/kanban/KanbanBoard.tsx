@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import {
     Plus,
+    ChevronDown,
+    ChevronRight,
 } from "lucide-react";
 
 import {
@@ -95,6 +97,26 @@ export default function KanbanBoard({
     const [commentTaskId, setCommentTaskId] = useState<number | null>(null);
     // Compteur de commentaires par tâche (mis à jour via onCountChange du CommentPanel)
     const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
+    // Colonnes repliées par statut : un statut présent dans cet ensemble masque
+    // sa zone de cartes (seul l'en-tête reste visible).
+    const [collapsedStatuses, setCollapsedStatuses] = useState<Set<number>>(new Set());
+
+    /**
+     * Replie ou déplie la colonne d'un statut (masque/affiche sa zone de cartes).
+     * Le compteur de l'en-tête conserve toujours le total des cartes
+     * (voir countColumnNodes).
+     */
+    const toggleColumn = (statusId: number) => {
+        setCollapsedStatuses(prev => {
+            const next = new Set(prev);
+            if (next.has(statusId)) {
+                next.delete(statusId);
+            } else {
+                next.add(statusId);
+            }
+            return next;
+        });
+    };
 
     const commentTask = useMemo(
         () => commentTaskId !== null ? tasks.find(t => t.taskId === commentTaskId) ?? null : null,
@@ -164,6 +186,9 @@ export default function KanbanBoard({
                 // (voir compareTasks) et groupées par parent TaskTreeItem.
                 const columnNodes = columnTrees.get(id) ?? [];
                 const style = getStatusStyle(status);
+                // Colonne repliée (zone de cartes masquée) : seul l'en-tête reste
+                // visible, le chevron permet de replier/déplier.
+                const isCollapsed = collapsedStatuses.has(id);
 
                 return (
                     <div
@@ -178,7 +203,9 @@ export default function KanbanBoard({
                             overColumn === id ? "ring-2 ring-blue-400" : ""
                         }`}
                     >
-                        {/* En-tête colonne */}
+                        {/* En-tête colonne : point, nom, compteur total, chevron de
+                            repli/dépli et bouton d'ajout. Le compteur est toujours
+                            le total (sous-tâches comprises), même colonne repliée. */}
                         <div className="mb-3 flex items-center justify-between px-1">
                             <div className="flex items-center gap-2">
                                 <span className={`h-2.5 w-2.5 rounded-full ${style.dot}`} />
@@ -186,6 +213,14 @@ export default function KanbanBoard({
                                 <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold text-gray-600 shadow-sm">
                                     {countColumnNodes(columnNodes)}
                                 </span>
+                                <button
+                                    onClick={() => toggleColumn(id)}
+                                    title={isCollapsed ? `Déplier ${status.name}` : `Replier ${status.name}`}
+                                    aria-expanded={!isCollapsed}
+                                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white transition hover:opacity-80"
+                                >
+                                    {isCollapsed ? <ChevronRight size={20} /> : <ChevronDown size={20} />}
+                                </button>
                             </div>
                             <button
                                 onClick={() => onCreateTask(id)}
@@ -196,8 +231,14 @@ export default function KanbanBoard({
                             </button>
                         </div>
 
-                        {/* Cartes tâches (sous-tâches imbriquées sous leur parent) */}
-                        <div className="flex flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar p-1">
+                        {/* Zone des cartes : masquée quand la colonne est repliée (isCollapsed).
+                            Le drop sur la colonne vide reste géré par la colonne
+                            elle-même (handleDrop), même repliée. */}
+                        <div
+                            className={`flex flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar p-1 ${
+                                isCollapsed ? "hidden" : ""
+                            }`}
+                        >
                             {columnNodes.length === 0 && (
                                 <div className="rounded-xl border-2 border-dashed border-white/70 px-4 py-6 text-center text-xs text-gray-400">
                                     Glissez une tâche ici
