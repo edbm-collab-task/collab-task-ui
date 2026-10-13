@@ -1,6 +1,12 @@
 import React from 'react';
-import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree } from 'lucide-react';
+import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree, ChevronDown, ChevronRight } from 'lucide-react';
 
+/**
+ * Propriétés de la carte de tâche.
+ *
+ * Une carte est soit une tâche racine (déplaçable), soit une sous-tâche
+ * (`task.parentTaskId != null`) : les sous-tâches ne sont jamais déplaçables.
+ */
 interface TaskCardProps {
     task: any;
     projectId: string | number;
@@ -18,10 +24,31 @@ interface TaskCardProps {
     depth?: number;
     /** Nombre de sous-tâches rendues directement en dessous de la carte */
     childrenCount?: number;
-    /** Titre du parent direct quand il est rendu en carte fantôme au-dessus */
-    parentTitle?: string | null;
+    /** La carte possède des sous-tâches (bouton déplier/replier visible) */
+    hasChildren?: boolean;
+    /** Sous-tâches actuellement dépliées (état contrôlé par TaskTreeItem) */
+    expanded?: boolean;
+    /** Bascule l'affichage des sous-tâches, appelée au clic sur la carte */
+    onToggle?: () => void;
+    /** Numéro hiérarchique de la tâche dans sa colonne (ex. "1", "1.1") */
+    number?: string;
 }
 
+/**
+ * Carte représentant une tâche ou une sous-tâche dans une colonne du kanban.
+ *
+ * Seules les tâches racines (sans `parentTaskId`) sont `draggable` : les
+ * sous-tâches restent fixes sous leur parent. Le glissement est délégué au
+ * parent via `setDraggedTask`/`setOverColumn` (KanbanBoard).
+ *
+ * Si la carte a des sous-tâches (`hasChildren`), un chevron est affiché à
+ * droite et un clic sur la carte bascule leur affichage via `onToggle`
+ * (TaskTreeItem gère l'état replié/déplié). Un clic sur un bouton interne
+ * (Modifier/Archiver/Commentaires) ne déclenche pas la bascule.
+ *
+ * Le numéro hiérarchique (`number`, ex. "1" ou "1.1") est affiché en badge
+ * bg-primary à côté du titre ; il est fourni par TaskTreeItem/KanbanBoard.
+ */
 export const TaskCard: React.FC<TaskCardProps> = ({
     task,
     projectId,
@@ -36,30 +63,55 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     showActions = true,
     depth = 0,
     childrenCount = 0,
-    parentTitle = null,
+    hasChildren = false,
+    expanded = false,
+    onToggle,
+    number,
 }) => {
     const priority = priorityBadge(task.priorityName);
     const commentCount = getCount(task.taskId);
     const isNested = depth > 0;
-    // Le parent est soit juste au-dessus (imbriqué), soit rendu en carte fantôme :
-    // dans les deux cas le badge "Sous-tâche" est inutile.
-    const showSubtaskBadge = Boolean(task.parentTaskId) && !isNested && !parentTitle;
+    // Une sous-tâche (parentTaskId renseigné) n'est pas déplaçable.
+    const isSubtask = Boolean(task.parentTaskId);
+    // Le badge "Sous-tâche" n'est utile que pour une sous-tâche rendue en tête
+    // de colonne (parent dans une autre colonne), pas pour une carte imbriquée.
+    const showSubtaskBadge = isSubtask && !isNested;
+
+    // Clic sur la carte = déplier/replier les sous-tâches, sauf si le clic
+    // provient d'un bouton interne (Modifier/Archiver/Commentaires).
+    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!hasChildren || !onToggle) return;
+        if ((e.target as HTMLElement).closest('button')) return;
+        onToggle();
+    };
 
     return (
         <div
             key={`${projectId}-${task.taskId}`}
-            draggable
-            onDragStart={() => setDraggedTask?.(task)}
-            onDragEnd={() => {
-                setDraggedTask?.(null);
-                setOverColumn?.(null);
-            }}
-            className={`group cursor-grab rounded-xl bg-white shadow-sm ring-1 transition hover:shadow-md hover:ring-primary active:cursor-grabbing ${
-                isNested ? 'p-3 ring-violet-100' : 'p-4 ring-gray-100'
-            }`}
+            draggable={!isSubtask}
+            onClick={handleClick}
+            onDragStart={isSubtask ? undefined : () => setDraggedTask?.(task)}
+            onDragEnd={
+                isSubtask
+                    ? undefined
+                    : () => {
+                          setDraggedTask?.(null);
+                          setOverColumn?.(null);
+                      }
+            }
+            className={`group rounded-xl ${isSubtask ? 'bg-white/80' : 'bg-white'} shadow-sm ring-1 transition hover:shadow-md hover:ring-primary ${
+                isSubtask ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
+            } ${isNested ? 'p-3 ring-violet-100' : 'p-4 ring-gray-100'}`}
         >
             <div className="flex items-start justify-between gap-2">
-                <p className={`font-semibold text-gray-800 ${isNested ? 'text-[13px]' : 'text-sm'}`}>{task.title}</p>
+                <div className="flex flex-wrap items-center gap-1.5">
+                    {number && (
+                        <span className="rounded-full bg-secondary p-1 px-2 text-xs font-bold leading-none text-accent">
+                            {number}
+                        </span>
+                    )}
+                    <p className={`font-semibold text-gray-800 ${isNested ? 'text-[13px]' : 'text-sm'}`}>{task.title}</p>
+                </div>
                 
                 {showActions && (
                     <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
@@ -111,44 +163,56 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 </div>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${priority.color}`}>
-                    {priority.name}
-                </span>
-
-                {task.dueDate && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">
-                        <CalendarDays size={11} />
-                        {formatDate(task.dueDate)}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${priority.color}`}>
+                        {priority.name}
                     </span>
-                )}
 
-                {showSubtaskBadge && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700">
-                        <GitBranch size={11} />
-                        Sous-tâche
-                    </span>
-                )}
+                    {task.dueDate && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">
+                            <CalendarDays size={11} />
+                            {formatDate(task.dueDate)}
+                        </span>
+                    )}
 
-                {childrenCount > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-gray-600">
-                        <ListTree size={11} />
-                        {childrenCount} sous-tâche{childrenCount > 1 ? "s" : ""}
-                    </span>
-                )}
+                    {showSubtaskBadge && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+                            <GitBranch size={11} />
+                            Sous-tâche
+                        </span>
+                    )}
 
-                {showActions && setCommentTaskId && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setCommentTaskId(task.taskId);
-                        }}
-                        className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
-                        title="Commentaires"
+                    {childrenCount > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-medium text-bg">
+                            <ListTree size={11} />
+                            {childrenCount} sous-tâche{childrenCount > 1 ? "s" : ""}
+                        </span>
+                    )}
+
+                    {showActions && setCommentTaskId && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setCommentTaskId(task.taskId);
+                            }}
+                            className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
+                            title="Commentaires"
+                        >
+                            <MessageSquare size={11} />
+                            {commentCount}
+                        </button>
+                    )}
+                </div>
+
+                {hasChildren && (
+                    <span
+                        title={expanded ? "Masquer les sous-tâches" : "Afficher les sous-tâches"}
+                        aria-expanded={expanded}
+                        className="inline-flex items-center gap-1 rounded-full bg-accent px-1.5 py-0.5 text-bg transition hover:opacity-80"
                     >
-                        <MessageSquare size={11} />
-                        {commentCount}
-                    </button>
+                        {expanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                    </span>
                 )}
             </div>
         </div>

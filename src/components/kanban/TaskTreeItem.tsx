@@ -1,5 +1,4 @@
-import React from 'react';
-import { GitBranch } from 'lucide-react';
+import { useState } from 'react';
 
 import { TaskCard } from './TaskCard';
 import type { ColumnTaskNode } from '@/utils/taskTree';
@@ -16,19 +15,27 @@ interface TaskTreeItemProps {
     setDraggedTask?: (task: any) => void;
     setOverColumn?: (column: any) => void;
     showActions?: boolean;
+    /** Numéro hiérarchique dans la colonne : racine "1", enfants "1.1", etc. */
+    number: string;
 }
 
 /** Décalage (~12px) + filet vertical appliqués à chaque niveau de sous-tâche. */
-const NESTED_WRAPPER = 'ml-3 border-l-2 border-gray-200 pl-3 max-md:ml-2 max-md:pl-2';
+const NESTED_WRAPPER = 'ml-3 border-l-2 border-primary pl-3 max-md:ml-2 max-md:pl-2';
 
 /**
  * Rendu récursif d'une tâche et de ses sous-tâches.
  *
- * - La carte du parent est suivie de ses enfants, chacun décalé et relié par un
- *   filet vertical (comme l'arbre de commentaires, CommentItem.tsx:357).
- * - Si le parent direct n'est pas dans la colonne (statut différent), il est
- *   représenté par une "carte fantôme" au-dessus, reliée à la sous-tâche par le
- *   même filet.
+ * La carte du parent est suivie de ses enfants, chacun décalé et relié par un
+ * filet vertical (comme l'arbre de commentaires, CommentItem.tsx:357).
+ *
+ * Les sous-tâches sont repliées par défaut : un clic sur la carte du parent
+ * (voir TaskCard onClick/onToggle) les déplie ou les replie. Chaque nœud gère
+ * son propre état d'expansion, donc un parent déplié laisse ses enfants
+ * eux-mêmes repliés tant qu'ils ne sont pas cliqués.
+ *
+ * Chaque tâche porte un numéro hiérarchique (`number`) défini par KanbanBoard
+ * pour les racines ("1", "2", ...) et hérité ici pour les sous-tâches
+ * (ex. "1.1", "1.2"), même repliées.
  */
 export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
     node,
@@ -42,13 +49,13 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
     setDraggedTask,
     setOverColumn,
     showActions = true,
+    number,
 }) => {
-    const { task, depth, parentTitle, children } = node;
-    const hasGhostParent = parentTitle !== null;
-
-    // Le groupe fantôme (parent dans une autre colonne) est en tête de colonne
-    // mais s'affiche visuellement comme une sous-tâche
-    const isNested = depth > 0 || hasGhostParent;
+    const { task, depth, children } = node;
+    const isNested = depth > 0;
+    // Sous-tâches masquées par défaut ; la carte parent bascule via onToggle.
+    const [expanded, setExpanded] = useState(false);
+    const hasChildren = children.length > 0;
 
     const card = (
         <TaskCard
@@ -66,13 +73,16 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
             showActions={showActions}
             depth={isNested ? Math.max(depth, 1) : 0}
             childrenCount={children.length}
-            parentTitle={parentTitle}
+            hasChildren={hasChildren}
+            expanded={expanded}
+            onToggle={() => setExpanded(prev => !prev)}
+            number={number}
         />
     );
 
-    const subtree = children.length > 0 && (
+    const subtree = expanded && hasChildren && (
         <div className={`mt-2 space-y-2 ${NESTED_WRAPPER}`}>
-            {children.map(child => (
+            {children.map((child, childIndex) => (
                 <TaskTreeItem
                     key={`${child.task.taskId}-${child.depth}`}
                     node={child}
@@ -86,36 +96,16 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
                     setDraggedTask={setDraggedTask}
                     setOverColumn={setOverColumn}
                     showActions={showActions}
+                    number={`${number}.${childIndex + 1}`}
                 />
             ))}
         </div>
     );
 
-    if (!hasGhostParent) {
-        return (
-            <div>
-                {card}
-                {subtree}
-            </div>
-        );
-    }
-
     return (
         <div>
-            {/* Carte fantôme du parent, absente de cette colonne */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 bg-white/60 px-2.5 py-1.5">
-                <GitBranch size={12} className="shrink-0 text-gray-400" />
-
-                <span className="truncate text-[11px] font-medium text-gray-500">
-                    {parentTitle}
-                </span>
-            </div>
-
-            {/* Filet reliant la carte fantôme à la sous-tâche */}
-            <div className="mt-2 ml-2 space-y-2 border-l-2 border-gray-200 pl-2.5">
-                {card}
-                {subtree}
-            </div>
+            {card}
+            {subtree}
         </div>
     );
 };

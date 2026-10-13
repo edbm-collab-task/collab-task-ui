@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import {
     Plus,
+    ChevronDown,
+    ChevronRight,
 } from "lucide-react";
 
 import {
@@ -95,6 +97,26 @@ export default function KanbanBoard({
     const [commentTaskId, setCommentTaskId] = useState<number | null>(null);
     // Compteur de commentaires par tâche (mis à jour via onCountChange du CommentPanel)
     const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
+    // Colonnes repliées par statut : un statut présent dans cet ensemble masque
+    // sa zone de cartes (seul l'en-tête reste visible).
+    const [collapsedStatuses, setCollapsedStatuses] = useState<Set<number>>(new Set());
+
+    /**
+     * Replie ou déplie la colonne d'un statut (masque/affiche sa zone de cartes).
+     * Le compteur de l'en-tête conserve toujours le total des cartes
+     * (voir countColumnNodes).
+     */
+    const toggleColumn = (statusId: number) => {
+        setCollapsedStatuses(prev => {
+            const next = new Set(prev);
+            if (next.has(statusId)) {
+                next.delete(statusId);
+            } else {
+                next.add(statusId);
+            }
+            return next;
+        });
+    };
 
     const commentTask = useMemo(
         () => commentTaskId !== null ? tasks.find(t => t.taskId === commentTaskId) ?? null : null,
@@ -158,12 +180,15 @@ export default function KanbanBoard({
     return (
         <div className="grid gap-5 md:grid-cols-3">
             {availableStatuses.map(status => {
-                // ✅ Correction : on utilise directement status.statusId
+                //  Correction : on utilise directement status.statusId
                 const id = status.statusId;
                 // Tâches de la colonne, triées par priorité puis ordre manuel
                 // (voir compareTasks) et groupées par parent TaskTreeItem.
                 const columnNodes = columnTrees.get(id) ?? [];
                 const style = getStatusStyle(status);
+                // Colonne repliée (zone de cartes masquée) : seul l'en-tête reste
+                // visible, le chevron permet de replier/déplier.
+                const isCollapsed = collapsedStatuses.has(id);
 
                 return (
                     <div
@@ -178,14 +203,36 @@ export default function KanbanBoard({
                             overColumn === id ? "ring-2 ring-blue-400" : ""
                         }`}
                     >
-                        {/* En-tête colonne */}
+                        {/* En-tête colonne : point, nom, compteur total, chevron de
+                            repli/dépli et bouton d'ajout. Le compteur est toujours
+                            le total (sous-tâches comprises), même colonne repliée.
+                            Un clic sur la zone du statut (point/nom/compteur)
+                            replie ou déplie aussi la colonne ; le clic sur le
+                            chevron ou le bouton '+' reste dédié à sa propre
+                            action. */}
                         <div className="mb-3 flex items-center justify-between px-1">
-                            <div className="flex items-center gap-2">
+                            <div
+                                className="flex cursor-pointer items-center gap-2"
+                                onClick={e => {
+                                    // Évite le double toggle quand le clic vient du
+                                    // bouton chevron (qui gère déjà sa propre action).
+                                    if ((e.target as HTMLElement).closest('button')) return;
+                                    toggleColumn(id);
+                                }}
+                            >
                                 <span className={`h-2.5 w-2.5 rounded-full ${style.dot}`} />
                                 <h3 className="text-sm font-bold uppercase tracking-wide text-gray-700">{status.name}</h3>
                                 <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold text-gray-600 shadow-sm">
                                     {countColumnNodes(columnNodes)}
                                 </span>
+                                <button
+                                    onClick={() => toggleColumn(id)}
+                                    title={isCollapsed ? `Déplier ${status.name}` : `Replier ${status.name}`}
+                                    aria-expanded={!isCollapsed}
+                                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white transition hover:opacity-80"
+                                >
+                                    {isCollapsed ? <ChevronRight size={17} /> : <ChevronDown size={17} />}
+                                </button>
                             </div>
                             <button
                                 onClick={() => onCreateTask(id)}
@@ -196,15 +243,24 @@ export default function KanbanBoard({
                             </button>
                         </div>
 
-                        {/* Cartes tâches (sous-tâches imbriquées sous leur parent) */}
-                        <div className="flex flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar p-1">
+                        {/* Zone des cartes : masquée quand la colonne est repliée (isCollapsed).
+                            Le drop sur la colonne vide reste géré par la colonne
+                            elle-même (handleDrop), même repliée.
+                            Chaque racine reçoit un numéro 1..N (ordre d'affichage)
+                            ; les sous-tâches en dérivent un relatif ("1.1", "1.2")
+                            dans TaskTreeItem. */}
+                        <div
+                            className={`flex flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar p-1 ${
+                                isCollapsed ? "hidden" : ""
+                            }`}
+                        >
                             {columnNodes.length === 0 && (
                                 <div className="rounded-xl border-2 border-dashed border-white/70 px-4 py-6 text-center text-xs text-gray-400">
                                     Glissez une tâche ici
                                 </div>
                             )}
 
-                            {columnNodes.map(node => {
+                            {columnNodes.map((node, index) => {
                                 const active = dropTarget?.key === node.task.taskId;
                                 return (
                                     <div
@@ -258,6 +314,7 @@ export default function KanbanBoard({
                                             setDraggedTask={setDraggedTask}
                                             setOverColumn={setOverColumn}
                                             showActions={true}
+                                            number={String(index + 1)}
                                         />
 
                                         {active && dropTarget?.anchor === "after" && (

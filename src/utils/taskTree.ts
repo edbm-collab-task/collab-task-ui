@@ -8,17 +8,15 @@ import type { TaskRes } from "@/types/task";
  *
  * Chaque tâche a son propre `statusId` (donc sa propre colonne kanban). Une
  * sous-tâche dont le parent est dans une AUTRE colonne ne peut pas être rendue
- * sous sa vraie carte : elle est placée à la racine de sa colonne avec un
- * `parentTitle`, rendu comme une "carte fantôme" au-dessus d'elle (TaskTreeItem).
+ * sous sa vraie carte : elle est promue à la racine de sa colonne (elle y est
+ * simplement signalée par le badge "Sous-tâche" de TaskCard).
  */
 
-/** Nœud d'une colonne : tâche + profondeur + éventuel parent fantôme + fils. */
+/** Nœud d'une colonne : tâche + profondeur + fils. */
 export interface ColumnTaskNode {
     task: TaskRes;
     /** 0 = en tête de colonne, 1 = sous-tâche, etc. */
     depth: number;
-    /** Titre du parent direct, quand celui-ci n'est pas rendu juste au-dessus. */
-    parentTitle: string | null;
     children: ColumnTaskNode[];
 }
 
@@ -133,8 +131,7 @@ const buildColumnTree = (
 
     const visit = (
         task: TaskRes,
-        depth: number,
-        parentTitle: string | null
+        depth: number
     ): ColumnTaskNode | null => {
         // Filet de sécurité : une tâche déjà rendue (cas d'un cycle de parenté
         // dont les deux membres sont promus racines) n'est pas dupliquée
@@ -143,10 +140,10 @@ const buildColumnTree = (
 
         const children = (index.childrenByParent.get(task.taskId) ?? [])
             .filter(child => child.statusId === statusId)
-            .map(child => visit(child, depth + 1, null))
+            .map(child => visit(child, depth + 1))
             .filter((node): node is ColumnTaskNode => node !== null);
 
-        return { task, depth, parentTitle, children };
+        return { task, depth, children };
     };
 
     // Racines de la colonne : tâches dont le parent n'est pas rendu au-dessus
@@ -165,15 +162,7 @@ const buildColumnTree = (
         .sort(compareTasks);
 
     return roots
-        .map(task => {
-            // Parent direct non rendu au-dessus : la carte fantôme prend le relais
-            const parent =
-                task.parentTaskId !== null
-                    ? index.byId.get(task.parentTaskId)
-                    : undefined;
-
-            return visit(task, 0, parent ? parent.title : null);
-        })
+        .map(task => visit(task, 0))
         .filter((node): node is ColumnTaskNode => node !== null);
 };
 
