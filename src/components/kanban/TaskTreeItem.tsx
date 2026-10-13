@@ -15,6 +15,8 @@ interface TaskTreeItemProps {
     setDraggedTask?: (task: any) => void;
     setOverColumn?: (column: any) => void;
     showActions?: boolean;
+    /** Numéro hiérarchique dans la colonne : racine "1", enfants "1.1", etc. */
+    number: string;
 }
 
 /** Décalage (~12px) + filet vertical appliqués à chaque niveau de sous-tâche. */
@@ -30,6 +32,10 @@ const NESTED_WRAPPER = 'ml-3 border-l-2 border-primary pl-3 max-md:ml-2 max-md:p
  * (voir TaskCard onClick/onToggle) les déplie ou les replie. Chaque nœud gère
  * son propre état d'expansion, donc un parent déplié laisse ses enfants
  * eux-mêmes repliés tant qu'ils ne sont pas cliqués.
+ *
+ * Chaque tâche porte un numéro hiérarchique (`number`) défini par KanbanBoard
+ * pour les racines ("1", "2", ...) et hérité ici pour les sous-tâches
+ * (ex. "1.1", "1.2"), même repliées.
  */
 export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
     node,
@@ -43,6 +49,7 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
     setDraggedTask,
     setOverColumn,
     showActions = true,
+    number,
 }) => {
     const { task, depth, children } = node;
     const isNested = depth > 0;
@@ -69,12 +76,13 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
             hasChildren={hasChildren}
             expanded={expanded}
             onToggle={() => setExpanded(prev => !prev)}
+            number={number}
         />
     );
 
     const subtree = expanded && hasChildren && (
         <div className={`mt-2 space-y-2 ${NESTED_WRAPPER}`}>
-            {children.map(child => (
+            {children.map((child, childIndex) => (
                 <TaskTreeItem
                     key={`${child.task.taskId}-${child.depth}`}
                     node={child}
@@ -88,6 +96,7 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
                     setDraggedTask={setDraggedTask}
                     setOverColumn={setOverColumn}
                     showActions={showActions}
+                    number={`${number}.${childIndex + 1}`}
                 />
             ))}
         </div>

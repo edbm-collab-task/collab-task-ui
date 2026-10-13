@@ -245,7 +245,10 @@ export default function KanbanBoard({
 
                         {/* Zone des cartes : masquée quand la colonne est repliée (isCollapsed).
                             Le drop sur la colonne vide reste géré par la colonne
-                            elle-même (handleDrop), même repliée. */}
+                            elle-même (handleDrop), même repliée.
+                            Chaque racine reçoit un numéro 1..N (ordre d'affichage)
+                            ; les sous-tâches en dérivent un relatif ("1.1", "1.2")
+                            dans TaskTreeItem. */}
                         <div
                             className={`flex flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar p-1 ${
                                 isCollapsed ? "hidden" : ""
@@ -257,7 +260,7 @@ export default function KanbanBoard({
                                 </div>
                             )}
 
-                            {columnNodes.map(node => {
+                            {columnNodes.map((node, index) => {
                                 const active = dropTarget?.key === node.task.taskId;
                                 return (
                                     <div
@@ -311,6 +314,7 @@ export default function KanbanBoard({
                                             setDraggedTask={setDraggedTask}
                                             setOverColumn={setOverColumn}
                                             showActions={true}
+                                            number={String(index + 1)}
                                         />
 
                                         {active && dropTarget?.anchor === "after" && (

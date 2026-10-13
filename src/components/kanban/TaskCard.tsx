@@ -30,6 +30,8 @@ interface TaskCardProps {
     expanded?: boolean;
     /** Bascule l'affichage des sous-tâches, appelée au clic sur la carte */
     onToggle?: () => void;
+    /** Numéro hiérarchique de la tâche dans sa colonne (ex. "1", "1.1") */
+    number?: string;
 }
 
 /**
@@ -43,6 +45,9 @@ interface TaskCardProps {
  * droite et un clic sur la carte bascule leur affichage via `onToggle`
  * (TaskTreeItem gère l'état replié/déplié). Un clic sur un bouton interne
  * (Modifier/Archiver/Commentaires) ne déclenche pas la bascule.
+ *
+ * Le numéro hiérarchique (`number`, ex. "1" ou "1.1") est affiché en badge
+ * bg-primary à côté du titre ; il est fourni par TaskTreeItem/KanbanBoard.
  */
 export const TaskCard: React.FC<TaskCardProps> = ({
     task,
@@ -61,6 +66,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     hasChildren = false,
     expanded = false,
     onToggle,
+    number,
 }) => {
     const priority = priorityBadge(task.priorityName);
     const commentCount = getCount(task.taskId);
@@ -98,7 +104,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             } ${isNested ? 'p-3 ring-violet-100' : 'p-4 ring-gray-100'}`}
         >
             <div className="flex items-start justify-between gap-2">
-                <p className={`font-semibold text-gray-800 ${isNested ? 'text-[13px]' : 'text-sm'}`}>{task.title}</p>
+                <div className="flex flex-wrap items-center gap-1.5">
+                    {number && (
+                        <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold leading-none text-bg">
+                            {number}
+                        </span>
+                    )}
+                    <p className={`font-semibold text-gray-800 ${isNested ? 'text-[13px]' : 'text-sm'}`}>{task.title}</p>
+                </div>
                 
                 {showActions && (
                     <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
@@ -198,7 +211,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         aria-expanded={expanded}
                         className="inline-flex items-center gap-1 rounded-full bg-accent px-1.5 py-0.5 text-bg transition hover:opacity-80"
                     >
-                        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                        {expanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                     </span>
                 )}
             </div>
