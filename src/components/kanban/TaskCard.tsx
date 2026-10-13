@@ -39,8 +39,8 @@ interface TaskCardProps {
  * sous-tâches restent fixes sous leur parent. Le glissement est délégué au
  * parent via `setDraggedTask`/`setOverColumn` (KanbanBoard).
  *
- * Si la carte a des sous-tâches (`hasChildren`), un chevron est affiché en bas
- * à gauche et un clic sur la carte bascule leur affichage via `onToggle`
+ * Si la carte a des sous-tâches (`hasChildren`), un chevron est affiché à
+ * droite et un clic sur la carte bascule leur affichage via `onToggle`
  * (TaskTreeItem gère l'état replié/déplié). Un clic sur un bouton interne
  * (Modifier/Archiver/Commentaires) ne déclenche pas la bascule.
  */
@@ -93,7 +93,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                           setOverColumn?.(null);
                       }
             }
-            className={`group rounded-xl ${isSubtask ? 'bg-secondary/40' : 'bg-white'} shadow-sm ring-1 transition hover:shadow-md hover:ring-primary ${
+            className={`group rounded-xl ${isSubtask ? 'bg-white/80' : 'bg-white'} shadow-sm ring-1 transition hover:shadow-md hover:ring-primary ${
                 isSubtask ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
             } ${isNested ? 'p-3 ring-violet-100' : 'p-4 ring-gray-100'}`}
         >
@@ -151,16 +151,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             )}
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
-                {hasChildren && (
-                    <span
-                        title={expanded ? "Masquer les sous-tâches" : "Afficher les sous-tâches"}
-                        aria-expanded={expanded}
-                        className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-gray-500 transition hover:bg-blue-50 hover:text-accent"
-                    >
-                        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                    </span>
-                )}
-
                 <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${priority.color}`}>
                     {priority.name}
                 </span>
@@ -180,7 +170,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 )}
 
                 {childrenCount > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-medium text-gray-600">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-medium text-bg">
                         <ListTree size={11} />
                         {childrenCount} sous-tâche{childrenCount > 1 ? "s" : ""}
                     </span>
@@ -198,6 +188,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         <MessageSquare size={11} />
                         {commentCount}
                     </button>
+                )}
+
+                {hasChildren && (
+                    <span
+                        title={expanded ? "Masquer les sous-tâches" : "Afficher les sous-tâches"}
+                        aria-expanded={expanded}
+                        className="inline-flex items-center gap-1 rounded-full bg-accent px-1.5 py-0.5 text-bg transition hover:opacity-80"
+                    >
+                        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    </span>
                 )}
             </div>
         </div>

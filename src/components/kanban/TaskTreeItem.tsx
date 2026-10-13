@@ -18,7 +18,7 @@ interface TaskTreeItemProps {
 }
 
 /** Décalage (~12px) + filet vertical appliqués à chaque niveau de sous-tâche. */
-const NESTED_WRAPPER = 'ml-3 border-l-2 border-gray-200 pl-3 max-md:ml-2 max-md:pl-2';
+const NESTED_WRAPPER = 'ml-3 border-l-2 border-primary pl-3 max-md:ml-2 max-md:pl-2';
 
 /**
  * Rendu récursif d'une tâche et de ses sous-tâches.
