@@ -158,7 +158,7 @@ export default function KanbanBoard({
     return (
         <div className="grid gap-5 md:grid-cols-3">
             {availableStatuses.map(status => {
-                // ✅ Correction : on utilise directement status.statusId
+                //  Correction : on utilise directement status.statusId
                 const id = status.statusId;
                 // Tâches de la colonne, triées par priorité puis ordre manuel
                 // (voir compareTasks) et groupées par parent TaskTreeItem.
