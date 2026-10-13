@@ -205,9 +205,21 @@ export default function KanbanBoard({
                     >
                         {/* En-tête colonne : point, nom, compteur total, chevron de
                             repli/dépli et bouton d'ajout. Le compteur est toujours
-                            le total (sous-tâches comprises), même colonne repliée. */}
+                            le total (sous-tâches comprises), même colonne repliée.
+                            Un clic sur la zone du statut (point/nom/compteur)
+                            replie ou déplie aussi la colonne ; le clic sur le
+                            chevron ou le bouton '+' reste dédié à sa propre
+                            action. */}
                         <div className="mb-3 flex items-center justify-between px-1">
-                            <div className="flex items-center gap-2">
+                            <div
+                                className="flex cursor-pointer items-center gap-2"
+                                onClick={e => {
+                                    // Évite le double toggle quand le clic vient du
+                                    // bouton chevron (qui gère déjà sa propre action).
+                                    if ((e.target as HTMLElement).closest('button')) return;
+                                    toggleColumn(id);
+                                }}
+                            >
                                 <span className={`h-2.5 w-2.5 rounded-full ${style.dot}`} />
                                 <h3 className="text-sm font-bold uppercase tracking-wide text-gray-700">{status.name}</h3>
                                 <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold text-gray-600 shadow-sm">
@@ -219,7 +231,7 @@ export default function KanbanBoard({
                                     aria-expanded={!isCollapsed}
                                     className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white transition hover:opacity-80"
                                 >
-                                    {isCollapsed ? <ChevronRight size={20} /> : <ChevronDown size={20} />}
+                                    {isCollapsed ? <ChevronRight size={17} /> : <ChevronDown size={17} />}
                                 </button>
                             </div>
                             <button
