@@ -23,10 +23,10 @@ export const getPermissionCategoryKey = (perm: Permission): PermissionCategory =
  * de repli « Autres » est reléguée en fin de liste pour ne pas parasiter
  * l'affichage des catégories métier.
  */
-export const groupPermissionsByCategory = (
-    allPermissions: Permission[]
-): [PermissionCategory, Permission[]][] => {
-    const groups = new Map<PermissionCategory, Permission[]>();
+export const groupPermissionsByCategory = <T extends Permission>(
+    allPermissions: T[]
+): [PermissionCategory, T[]][] => {
+    const groups = new Map<PermissionCategory, T[]>();
 
     for (const perm of allPermissions) {
         const key = getPermissionCategoryKey(perm);
