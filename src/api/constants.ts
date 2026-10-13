@@ -98,7 +98,7 @@ export const API_ENDPOINTS = {
         DELETE: "/roles",
         PERMISSIONS: "/roles/permissions",
         PERMISSIONS_ACTIONS: "/roles/permissions/actions",
-        ACTIONS: "/roles/actions",
+        ROLE_ACTIONS: (id: number) => `/roles/${id}/actions`,
     },
 
     ADMINS: {

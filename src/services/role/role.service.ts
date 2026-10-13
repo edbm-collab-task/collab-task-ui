@@ -43,7 +43,7 @@ export const roleService = {
      * Actions actuellement accordées à un rôle, regroupées par permission.
      */
     getActions: async (id: number): Promise<RoleActions> => {
-        return apiClient.get<RoleActions>(`${API_ENDPOINTS.ROLES.ACTIONS}/${id}`);
+        return apiClient.get<RoleActions>(API_ENDPOINTS.ROLES.ROLE_ACTIONS(id));
     },
 
     /**
@@ -55,7 +55,7 @@ export const roleService = {
         actions: Record<string, string[]>
     ): Promise<RoleActions> => {
         return apiClient.put<RoleActions, Record<string, string[]>>(
-            `${API_ENDPOINTS.ROLES.ACTIONS}/${id}`,
+            API_ENDPOINTS.ROLES.ROLE_ACTIONS(id),
             actions
         );
     },
