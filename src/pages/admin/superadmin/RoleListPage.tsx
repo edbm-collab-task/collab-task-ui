@@ -10,7 +10,7 @@ import RoleForm from "@/components/role/RoleForm";
 import { ROLE_FORM_LABELS } from "@/components/role/roleForm.constants";
 
 import type { TableAction, HeaderAction } from "@/types/table";
-import type { Role, RoleFormData } from "@/types/role";
+import type { Role, RoleFormData, PermissionWithActions } from "@/types/role";
 import { roleService } from "@/services/role/role.service";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
 import { normalizeRoleCode } from "@/utils/roleCode";
@@ -37,9 +37,10 @@ export default function RoleListPage() {
      */
     const [allRoleCodes, setAllRoleCodes] = useState<{ id: number; codeRole: string }[]>([]);
     /**
-     * Catalogue complet des permissions, transmis au formulaire de rôle.
+     * Catalogue complet des permissions (avec leurs actions), transmis au
+     * formulaire de rôle.
      */
-    const [allPermissions, setAllPermissions] = useState<Role["permissions"]>([]);
+    const [allPermissions, setAllPermissions] = useState<PermissionWithActions[]>([]);
     const pageSize = 5;
 
     const loadData = async () => {
@@ -47,7 +48,7 @@ export default function RoleListPage() {
             setLoading(true);
             const [rolesData, permsData] = await Promise.all([
                 roleService.getAll(),
-                roleService.getAllPermissions()
+                roleService.getPermissionsWithActions()
             ]);
 
             const filtered = rolesData.filter(r => r.name !== "SUPER_ADMIN");
@@ -91,16 +92,22 @@ export default function RoleListPage() {
     }, [allRoleCodes, editingRole]);
 
     /**
-     * Soumission du formulaire : création ou mise à jour selon `editingRole`,
-     * puis fermeture et rechargement de la liste.
+     * Soumission du formulaire : création ou mise à jour du rôle, puis
+     * enregistrement de ses actions (endpoint dédié). Les actions sont
+     * retirées du corps envoyé à `create`/`update`, qui ne les accepte pas.
      */
     const handleSave = async (data: RoleFormData) => {
         try {
+            const { actions, ...rolePayload } = data;
+            const saved = editingRole
+                ? await roleService.update(editingRole.id, rolePayload)
+                : await roleService.create(rolePayload);
+
+            await roleService.setActions(saved.id, actions);
+
             if (editingRole) {
-                await roleService.update(editingRole.id, data);
                 toast.success("Rôle mis à jour avec succès");
             } else {
-                await roleService.create(data);
                 toast.success("Rôle créé avec succès");
             }
             setShowForm(false);
