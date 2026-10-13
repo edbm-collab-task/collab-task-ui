@@ -18,8 +18,6 @@ interface TaskCardProps {
     depth?: number;
     /** Nombre de sous-tâches rendues directement en dessous de la carte */
     childrenCount?: number;
-    /** Titre du parent direct quand il est rendu en carte fantôme au-dessus */
-    parentTitle?: string | null;
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -36,14 +34,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     showActions = true,
     depth = 0,
     childrenCount = 0,
-    parentTitle = null,
 }) => {
     const priority = priorityBadge(task.priorityName);
     const commentCount = getCount(task.taskId);
     const isNested = depth > 0;
-    // Le parent est soit juste au-dessus (imbriqué), soit rendu en carte fantôme :
-    // dans les deux cas le badge "Sous-tâche" est inutile.
-    const showSubtaskBadge = Boolean(task.parentTaskId) && !isNested && !parentTitle;
+    // Le badge "Sous-tâche" n'est utile que pour une sous-tâche rendue en tête
+    // de colonne (parent dans une autre colonne), pas pour une carte imbriquée.
+    const showSubtaskBadge = Boolean(task.parentTaskId) && !isNested;
 
     return (
         <div

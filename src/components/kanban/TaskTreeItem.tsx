@@ -1,5 +1,4 @@
 import React from 'react';
-import { GitBranch } from 'lucide-react';
 
 import { TaskCard } from './TaskCard';
 import type { ColumnTaskNode } from '@/utils/taskTree';
@@ -24,11 +23,8 @@ const NESTED_WRAPPER = 'ml-3 border-l-2 border-gray-200 pl-3 max-md:ml-2 max-md:
 /**
  * Rendu récursif d'une tâche et de ses sous-tâches.
  *
- * - La carte du parent est suivie de ses enfants, chacun décalé et relié par un
- *   filet vertical (comme l'arbre de commentaires, CommentItem.tsx:357).
- * - Si le parent direct n'est pas dans la colonne (statut différent), il est
- *   représenté par une "carte fantôme" au-dessus, reliée à la sous-tâche par le
- *   même filet.
+ * La carte du parent est suivie de ses enfants, chacun décalé et relié par un
+ * filet vertical (comme l'arbre de commentaires, CommentItem.tsx:357).
  */
 export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
     node,
@@ -43,12 +39,8 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
     setOverColumn,
     showActions = true,
 }) => {
-    const { task, depth, parentTitle, children } = node;
-    const hasGhostParent = parentTitle !== null;
-
-    // Le groupe fantôme (parent dans une autre colonne) est en tête de colonne
-    // mais s'affiche visuellement comme une sous-tâche
-    const isNested = depth > 0 || hasGhostParent;
+    const { task, depth, children } = node;
+    const isNested = depth > 0;
 
     const card = (
         <TaskCard
@@ -66,7 +58,6 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
             showActions={showActions}
             depth={isNested ? Math.max(depth, 1) : 0}
             childrenCount={children.length}
-            parentTitle={parentTitle}
         />
     );
 
@@ -91,31 +82,10 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
         </div>
     );
 
-    if (!hasGhostParent) {
-        return (
-            <div>
-                {card}
-                {subtree}
-            </div>
-        );
-    }
-
     return (
         <div>
-            {/* Carte fantôme du parent, absente de cette colonne */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 bg-white/60 px-2.5 py-1.5">
-                <GitBranch size={12} className="shrink-0 text-gray-400" />
-
-                <span className="truncate text-[11px] font-medium text-gray-500">
-                    {parentTitle}
-                </span>
-            </div>
-
-            {/* Filet reliant la carte fantôme à la sous-tâche */}
-            <div className="mt-2 ml-2 space-y-2 border-l-2 border-gray-200 pl-2.5">
-                {card}
-                {subtree}
-            </div>
+            {card}
+            {subtree}
         </div>
     );
 };
