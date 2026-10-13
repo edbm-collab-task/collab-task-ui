@@ -1,6 +1,12 @@
 import React from 'react';
 import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree } from 'lucide-react';
 
+/**
+ * Propriétés de la carte de tâche.
+ *
+ * Une carte est soit une tâche racine (déplaçable), soit une sous-tâche
+ * (`task.parentTaskId != null`) : les sous-tâches ne sont jamais déplaçables.
+ */
 interface TaskCardProps {
     task: any;
     projectId: string | number;
@@ -20,6 +26,13 @@ interface TaskCardProps {
     childrenCount?: number;
 }
 
+/**
+ * Carte représentant une tâche ou une sous-tâche dans une colonne du kanban.
+ *
+ * Seules les tâches racines (sans `parentTaskId`) sont `draggable` : les
+ * sous-tâches restent fixes sous leur parent. Le glissement est délégué au
+ * parent via `setDraggedTask`/`setOverColumn` (KanbanBoard).
+ */
 export const TaskCard: React.FC<TaskCardProps> = ({
     task,
     projectId,
@@ -38,22 +51,28 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     const priority = priorityBadge(task.priorityName);
     const commentCount = getCount(task.taskId);
     const isNested = depth > 0;
+    // Une sous-tâche (parentTaskId renseigné) n'est pas déplaçable.
+    const isSubtask = Boolean(task.parentTaskId);
     // Le badge "Sous-tâche" n'est utile que pour une sous-tâche rendue en tête
     // de colonne (parent dans une autre colonne), pas pour une carte imbriquée.
-    const showSubtaskBadge = Boolean(task.parentTaskId) && !isNested;
+    const showSubtaskBadge = isSubtask && !isNested;
 
     return (
         <div
             key={`${projectId}-${task.taskId}`}
-            draggable
-            onDragStart={() => setDraggedTask?.(task)}
-            onDragEnd={() => {
-                setDraggedTask?.(null);
-                setOverColumn?.(null);
-            }}
-            className={`group cursor-grab rounded-xl bg-white shadow-sm ring-1 transition hover:shadow-md hover:ring-primary active:cursor-grabbing ${
-                isNested ? 'p-3 ring-violet-100' : 'p-4 ring-gray-100'
-            }`}
+            draggable={!isSubtask}
+            onDragStart={isSubtask ? undefined : () => setDraggedTask?.(task)}
+            onDragEnd={
+                isSubtask
+                    ? undefined
+                    : () => {
+                          setDraggedTask?.(null);
+                          setOverColumn?.(null);
+                      }
+            }
+            className={`group rounded-xl bg-white shadow-sm ring-1 transition hover:shadow-md hover:ring-primary ${
+                isSubtask ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
+            } ${isNested ? 'p-3 ring-violet-100' : 'p-4 ring-gray-100'}`}
         >
             <div className="flex items-start justify-between gap-2">
                 <p className={`font-semibold text-gray-800 ${isNested ? 'text-[13px]' : 'text-sm'}`}>{task.title}</p>
