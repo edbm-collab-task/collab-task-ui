@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import RoleTemplateSelect from "@/components/role/RoleTemplateSelect";
 import { ROLE_CODE_MESSAGES } from "@/components/role/roleForm.constants";
 import {
-    getCategoriesWithSelection,
+    getDefaultOpenCategories,
     groupPermissionsByCategory
 } from "@/components/role/rolePermissions";
 import type { RoleFormProps } from "@/components/role/roleForm.types";
@@ -81,25 +81,14 @@ export default function RoleForm({
     );
 
     /**
-     * Catégories contenant au moins une permission cochée, à déplier
-     * automatiquement pour ne pas masquer une permission déjà attribuée.
-     */
-    const categoriesWithSelection = useMemo(
-        () => getCategoriesWithSelection(permissionsByCategory, selectedPermissions),
-        [permissionsByCategory, selectedPermissions]
-    );
-
-    /**
-     * Déploiement initial des catégories : celles qui portent une sélection en
-     * édition/modèle, toutes en création vierge. Les dépendances sont
+     * Déploiement initial des catégories : celles qui portent une permission
+     * cochée, ou la première catégorie si aucune ne l'est. Les dépendances sont
      * volontairement omises : l'effet ne doit s'exécuter qu'au montage, pas à
      * chaque permission cochée/décochée (ce qui écraserait les replis manuels).
      */
     useEffect(() => {
         setOpenCategories(
-            isEditing
-                ? categoriesWithSelection
-                : permissionsByCategory.map(([category]) => category)
+            getDefaultOpenCategories(permissionsByCategory, selectedPermissions)
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -161,6 +150,7 @@ export default function RoleForm({
         if (id === null) {
             setSelectedPermissions([]);
             setSelectedActions({});
+            setOpenCategories(getDefaultOpenCategories(permissionsByCategory, []));
             return;
         }
 
@@ -168,13 +158,11 @@ export default function RoleForm({
             setLoadingTemplate(true);
             const template = await roleService.getById(id);
             const templateActions = await roleService.getActions(id);
-            setSelectedPermissions(template.permissions.map((p) => p.name));
+            const templatePermissionNames = template.permissions.map((p) => p.name);
+            setSelectedPermissions(templatePermissionNames);
             setSelectedActions(templateActions.permissions ?? {});
             setOpenCategories(
-                getCategoriesWithSelection(
-                    permissionsByCategory,
-                    template.permissions.map((p) => p.name)
-                )
+                getDefaultOpenCategories(permissionsByCategory, templatePermissionNames)
             );
         } catch (error) {
             console.error("Erreur lors du chargement du rôle modèle :", error);
@@ -184,34 +172,62 @@ export default function RoleForm({
         }
     };
 
-    const togglePermission = (permName: string) => {
+    /**
+     * Coche / décoche la permission parente.
+     *
+     * Le parent agit comme un « tout cocher / tout décocher » de ses propres
+     * actions : si toutes les actions de la permission sont déjà cochées, elles
+     * sont toutes retirées (ainsi que la permission) ; sinon elles sont toutes
+     * cochées (et la permission ajoutée). Portée limitée à cette permission.
+     */
+    const togglePermission = (perm: PermissionWithActions) => {
+        const actions = perm.actions ?? [];
+        const current = selectedActions[perm.name] ?? [];
+        const allChecked =
+            actions.length > 0 && actions.every((a) => current.includes(a));
+
+        if (allChecked) {
+            setSelectedActions((prev) => {
+                const rest = { ...prev };
+                delete rest[perm.name];
+                return rest;
+            });
+            setSelectedPermissions((prev) => prev.filter((p) => p !== perm.name));
+            return;
+        }
+
+        setSelectedActions((prev) => ({ ...prev, [perm.name]: [...actions] }));
         setSelectedPermissions((prev) =>
-            prev.includes(permName)
-                ? prev.filter((p) => p !== permName)
-                : [...prev, permName]
+            prev.includes(perm.name) ? prev : [...prev, perm.name]
         );
     };
 
     /**
      * Coche / décoche une action pour une permission donnée.
      *
-     * La permission est retirée de la map dès qu'elle ne porte plus aucune
-     * action, pour ne jamais transmettre d'entrée vide à `setActions`.
+     * La permission et ses actions restent synchronisées : cocher une action
+     * ajoute la permission, décocher la dernière action la retire. La permission
+     * est retirée de la map dès qu'elle ne porte plus aucune action, pour ne
+     * jamais transmettre d'entrée vide à `setActions`.
      */
-    const toggleAction = (permName: string, action: string) => {
-        setSelectedActions((prev) => {
-            const current = prev[permName] ?? [];
-            const next = current.includes(action)
-                ? current.filter((a) => a !== action)
-                : [...current, action];
+    const toggleAction = (perm: PermissionWithActions, action: string) => {
+        const current = selectedActions[perm.name] ?? [];
+        const next = current.includes(action)
+            ? current.filter((a) => a !== action)
+            : [...current, action];
 
+        setSelectedActions((prev) => {
             if (next.length === 0) {
                 const rest = { ...prev };
-                delete rest[permName];
+                delete rest[perm.name];
                 return rest;
             }
+            return { ...prev, [perm.name]: next };
+        });
 
-            return { ...prev, [permName]: next };
+        setSelectedPermissions((prev) => {
+            if (next.length === 0) return prev.filter((p) => p !== perm.name);
+            return prev.includes(perm.name) ? prev : [...prev, perm.name];
         });
     };
 
@@ -412,7 +428,7 @@ export default function RoleForm({
                                                     <input
                                                         type="checkbox"
                                                         checked={isChecked}
-                                                        onChange={() => togglePermission(perm.name)}
+                                                        onChange={() => togglePermission(perm)}
                                                         className="hidden"
                                                     />
                                                     <div
@@ -446,7 +462,7 @@ export default function RoleForm({
                                                                 <input
                                                                     type="checkbox"
                                                                     checked={isActionChecked}
-                                                                    onChange={() => toggleAction(perm.name, action)}
+                                                                    onChange={() => toggleAction(perm, action)}
                                                                     className="hidden"
                                                                 />
                                                                 <span

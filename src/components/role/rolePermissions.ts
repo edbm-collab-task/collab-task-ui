@@ -61,3 +61,20 @@ export const getCategoriesWithSelection = (
             perms.some(perm => selectedPermissions.includes(perm.name))
         )
         .map(([category]) => category);
+
+/**
+ * Catégories à déplier par défaut : celles qui portent au moins une permission
+ * cochée. Si aucune ne l'est, seule la première catégorie est dépliée.
+ *
+ * Sert à l'état initial (montage, choix d'un modèle) : l'utilisateur reste
+ * ensuite libre de replier/déplier manuellement.
+ */
+export const getDefaultOpenCategories = (
+    groups: [PermissionCategory, Permission[]][],
+    selectedPermissions: string[]
+): PermissionCategory[] => {
+    const withSelection = getCategoriesWithSelection(groups, selectedPermissions);
+    if (withSelection.length > 0) return withSelection;
+
+    return groups.length > 0 ? [groups[0][0]] : [];
+};
