@@ -150,45 +150,47 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 </div>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${priority.color}`}>
-                    {priority.name}
-                </span>
-
-                {task.dueDate && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">
-                        <CalendarDays size={11} />
-                        {formatDate(task.dueDate)}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${priority.color}`}>
+                        {priority.name}
                     </span>
-                )}
 
-                {showSubtaskBadge && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700">
-                        <GitBranch size={11} />
-                        Sous-tâche
-                    </span>
-                )}
+                    {task.dueDate && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">
+                            <CalendarDays size={11} />
+                            {formatDate(task.dueDate)}
+                        </span>
+                    )}
 
-                {childrenCount > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-medium text-bg">
-                        <ListTree size={11} />
-                        {childrenCount} sous-tâche{childrenCount > 1 ? "s" : ""}
-                    </span>
-                )}
+                    {showSubtaskBadge && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+                            <GitBranch size={11} />
+                            Sous-tâche
+                        </span>
+                    )}
 
-                {showActions && setCommentTaskId && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setCommentTaskId(task.taskId);
-                        }}
-                        className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
-                        title="Commentaires"
-                    >
-                        <MessageSquare size={11} />
-                        {commentCount}
-                    </button>
-                )}
+                    {childrenCount > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-medium text-bg">
+                            <ListTree size={11} />
+                            {childrenCount} sous-tâche{childrenCount > 1 ? "s" : ""}
+                        </span>
+                    )}
+
+                    {showActions && setCommentTaskId && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setCommentTaskId(task.taskId);
+                            }}
+                            className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
+                            title="Commentaires"
+                        >
+                            <MessageSquare size={11} />
+                            {commentCount}
+                        </button>
+                    )}
+                </div>
 
                 {hasChildren && (
                     <span
