@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 
 import { TaskCard } from './TaskCard';
 import type { ColumnTaskNode } from '@/utils/taskTree';
@@ -25,6 +25,11 @@ const NESTED_WRAPPER = 'ml-3 border-l-2 border-gray-200 pl-3 max-md:ml-2 max-md:
  *
  * La carte du parent est suivie de ses enfants, chacun décalé et relié par un
  * filet vertical (comme l'arbre de commentaires, CommentItem.tsx:357).
+ *
+ * Les sous-tâches sont repliées par défaut : un clic sur la carte du parent
+ * (voir TaskCard onClick/onToggle) les déplie ou les replie. Chaque nœud gère
+ * son propre état d'expansion, donc un parent déplié laisse ses enfants
+ * eux-mêmes repliés tant qu'ils ne sont pas cliqués.
  */
 export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
     node,
@@ -41,6 +46,9 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
 }) => {
     const { task, depth, children } = node;
     const isNested = depth > 0;
+    // Sous-tâches masquées par défaut ; la carte parent bascule via onToggle.
+    const [expanded, setExpanded] = useState(false);
+    const hasChildren = children.length > 0;
 
     const card = (
         <TaskCard
@@ -58,10 +66,13 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
             showActions={showActions}
             depth={isNested ? Math.max(depth, 1) : 0}
             childrenCount={children.length}
+            hasChildren={hasChildren}
+            expanded={expanded}
+            onToggle={() => setExpanded(prev => !prev)}
         />
     );
 
-    const subtree = children.length > 0 && (
+    const subtree = expanded && hasChildren && (
         <div className={`mt-2 space-y-2 ${NESTED_WRAPPER}`}>
             {children.map(child => (
                 <TaskTreeItem

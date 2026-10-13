@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree } from 'lucide-react';
+import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree, ChevronDown, ChevronRight } from 'lucide-react';
 
 /**
  * Propriétés de la carte de tâche.
@@ -24,6 +24,12 @@ interface TaskCardProps {
     depth?: number;
     /** Nombre de sous-tâches rendues directement en dessous de la carte */
     childrenCount?: number;
+    /** La carte possède des sous-tâches (bouton déplier/replier visible) */
+    hasChildren?: boolean;
+    /** Sous-tâches actuellement dépliées (état contrôlé par TaskTreeItem) */
+    expanded?: boolean;
+    /** Bascule l'affichage des sous-tâches, appelée au clic sur la carte */
+    onToggle?: () => void;
 }
 
 /**
@@ -32,6 +38,11 @@ interface TaskCardProps {
  * Seules les tâches racines (sans `parentTaskId`) sont `draggable` : les
  * sous-tâches restent fixes sous leur parent. Le glissement est délégué au
  * parent via `setDraggedTask`/`setOverColumn` (KanbanBoard).
+ *
+ * Si la carte a des sous-tâches (`hasChildren`), un chevron est affiché en bas
+ * à gauche et un clic sur la carte bascule leur affichage via `onToggle`
+ * (TaskTreeItem gère l'état replié/déplié). Un clic sur un bouton interne
+ * (Modifier/Archiver/Commentaires) ne déclenche pas la bascule.
  */
 export const TaskCard: React.FC<TaskCardProps> = ({
     task,
@@ -47,6 +58,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     showActions = true,
     depth = 0,
     childrenCount = 0,
+    hasChildren = false,
+    expanded = false,
+    onToggle,
 }) => {
     const priority = priorityBadge(task.priorityName);
     const commentCount = getCount(task.taskId);
@@ -57,10 +71,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     // de colonne (parent dans une autre colonne), pas pour une carte imbriquée.
     const showSubtaskBadge = isSubtask && !isNested;
 
+    // Clic sur la carte = déplier/replier les sous-tâches, sauf si le clic
+    // provient d'un bouton interne (Modifier/Archiver/Commentaires).
+    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!hasChildren || !onToggle) return;
+        if ((e.target as HTMLElement).closest('button')) return;
+        onToggle();
+    };
+
     return (
         <div
             key={`${projectId}-${task.taskId}`}
             draggable={!isSubtask}
+            onClick={handleClick}
             onDragStart={isSubtask ? undefined : () => setDraggedTask?.(task)}
             onDragEnd={
                 isSubtask
@@ -128,6 +151,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             )}
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
+                {hasChildren && (
+                    <span
+                        title={expanded ? "Masquer les sous-tâches" : "Afficher les sous-tâches"}
+                        aria-expanded={expanded}
+                        className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-1.5 py-0.5 text-gray-500 transition hover:bg-blue-50 hover:text-accent"
+                    >
+                        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    </span>
+                )}
+
                 <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${priority.color}`}>
                     {priority.name}
                 </span>
