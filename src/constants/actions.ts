@@ -40,6 +40,24 @@ export const ALL_ACTIONS: number = Object.values(ACT).reduce(
     0
 );
 
+/** Libellés lisibles des actions, alignés sur ceux renvoyés par l'API. */
+export const ACTION_LABELS: Record<ActionName, string> = {
+    INSERT: "Insérer",
+    SELECT: "Voir",
+    UPDATE: "Modifier",
+    DELETE: "Supprimer",
+    GENERATE_REPORT: "Générer un rapport",
+    EXPORT: "Exporter"
+};
+
+/**
+ * Noms des actions dans leur ordre d'affichage (ordre croissant des codes).
+ *
+ * Dérivé de {@link ACT} : l'ordre d'insertion de l'objet suit les codes, un
+ * ajout d'action se répercute donc sans intervention.
+ */
+export const ACTION_NAMES: ActionName[] = Object.keys(ACT) as ActionName[];
+
 /**
  * Vérifie qu'une action est incluse dans un masque de permissions.
  *
@@ -70,4 +88,18 @@ export function hasAction(
  */
 export function actionsToMask(actions: ActionName[]): number {
     return actions.reduce((mask, action) => mask | ACT[action], 0);
+}
+
+/**
+ * Décompose un masque binaire en la liste des actions qu'il contient.
+ *
+ * Inverse de {@link actionsToMask} : sert à reconstruire les cases à cocher
+ * d'une permission à partir de `totalActions` (actions possibles) ou de
+ * `totalActionsAccordees` (actions accordées) renvoyés par l'API.
+ *
+ * @param mask Masque binaire, ou `undefined` (donnée non fournie).
+ * @returns Les noms des actions présentes, dans l'ordre de {@link ACTION_NAMES}.
+ */
+export function maskToActions(mask: number | undefined): ActionName[] {
+    return ACTION_NAMES.filter((name) => hasAction(mask, ACT[name]));
 }
