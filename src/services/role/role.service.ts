@@ -4,7 +4,9 @@ import type {
     Role,
     RoleBody,
     RoleActions,
-    PermissionWithActions
+    RoleActionsMap,
+    PermissionWithActions,
+    PermissionWithActionMask
 } from "@/types/role";
 
 export const roleService = {
@@ -37,6 +39,25 @@ export const roleService = {
         return apiClient.get<PermissionWithActions[]>(
             API_ENDPOINTS.ROLES.PERMISSIONS_ACTIONS
         );
+    },
+
+    /**
+     * Catalogue des permissions avec le masque de leurs actions possibles
+     * (`totalActions`). Remplace {@link getPermissionsWithActions} : l'API ne
+     * renvoie plus la liste `actions`, mais un masque binaire.
+     */
+    getPermissionsWithActionMasks: async (): Promise<PermissionWithActionMask[]> => {
+        return apiClient.get<PermissionWithActionMask[]>(
+            API_ENDPOINTS.ROLES.PERMISSIONS_ACTIONS
+        );
+    },
+
+    /**
+     * Actions de tous les rôles, regroupées par permission, en un seul appel.
+     * Chaque entrée porte `totalActions` et `totalActionsAccordees` (masques).
+     */
+    getActionsMap: async (): Promise<RoleActionsMap> => {
+        return apiClient.get<RoleActionsMap>(API_ENDPOINTS.ROLES.ACTIONS_MAP);
     },
 
     /**

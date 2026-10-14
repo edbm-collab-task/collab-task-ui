@@ -1,3 +1,4 @@
+import type { ActionName } from "@/constants/actions";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
 
 export interface AttacheRole {
@@ -96,3 +97,55 @@ export interface RoleFormData extends RoleBody {
      */
     actions: Record<string, string[]>;
 }
+
+/**
+ * Action du catalogue backend (`ActionResDto`, `GET /roles/actions`).
+ *
+ * Chaque action porte son code binaire (`codeAction`), son nom technique
+ * (`INSERT`, `SELECT`…) et un libellé lisible destiné à l'affichage.
+ */
+export interface Action {
+    codeAction: number;
+    name: ActionName;
+    label: string;
+}
+
+/**
+ * Permission enrichie du masque de ses actions possibles (`totalActions`).
+ *
+ * Renvoyée par `GET /roles/permissions/actions` (`PermissionActionsResDto`).
+ * Le masque remplace la liste `actions` historique : les actions possibles se
+ * déduisent via `maskToActions` (voir `@/constants/actions`).
+ */
+export interface PermissionWithActionMask extends Permission {
+    /** Masque binaire des actions possibles pour la permission (ex. `3`). */
+    totalActions: number;
+}
+
+/**
+ * Actions d'une permission pour un rôle (`RolePermissionActionsResDto`).
+ *
+ * `totalActions` désigne les actions possibles, `totalActionsAccordees` les
+ * actions effectivement accordées au rôle. Les deux sont des masques binaires.
+ */
+export interface RolePermissionActions {
+    totalActions: number;
+    totalActionsAccordees: number;
+}
+
+/**
+ * Actions d'un rôle, regroupées par nom de permission (`RoleActionsResDto`).
+ *
+ * Renvoyé par `GET /roles/{id}/actions` et, pour tous les rôles à la fois, par
+ * `GET /roles/actions-map`.
+ */
+export interface RoleActionsMapEntry {
+    label: string;
+    permissions: Record<string, RolePermissionActions>;
+}
+
+/**
+ * Réponse de `GET /roles/actions-map` : les actions de chaque rôle, indexées
+ * par identifiant de rôle.
+ */
+export type RoleActionsMap = Record<number, RoleActionsMapEntry>;
