@@ -185,7 +185,7 @@ Chaque permission porte des actions identifiées par un code binaire (`INSERT = 
 </Allow>
 ```
 
-> Le backend n'expose pas encore les masques d'actions (`{ correspondant, accorde }`) : `hasPermission` ne teste pour l'instant que la présence de la permission.
+> `/auth/me` renvoie encore `permissions: string[]` (sans masques d'actions) : `hasPermission` ne teste pour l'instant que la présence de la permission. Le formulaire de rôle, lui, s'appuie sur les masques `totalActions` / `totalActionsAccordees`.
 
 ## Tests
 

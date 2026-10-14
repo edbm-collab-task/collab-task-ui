@@ -32,8 +32,11 @@ Tester une action revient à vérifier que son bit est positionné : `(masque & 
 |---|---|
 | `ACT` | Table `nom → code` (`ACT.INSERT = 1`, `ACT.SELECT = 2`, …) |
 | `ALL_ACTIONS` | Masque de toutes les actions, **calculé** depuis `ACT` (`63`) — se met à jour automatiquement si la table change |
+| `ACTION_LABELS` | Libellés FR affichables (`ACT.INSERT → "Insérer"`), alignés sur `ActionResDto.label` |
+| `ACTION_NAMES` | Noms des actions dans l'ordre des codes (ordre d'affichage) |
 | `hasAction(mask, action)` | `true` si le bit de `action` est présent dans `mask` (`undefined` ⇒ `false`) |
 | `actionsToMask(actions)` | Reconstruit un masque depuis une liste de noms (cases à cocher → entier) |
+| `maskToActions(mask)` | Inverse : décompose un masque en noms d'actions (actions possibles/accordées → cases à cocher) |
 | `ActionName` / `ActionCode` | Types dérivés de `ACT` |
 
 ### `src/constants/permissions.ts`
@@ -65,36 +68,47 @@ Le composant s'appuie sur `usePermissions().hasPermission(perm, action)`.
 
 ## Forme des données reçues
 
-L'API renvoie, pour chaque permission, un objet `actions` sous forme de masques :
+### `GET /roles/actions`
+
+Catalogue des actions (`ActionResDto`) : `{ codeAction, name, label }`. Il double `ACT` / `ACTION_LABELS` côté front, la constante restant la source utilisée par l'UI.
+
+### `GET /roles/permissions/actions`
+
+Chaque permission (`PermissionActionsResDto`) porte le **masque** de ses actions possibles via `totalActions` :
 
 ```jsonc
-// GET /roles/permissions/actions  (sans contexte de rôle)
 { "id": 3, "name": "MANAGE_PROJECTS", "description": "…",
   "categoryPermission": "PROJETS",
-  "actions": { "correspondant": 3 } }
+  "totalActions": 15 }        // 1|2|4|8 = INSERT, SELECT, UPDATE, DELETE
+```
 
-// GET /roles/{id}/actions  (avec contexte de rôle)
-{ "id": 3, "name": "MANAGE_PROJECTS", "description": "…",
-  "categoryPermission": "PROJETS",
-  "actions": { "correspondant": 3, "accorde": 2 } }
+### `GET /roles/{id}/actions` et `GET /roles/actions-map`
+
+Actions d'un rôle (`RoleActionsResDto`), regroupées par nom de permission. `actions-map` renvoie le même objet pour **tous** les rôles, indexé par identifiant (`Record<roleId, RoleActionsResDto>`) :
+
+```jsonc
+// GET /roles/actions-map
+{ "1": { "label": "USER", "permissions": {
+    "MANAGE_PROJECTS": { "totalActions": 15, "totalActionsAccordees": 0 } } } }
 ```
 
 | Champ | Sens |
 |---|---|
-| `correspondant` | Masque des actions **possibles** pour la permission |
-| `accorde` | Masque des actions **accordées** à l'utilisateur/au rôle. **Absent** quand l'appel n'est pas contextualisé par un rôle |
+| `totalActions` | Masque des actions **possibles** pour la permission |
+| `totalActionsAccordees` | Masque des actions **accordées** au rôle |
 
-Types correspondants : `ActionGrants` et `PermissionActions` dans `src/types/role.ts`. La forme historique `PermissionWithActions` (`actions: string[]`) reste en place le temps de la migration.
+Les noms d'actions se déduisent de ces masques via `maskToActions`. Types correspondants : `Action`, `PermissionWithActionMask`, `RolePermissionActions`, `RoleActionsMapEntry`, `RoleActionsMap` dans `src/types/role.ts`.
 
 ## État actuel et migration
 
-- **Backend non migré** : `/roles/permissions/actions` renvoie encore `actions: string[]`, et `/auth/me` renvoie `permissions: string[]`.
-- En conséquence, `usePermissions().hasPermission(perm, action)` **ne contrôle pas encore le bit d'action** : la seule présence de la permission vaut accord. Le point d'extension est `getGrantedMask()` dans `src/hooks/usePermissions.ts` (TODO).
-- Le formulaire de rôle (`RoleForm`/`RoleListPage`) fonctionne toujours sur `actions: string[]` ; il sera rebranché sur les masques une fois le backend prêt.
-- Les guards (`PermissionRoute`, `SelfOrPermissionRoute`), le menu (`AdminNavigation.config.ts`, `AdminMenu`) et `Dashboard` utilisent encore des chaînes littérales ; leur migration vers `PERM` (et un typage `PermissionName`) reste à faire.
+- **Formulaire de rôle migré** : `RoleForm` affiche les actions cochables depuis `totalActions` (`maskToActions` + `ACTION_LABELS`) et pré-remplit permissions/actions depuis `/roles/actions-map` (`totalActionsAccordees`), en édition comme via le sélecteur de modèle.
+- **Écriture inchangée** : `PUT /roles/{id}/actions` attend toujours `Record<nomPermission, string[]>`. La sélection de l'UI (noms d'actions) y est transmise telle quelle.
+- **`/auth/me` renvoie `permissions: string[]`** : `usePermissions().hasPermission(perm, action)` **ne contrôle pas encore le bit d'action** — la seule présence de la permission vaut accord. Point d'extension : `getGrantedMask()` dans `src/hooks/usePermissions.ts` (TODO : lire `totalActionsAccordees`).
+- **À migrer** : les guards (`PermissionRoute`, `SelfOrPermissionRoute`), le menu (`AdminNavigation.config.ts`, `AdminMenu`) et `Dashboard` utilisent encore des chaînes littérales ; à basculer vers `PERM` (et un typage `PermissionName`).
 
 ## Points d'attention
 
 - **Ne pas utiliser de chaînes littérales** pour une permission : préférer `PERM.*`, sinon une faute de frappe passe inaperçue.
 - **`PERM` doit rester synchronisée** avec la table des permissions du backend.
-- **`correspondant` ≠ `accorde`** : ne jamais tester une action contre `correspondant` (actions possibles) au lieu de `accorde` (actions accordées).
+- **`totalActions` ≠ `totalActionsAccordees`** : ne jamais tester une action contre `totalActions` (actions possibles) au lieu de `totalActionsAccordees` (actions accordées).
+- **Ne pas se fier au champ `actions`** des réponses API : il sera retiré, seuls les masques `totalActions` / `totalActionsAccordees` sont pérennes.

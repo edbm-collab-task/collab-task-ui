@@ -9,7 +9,7 @@ Documentation d'ingénierie du frontend `collab-task-ui`. Elle est **extraite du
 | [getting-started.md](./getting-started.md) | Prérequis, installation, variables d'environnement, scripts npm, premiers pas et pièges de démarrage |
 | [architecture.md](./architecture.md) | Vue d'ensemble, couches et flux de données, rôle de chaque dossier, arborescence réelle, alias `@` |
 | [routing-et-permissions.md](./routing-et-permissions.md) | Table des routes, les 5 guards, layout et menu, modèle de permissions et de rôles |
-| [permissions-actions.md](./permissions-actions.md) | Modèle binaire des actions (codes `ACT`), constantes `PERM`, composant `<Allow>`, forme API `{ correspondant, accorde }` |
+| [permissions-actions.md](./permissions-actions.md) | Modèle binaire des actions (codes `ACT`), constantes `PERM`, composant `<Allow>`, masques API `totalActions` / `totalActionsAccordees` |
 | [authentification-et-session.md](./authentification-et-session.md) | Cycle de session, stockage des tokens, intercepteurs, providers, récupération de mot de passe |
 | [couche-api.md](./couche-api.md) | Instance axios, `apiClient`, refresh automatique, `API_ENDPOINTS`, conventions des 15 services, multipart |
 | [types-enums-donnees.md](./types-enums-donnees.md) | Types `*Req`/`*Res`, enums, libellés, duplications `constant`/`constants`, mappers |

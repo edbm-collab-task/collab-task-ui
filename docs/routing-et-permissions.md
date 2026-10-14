@@ -146,7 +146,8 @@ Seul `ROUTES.HOME` est utilisé (`NotFoundPage`). `USERS` pointe vers `/users` (
 
 - **Typage permissions** : les noms de permission sont passés en `string` (`"VIEW_USERS"`, `"MANAGE_USERS"`, etc.). Aucune union type stricte n'est utilisée — une faute de frappe redirige silencieusement vers `/admin`.
 - **Socle actions** : un modèle binaire d'actions (`ACT`, `PERM`, `<Allow>`) est en place (voir [permissions-actions.md](./permissions-actions.md)). Les guards, le menu et `Dashboard` utilisent encore des chaînes littérales : leur migration vers `PERM` / `PermissionName` reste à faire.
-- **Actions non contrôlées** : `usePermissions().hasPermission(perm, action)` ignore encore le bit d'action tant que le backend n'expose pas `{ correspondant, accorde }`.
+- **Actions non contrôlées** : `usePermissions().hasPermission(perm, action)` ignore encore le bit d'action tant que `/auth/me` n'expose pas les masques (`totalActionsAccordees`).
+- **Formulaire de rôle migré** : l'affichage et le pré-remplissage des permissions/actions s'appuient désormais sur les masques `totalActions` / `totalActionsAccordees` (`/roles/permissions/actions`, `/roles/actions-map`), plus sur la liste `actions` dépréciée.
 - **Recovery redirect** : `RecoveryProtectedRoute` redirige vers `/reccuperation-comptes` (correction apportée vs ancienne version pointant vers `/forgot-password`).
 - **SelfOrPermissionRoute** : se base sur `userId` numérique et `id` URL (converti via `Number(id)`). À vérifier si `id` peut ne pas être un nombre valide.
 - **SuperAdmin vs permissions** : `SuperAdminRoute` vérifie le rôle brut (`SUPER_ADMIN`), alors que `PermissionRoute` délègue à `usePermissions` qui inclut un bypass pour SUPER_ADMIN.
