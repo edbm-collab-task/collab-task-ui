@@ -9,11 +9,11 @@ import {
     groupPermissionsByCategory
 } from "@/components/role/rolePermissions";
 import type { RoleFormProps } from "@/components/role/roleForm.types";
+import { ACTION_LABELS, maskToActions } from "@/constants/actions";
 import { getPermissionCategoryLabel } from "@/constants/permissionCategoryLabels";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
-import type { PermissionWithActions } from "@/types/role";
-import { roleService } from "@/services/role/role.service";
+import type { PermissionWithActionMask, RoleActionsMapEntry } from "@/types/role";
 import {
     ROLE_CODE_PATTERN,
     generateRoleCode,
@@ -36,6 +36,7 @@ import {
 export default function RoleForm({
     editingRole,
     allPermissions,
+    actionsMap,
     sourceRoles,
     takenCodes,
     onSubmit,
@@ -61,7 +62,6 @@ export default function RoleForm({
     const [selectedActions, setSelectedActions] = useState<Record<string, string[]>>({});
     /** Identifiant du rôle modèle choisi, ou `null` pour une création vierge. */
     const [templateRoleId, setTemplateRoleId] = useState<number | null>(null);
-    const [loadingTemplate, setLoadingTemplate] = useState(false);
     const [saving, setSaving] = useState(false);
     /**
      * Catégories dépliées. Synchronisées à chaque montage plutôt que dérivées
@@ -81,6 +81,35 @@ export default function RoleForm({
     );
 
     /**
+     * Convertit les actions accordées d'un rôle (masques `totalActionsAccordees`)
+     * en la map `permission → actions` attendue par les cases à cocher. Les
+     * permissions sans action accordée sont omises, comme après une saisie.
+     */
+    const toSelectedActions = (
+        entry: RoleActionsMapEntry | undefined
+    ): Record<string, string[]> => {
+        const result: Record<string, string[]> = {};
+        if (!entry) return result;
+
+        for (const [name, grants] of Object.entries(entry.permissions)) {
+            const actions = maskToActions(grants.totalActionsAccordees);
+            if (actions.length > 0) result[name] = actions;
+        }
+        return result;
+    };
+
+    /**
+     * Applique les permissions et actions d'un rôle (masques) à l'état du
+     * formulaire. Utilisé au montage en édition et au choix d'un modèle.
+     * Sans entrée (rôle introuvable), l'état courant est conservé.
+     */
+    const applyRoleGrants = (entry: RoleActionsMapEntry | undefined) => {
+        if (!entry) return;
+        setSelectedPermissions(Object.keys(entry.permissions));
+        setSelectedActions(toSelectedActions(entry));
+    };
+
+    /**
      * Déploiement initial des catégories : celles qui portent une permission
      * cochée, ou la première catégorie si aucune ne l'est. Les dépendances sont
      * volontairement omises : l'effet ne doit s'exécuter qu'au montage, pas à
@@ -94,30 +123,13 @@ export default function RoleForm({
     }, []);
 
     /**
-     * En édition, charge les actions déjà accordées au rôle pour pré-remplir
-     * les cases à cocher. Les dépendances sont volontairement omises :
+     * En édition, pré-remplit les permissions et actions déjà accordées au rôle
+     * depuis `actionsMap` (masques). Les dépendances sont volontairement omises :
      * l'identifiant du rôle édité ne change pas pendant la vie du formulaire.
      */
     useEffect(() => {
         if (editingRole === null) return;
-
-        let cancelled = false;
-
-        roleService
-            .getActions(editingRole.id)
-            .then((roleActions) => {
-                if (!cancelled) {
-                    setSelectedActions(roleActions.permissions ?? {});
-                }
-            })
-            .catch((error) => {
-                console.error("Erreur lors du chargement des actions :", error);
-                toast.error("Erreur lors du chargement des actions");
-            });
-
-        return () => {
-            cancelled = true;
-        };
+        applyRoleGrants(actionsMap[editingRole.id]);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -141,10 +153,11 @@ export default function RoleForm({
     const codeError = validateCode();
 
     /**
-     * Sélection d'un rôle modèle : charge ses permissions et les coche.
-     * Le nom et le code ne sont jamais modifiés (voir {@link RoleTemplateSelect}).
+     * Sélection d'un rôle modèle : pré-remplit permissions et actions depuis
+     * `actionsMap` (masques). Le nom et le code restent à saisir (voir
+     * {@link RoleTemplateSelect}).
      */
-    const handleTemplateChange = async (id: number | null) => {
+    const handleTemplateChange = (id: number | null) => {
         setTemplateRoleId(id);
 
         if (id === null) {
@@ -154,22 +167,13 @@ export default function RoleForm({
             return;
         }
 
-        try {
-            setLoadingTemplate(true);
-            const template = await roleService.getById(id);
-            const templateActions = await roleService.getActions(id);
-            const templatePermissionNames = template.permissions.map((p) => p.name);
-            setSelectedPermissions(templatePermissionNames);
-            setSelectedActions(templateActions.permissions ?? {});
-            setOpenCategories(
-                getDefaultOpenCategories(permissionsByCategory, templatePermissionNames)
-            );
-        } catch (error) {
-            console.error("Erreur lors du chargement du rôle modèle :", error);
-            toast.error("Erreur lors du chargement du rôle modèle");
-        } finally {
-            setLoadingTemplate(false);
-        }
+        const entry = actionsMap[id];
+        const permissionNames = entry ? Object.keys(entry.permissions) : [];
+        setSelectedPermissions(permissionNames);
+        setSelectedActions(toSelectedActions(entry));
+        setOpenCategories(
+            getDefaultOpenCategories(permissionsByCategory, permissionNames)
+        );
     };
 
     /**
@@ -180,8 +184,8 @@ export default function RoleForm({
      * sont toutes retirées (ainsi que la permission) ; sinon elles sont toutes
      * cochées (et la permission ajoutée). Portée limitée à cette permission.
      */
-    const togglePermission = (perm: PermissionWithActions) => {
-        const actions = perm.actions ?? [];
+    const togglePermission = (perm: PermissionWithActionMask) => {
+        const actions = maskToActions(perm.totalActions);
         const current = selectedActions[perm.name] ?? [];
         const allChecked =
             actions.length > 0 && actions.every((a) => current.includes(a));
@@ -210,7 +214,7 @@ export default function RoleForm({
      * est retirée de la map dès qu'elle ne porte plus aucune action, pour ne
      * jamais transmettre d'entrée vide à `setActions`.
      */
-    const toggleAction = (perm: PermissionWithActions, action: string) => {
+    const toggleAction = (perm: PermissionWithActionMask, action: string) => {
         const current = selectedActions[perm.name] ?? [];
         const next = current.includes(action)
             ? current.filter((a) => a !== action)
@@ -357,7 +361,6 @@ export default function RoleForm({
                     roles={sourceRoles}
                     value={templateRoleId}
                     onChange={handleTemplateChange}
-                    disabled={loadingTemplate}
                 />
             )}
 
@@ -413,9 +416,10 @@ export default function RoleForm({
                                     aria-label={label}
                                     className="grid grid-cols-1 gap-2"
                                 >
-                                    {perms.map((perm: PermissionWithActions) => {
+                                    {perms.map((perm: PermissionWithActionMask) => {
                                         const isChecked = selectedPermissions.includes(perm.name);
                                         const selectedForPerm = selectedActions[perm.name] ?? [];
+                                        const availableActions = maskToActions(perm.totalActions);
 
                                         return (
                                             <div
@@ -451,7 +455,7 @@ export default function RoleForm({
                                                     2 colonnes et autant de lignes que nécessaire.
                                                 */}
                                                 <div className="mt-2 grid grid-flow-col grid-rows-3 gap-1.5 pl-8 max-sm:grid-flow-row max-sm:grid-rows-none max-sm:grid-cols-2">
-                                                    {(perm.actions ?? []).map((action) => {
+                                                    {availableActions.map((action) => {
                                                         const isActionChecked = selectedForPerm.includes(action);
 
                                                         return (
@@ -474,7 +478,7 @@ export default function RoleForm({
                                                                         <Check size={10} className="text-white" />
                                                                     )}
                                                                 </span>
-                                                                <span className="text-gray-600">{action}</span>
+                                                                <span className="text-gray-600">{ACTION_LABELS[action]}</span>
                                                             </label>
                                                         );
                                                     })}

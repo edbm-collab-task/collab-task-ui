@@ -3,9 +3,8 @@ import { API_ENDPOINTS } from "@/api/constants";
 import type {
     Role,
     RoleBody,
-    RoleActions,
     RoleActionsMap,
-    PermissionWithActions,
+    RoleActionsMapEntry,
     PermissionWithActionMask
 } from "@/types/role";
 
@@ -32,19 +31,9 @@ export const roleService = {
     },
 
     /**
-     * Catalogue des permissions avec, pour chacune, ses actions disponibles.
-     * Remplace {@link getAllPermissions} en apportant les actions.
-     */
-    getPermissionsWithActions: async (): Promise<PermissionWithActions[]> => {
-        return apiClient.get<PermissionWithActions[]>(
-            API_ENDPOINTS.ROLES.PERMISSIONS_ACTIONS
-        );
-    },
-
-    /**
      * Catalogue des permissions avec le masque de leurs actions possibles
-     * (`totalActions`). Remplace {@link getPermissionsWithActions} : l'API ne
-     * renvoie plus la liste `actions`, mais un masque binaire.
+     * (`totalActions`). L'API ne renvoie plus la liste `actions`, mais un
+     * masque binaire exploité via `maskToActions`.
      */
     getPermissionsWithActionMasks: async (): Promise<PermissionWithActionMask[]> => {
         return apiClient.get<PermissionWithActionMask[]>(
@@ -61,21 +50,14 @@ export const roleService = {
     },
 
     /**
-     * Actions actuellement accordées à un rôle, regroupées par permission.
-     */
-    getActions: async (id: number): Promise<RoleActions> => {
-        return apiClient.get<RoleActions>(API_ENDPOINTS.ROLES.ROLE_ACTIONS(id));
-    },
-
-    /**
      * Remplace les actions d'un rôle. Le corps attend une association
-     * `nom de permission → actions` (voir {@link RoleActions.permissions}).
+     * `nom de permission → actions` (voir {@link RoleActionsMapEntry.permissions}).
      */
     setActions: async (
         id: number,
         actions: Record<string, string[]>
-    ): Promise<RoleActions> => {
-        return apiClient.put<RoleActions, Record<string, string[]>>(
+    ): Promise<RoleActionsMapEntry> => {
+        return apiClient.put<RoleActionsMapEntry, Record<string, string[]>>(
             API_ENDPOINTS.ROLES.ROLE_ACTIONS(id),
             actions
         );

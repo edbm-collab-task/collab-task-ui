@@ -10,7 +10,7 @@ import RoleForm from "@/components/role/RoleForm";
 import { ROLE_FORM_LABELS } from "@/components/role/roleForm.constants";
 
 import type { TableAction, HeaderAction } from "@/types/table";
-import type { Role, RoleFormData, PermissionWithActions } from "@/types/role";
+import type { Role, RoleFormData, PermissionWithActionMask, RoleActionsMap } from "@/types/role";
 import { roleService } from "@/services/role/role.service";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
 import { normalizeRoleCode } from "@/utils/roleCode";
@@ -37,18 +37,24 @@ export default function RoleListPage() {
      */
     const [allRoleCodes, setAllRoleCodes] = useState<{ id: number; codeRole: string }[]>([]);
     /**
-     * Catalogue complet des permissions (avec leurs actions), transmis au
-     * formulaire de rôle.
+     * Catalogue complet des permissions (avec leurs actions possibles),
+     * transmis au formulaire de rôle.
      */
-    const [allPermissions, setAllPermissions] = useState<PermissionWithActions[]>([]);
+    const [allPermissions, setAllPermissions] = useState<PermissionWithActionMask[]>([]);
+    /**
+     * Actions accordées de chaque rôle (masques), pour pré-remplir le
+     * formulaire sans un appel par rôle.
+     */
+    const [actionsMap, setActionsMap] = useState<RoleActionsMap>({});
     const pageSize = 5;
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const [rolesData, permsData] = await Promise.all([
+            const [rolesData, permsData, actionsMapData] = await Promise.all([
                 roleService.getAll(),
-                roleService.getPermissionsWithActions()
+                roleService.getPermissionsWithActionMasks(),
+                roleService.getActionsMap()
             ]);
 
             const filtered = rolesData.filter(r => r.name !== "SUPER_ADMIN");
@@ -63,6 +69,7 @@ export default function RoleListPage() {
 
             setRoles(tableData);
             setAllPermissions(permsData);
+            setActionsMap(actionsMapData);
             setAllRoleCodes(
                 rolesData.map(r => ({ id: r.id, codeRole: r.codeRole ?? "" }))
             );
@@ -196,6 +203,7 @@ export default function RoleListPage() {
                     key={editingRole?.id ?? "create"}
                     editingRole={editingRole}
                     allPermissions={allPermissions}
+                    actionsMap={actionsMap}
                     sourceRoles={roles.map(r => ({ id: r.id, name: r.name }))}
                     takenCodes={takenCodes}
                     onSubmit={handleSave}
