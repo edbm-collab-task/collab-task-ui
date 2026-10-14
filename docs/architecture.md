@@ -79,7 +79,7 @@ Le reste de l'état vit dans les pages/composants (`useState` + `useEffect`), av
 | `src/types/` | 18 fichiers de contrats API, convention `*Req` (corps envoyé) / `*Res` (réponse reçue) + types UI (`table.ts`) |
 | `src/enum/` | Codes énumérés en objets `as const` (`role.enum.ts`, `gender.enum.ts`) — les `enum` TS sont interdits (voir contraintes plus bas) |
 | `src/mappers/` | Conversions DTO ↔ type UI, fonctions `toXxx` (`auth.mapper.ts`, `direction.mapper.ts`, `status.mapper.ts`) |
-| `src/constants/` | Libellés d'affichage (`roleLabels.ts`, `permissionCategoryLabels.ts`) |
+| `src/constants/` | Constantes partagées : libellés (`roleLabels.ts`, `permissionCategoryLabels.ts`) et permissions/actions (`actions.ts`, `permissions.ts`) |
 | `src/constant/` | **Homonyme singulier** : `routes.ts` uniquement, quasi inutilisé — vérifier l'orthographe avant d'importer |
 | `src/utils/` | Fonctions pures : `avatar`, `date`, `format`, `image`, `roleCode`, `sparkline`, `taskTree`, `time` |
 | `src/assets/` | Images importées en modules (`logo.png`, `hero.png`) |
@@ -119,7 +119,7 @@ src/
 │   ├── table/            # GlobalTable<T>, createColumns, Header/Filter/Pagination/Search/Actions
 │   ├── kanban/           # KanbanBoard, TaskCard, TaskModal, CommentPanel, Mention*, ReactionPicker…
 │   ├── message/          # ConversationSidebar, Message*, modales + message.socket.ts (STOMP)
-│   ├── common/           # BackButton, ConfirmPopup, EmptyState, ErrorBoundary, Spinner…
+│   ├── common/           # BackButton, ConfirmPopup, EmptyState, ErrorBoundary, Spinner, Allow…
 │   ├── details/          # globalDetail.tsx (DetailModal), userDetails.tsx
 │   ├── modal/            # confirmDelete.ts (SweetAlert2)
 │   ├── notification/     # NotificationBell.tsx
@@ -137,7 +137,7 @@ src/
 ├── types/                # 18 fichiers de contrats (*Req/*Res…)
 ├── enum/                 # role.enum.ts, gender.enum.ts (objets as const)
 ├── mappers/              # auth.mapper.ts, direction.mapper.ts, status.mapper.ts
-├── constants/            # roleLabels.ts, permissionCategoryLabels.ts
+├── constants/            # actions.ts, permissions.ts, roleLabels.ts, permissionCategoryLabels.ts
 ├── constant/             # routes.ts (singulier — homonyme déroutant)
 ├── utils/                # avatar, date, format, image, roleCode, sparkline, taskTree, time
 └── assets/               # logo.png, hero.png

@@ -71,7 +71,7 @@ src/
 ├── store/                # État global
 ├── types/                # Types et interfaces TypeScript
 ├── utils/                # Fonctions utilitaires
-├── constants/            # Constantes globales
+├── constants/            # Constantes globales (actions, permissions, libellés)
 ├── layouts/              # Layouts principaux
 ├── styles/               # Styles globaux
 ├── App.tsx
@@ -171,6 +171,21 @@ Les pages nécessitant une authentification sont encapsulées par le composant `
 | USER | Accès aux projets et tâches qui lui sont attribués |
 
 Les permissions sont vérifiées côté backend.
+
+### Permissions et actions (frontend)
+
+Chaque permission porte des actions identifiées par un code binaire (`INSERT = 1`, `SELECT = 2`, `UPDATE = 4`, …), combinées en un seul masque entier — sur le modèle des permissions Unix. Détails : [`docs/permissions-actions.md`](docs/permissions-actions.md).
+
+- Constantes : `src/constants/actions.ts` (`ACT`, `ALL_ACTIONS` calculé, helpers `hasAction`/`actionsToMask`) et `src/constants/permissions.ts` (`PERM`).
+- Composant `src/components/common/Allow.tsx` : masque son contenu si la permission (et, à terme, l'action) manque.
+
+```tsx
+<Allow perm={PERM.MANAGE_PROJECTS} action={ACT.INSERT}>
+    <AddButton />
+</Allow>
+```
+
+> Le backend n'expose pas encore les masques d'actions (`{ correspondant, accorde }`) : `hasPermission` ne teste pour l'instant que la présence de la permission.
 
 ## Tests
 
