@@ -176,7 +176,7 @@ Les permissions sont vérifiées côté backend.
 
 Chaque permission porte des actions identifiées par un code binaire (`INSERT = 1`, `SELECT = 2`, `UPDATE = 4`, …), combinées en un seul masque entier — sur le modèle des permissions Unix. Détails : [`docs/permissions-actions.md`](docs/permissions-actions.md).
 
-- Constantes : `src/constants/actions.ts` (`ACT`, `ALL_ACTIONS` calculé, helpers `hasAction`/`actionsToMask`) et `src/constants/permissions.ts` (`PERM`).
+- Constantes : `src/constants/actions.ts` (`ACT`, `ALL_ACTIONS` calculé, helpers `hasAction`/`actionsToMask`) et `src/constants/permissions.ts` (`PERM`, `PERMISSION_LABELS`, `getPermissionLabel`).
 - Composant `src/components/common/Allow.tsx` : masque son contenu si la permission (et, à terme, l'action) manque.
 
 ```tsx

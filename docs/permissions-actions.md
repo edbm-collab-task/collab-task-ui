@@ -45,8 +45,10 @@ Tester une action revient à vérifier que son bit est positionné : `(masque & 
 |---|---|
 | `PERM` | Les noms exacts des permissions renvoyées par l'API (`PERM.MANAGE_PROJECTS`, `PERM.VIEW_USERS`, …) |
 | `PermissionName` | Type dérivé de `PERM` |
+| `PERMISSION_LABELS` | Libellés FR affichables (`MANAGE_PROJECTS → "Gérer les projets"`), plus courts que les `description` de l'API |
+| `getPermissionLabel(name)` | Libellé d'une permission, ou nom technique en repli si inconnue |
 
-La liste de `PERM` est issue de `GET /roles/permissions/actions` (13 permissions). **Toute permission ajoutée côté backend doit y être reportée.**
+La liste de `PERM` est issue de `GET /roles/permissions/actions` (13 permissions). **Toute permission ajoutée côté backend doit y être reportée** (dans `PERM` et `PERMISSION_LABELS`).
 
 ## Composant `Allow`
 
@@ -101,7 +103,7 @@ Les noms d'actions se déduisent de ces masques via `maskToActions`. Types corre
 
 ## État actuel et migration
 
-- **Formulaire de rôle migré** : `RoleForm` affiche les actions cochables depuis `totalActions` (`maskToActions` + `ACTION_LABELS`) et pré-remplit permissions/actions depuis `/roles/actions-map` (`totalActionsAccordees`), en édition comme via le sélecteur de modèle.
+- **Formulaire de rôle migré** : `RoleForm` affiche les actions cochables depuis `totalActions` (`maskToActions` + `ACTION_LABELS`) et pré-remplit permissions/actions depuis `/roles/actions-map` (`totalActionsAccordees`), en édition comme via le sélecteur de modèle. Les permissions y sont titrées par `getPermissionLabel` (plus de nom technique).
 - **Écriture inchangée** : `PUT /roles/{id}/actions` attend toujours `Record<nomPermission, string[]>`. La sélection de l'UI (noms d'actions) y est transmise telle quelle.
 - **`/auth/me` renvoie `permissions: string[]`** : `usePermissions().hasPermission(perm, action)` **ne contrôle pas encore le bit d'action** — la seule présence de la permission vaut accord. Point d'extension : `getGrantedMask()` dans `src/hooks/usePermissions.ts` (TODO : lire `totalActionsAccordees`).
 - **À migrer** : les guards (`PermissionRoute`, `SelfOrPermissionRoute`), le menu (`AdminNavigation.config.ts`, `AdminMenu`) et `Dashboard` utilisent encore des chaînes littérales ; à basculer vers `PERM` (et un typage `PermissionName`).
