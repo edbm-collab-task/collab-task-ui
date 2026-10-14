@@ -12,6 +12,7 @@ import type { RoleFormProps } from "@/components/role/roleForm.types";
 import { ACTION_LABELS, maskToActions } from "@/constants/actions";
 import { getPermissionCategoryLabel } from "@/constants/permissionCategoryLabels";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
+import { getPermissionLabel } from "@/constants/permissions";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
 import type { PermissionWithActionMask, RoleActionsMapEntry } from "@/types/role";
 import {
@@ -443,7 +444,7 @@ export default function RoleForm({
                                                         {isChecked && <Check size={12} className="text-white" />}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-700">{perm.name}</p>
+                                                        <p className="text-sm font-medium text-gray-700">{getPermissionLabel(perm.name)}</p>
                                                         <p className="text-xs text-gray-500">{perm.description}</p>
                                                     </div>
                                                 </label>

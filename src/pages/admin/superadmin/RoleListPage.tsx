@@ -13,6 +13,7 @@ import type { TableAction, HeaderAction } from "@/types/table";
 import type { Role, RoleFormData, PermissionWithActionMask, RoleActionsMap } from "@/types/role";
 import { roleService } from "@/services/role/role.service";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
+import { getPermissionLabel } from "@/constants/permissions";
 import { normalizeRoleCode } from "@/utils/roleCode";
 
 interface RoleTable {
@@ -63,7 +64,7 @@ export default function RoleListPage() {
                 name: r.name,
                 codeRole: r.codeRole || "—",
                 permissions: r.permissions.length > 0
-                    ? r.permissions.map(p => p.name).join(", ")
+                    ? r.permissions.map(p => getPermissionLabel(p.name)).join(", ")
                     : "Aucune permission"
             }));
 
