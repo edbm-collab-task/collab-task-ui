@@ -52,7 +52,7 @@ La liste de `PERM` est issue de `GET /roles/permissions/actions` (13 permissions
 
 ## Composant `Allow`
 
-`src/components/common/Allow.tsx` masque son contenu si l'utilisateur n'a pas la permission (et, à terme, l'action) requise. Les enfants ne sont **pas montés** : leurs effets et requêtes ne sont donc pas déclenchés.
+`src/components/common/Allow.tsx` masque son contenu si l'utilisateur n'a pas la permission (et l'action) requise. Les enfants ne sont **pas montés** : leurs effets et requêtes ne sont donc pas déclenchés.
 
 ```tsx
 <Allow perm={PERM.MANAGE_PROJECTS} action={ACT.INSERT}>
@@ -66,7 +66,7 @@ La liste de `PERM` est issue de `GET /roles/permissions/actions` (13 permissions
 | `action` | Action exigée sur la permission (`ActionCode`), optionnelle |
 | `fallback` | Contenu de repli si la permission manque (rien par défaut) |
 
-Le composant s'appuie sur `usePermissions().hasPermission(perm, action)` : il ne monte son contenu que si la permission est présente et, lorsque `action` est fournie, le bit accordé correspondant (voir « Résolution côté client des masques accordés »).
+Le composant s'appuie sur `usePermissions().hasPermission(perm, action)` : il ne monte son contenu que si la permission est présente et, lorsque `action` est fournie, le bit accordé correspondant (voir « Masques d'actions portés par la session »).
 
 ## Forme des données reçues
 
@@ -105,20 +105,18 @@ Les noms d'actions se déduisent de ces masques via `maskToActions`. Types corre
 
 - **Formulaire de rôle migré** : `RoleForm` affiche les actions cochables depuis `totalActions` (`maskToActions` + `ACTION_LABELS`) et pré-remplit permissions/actions depuis `/roles/actions-map` (`totalActionsAccordees`), en édition comme via le sélecteur de modèle. Les permissions y sont titrées par `getPermissionLabel` (plus de nom technique).
 - **Écriture inchangée** : `PUT /roles/{id}/actions` attend toujours `Record<nomPermission, string[]>`. La sélection de l'UI (noms d'actions) y est transmise telle quelle.
-- **`/auth/me` ne renvoie pas les masques d'actions** (seulement `permissions: string[]`) : les masques accordés sont **reconstruits côté client** par `PermissionActionsProvider` (voir ci-dessous). `usePermissions().hasPermission(perm, action)` teste alors réellement le bit d'action.
+- **Masques portés par la session** : `/auth/me` (et `/auth/login`, `/auth/refresh`) renvoie `permissions: PermissionSummary[]` — `{ name, totalActions, totalActionsAccordees }`. `usePermissions().hasPermission(perm, action)` teste directement le bit `totalActionsAccordees`, sans appel `/roles/actions-map`.
 - **Guards/menu migrés** : `PermissionRoute`, `SelfOrPermissionRoute`, `AdminNavigation.config.ts` et `Dashboard` utilisent `PERM.*` avec un typage `PermissionName` (aucune chaîne littérales de permission ne subsiste dans `src/`).
 
-## Résolution côté client des masques accordés
+## Masques d'actions portés par la session
 
-Le backend n'expose les masques accordés que **par rôle** (`GET /roles/actions-map`), jamais par utilisateur. `PermissionActionsProvider` (`src/contexts/PermissionActionsProvider.tsx`, monté sous `AuthProvider`) reconstruit donc les masques de la session :
+`/auth/me` expose `permissions: PermissionSummary[]` (nom + `totalActions` + `totalActionsAccordees`). Les masques accordés de l'utilisateur sont donc disponibles **directement dans la session**, sans appel dédié :
 
-1. lit le rôle de l'utilisateur (`useAuth().user.role`) ;
-2. récupère une fois `GET /roles/actions-map` (le `label` d'une entrée correspond au **nom** du rôle, ex. `label: "ADMIN"` pour `user.role === "ADMIN"`) ;
-3. aplatit `totalActionsAccordees` par nom de permission dans `grantedMasks` (`{ MANAGE_PROJECTS: 15, … }`).
+1. `usePermissions` lit `user.permissions` et résout, pour une permission, son `totalActionsAccordees` (`getGrantedMask`) ;
+2. `hasPermission(perm)` vérifie la présence du nom ; `hasPermission(perm, action)` teste ensuite `(masque & action) === action` ;
+3. le composant `<Allow>` (`src/components/common/Allow.tsx`) en dépend : il ne monte son contenu que si la permission est présente **et** le bit d'action accordé.
 
-`usePermissions` expose ce résultat via `getGrantedMask(perm)`, `grantedMasks`, `hasAction(perm, action)` et `hasPermission(perm, action)`. Le composant `<Allow>` (`src/components/common/Allow.tsx`) en dépend : il ne monte son contenu que si la permission est présente **et** le bit d'action accordé.
-
-**Repli (fail-open)** : si le masque est inconnu (chargement en cours, rôle absent de la map, permission absente), la seule présence de la permission vaut accord — l'UI ne cache rien. Un masque connu, y compris `0`, est en revanche appliqué strictement. `SUPER_ADMIN` court-circuite tout. Ce contrôle est **purement visuel** : le backend reste l'autorité.
+Un masque connu, y compris `0`, est appliqué strictement. `SUPER_ADMIN` court-circuite tout. Ce contrôle est **purement visuel** : le backend reste l'autorité.
 
 ## Points d'attention
 
@@ -126,4 +124,4 @@ Le backend n'expose les masques accordés que **par rôle** (`GET /roles/actions
 - **`PERM` doit rester synchronisée** avec la table des permissions du backend.
 - **`totalActions` ≠ `totalActionsAccordees`** : ne jamais tester une action contre `totalActions` (actions possibles) au lieu de `totalActionsAccordees` (actions accordées).
 - **Ne pas se fier au champ `actions`** des réponses API : il sera retiré, seuls les masques `totalActions` / `totalActionsAccordees` sont pérennes.
-- **Masques accordés résolus côté client** : ils reposent sur `entry.label === user.role` dans `/roles/actions-map`. Un rôle renommé ou absent de la map rend le masque inconnu (repli fail-open). Le backend reste l'autorité.
+- **Masques accordés portés par la session** : ils proviennent de `/auth/me` (`PermissionSummary.totalActionsAccordees`), plus de `/roles/actions-map` — ce dernier reste utilisé par le formulaire de rôle. Le backend reste l'autorité.

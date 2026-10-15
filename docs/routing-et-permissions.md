@@ -27,7 +27,7 @@ Les guards sont définis dans `src/router/`.
 | Guard | Rôle | Comportement |
 |---|---|---|
 | `ProtectedRoute` | Authentification requise | Si `loading` (vérification session via `useAuth`) → affiche `AdminLayoutSkeleton`. Si aucun utilisateur → redirige vers `/login` (avec `replace`). Sinon rend les enfants. |
-| `PermissionRoute` | Permission requise | Reçoit `permission: string`. Vérifie via `usePermissions().hasPermission(permission)`. SUPER_ADMIN bypass (implémenté dans `usePermissions`). Si manquant → redirige vers `/admin`. |
+| `PermissionRoute` | Permission requise | Reçoit `permission: PermissionName`. Vérifie via `usePermissions().hasPermission(permission)`. SUPER_ADMIN bypass (implémenté dans `usePermissions`). Si manquant → redirige vers `/admin`. |
 | `SelfOrPermissionRoute` | Soi-même OU permission | Compare `user.userId === Number(id)` (paramètre `:id` de l'URL) OU `hasPermission(permission)`. Autorise si l'un des deux est vrai. Sinon redirige vers `/admin`. Utilisé pour l'édition d'un utilisateur par lui-même ou par un gestionnaire. |
 | `SuperAdminRoute` | Rôle strict SUPER_ADMIN | Vérifie `user.role === "SUPER_ADMIN"`. Affiche un spinner pendant `loading`. Sinon redirige vers `/admin`. |
 | `RecoveryProtectedRoute` | Flux récupération mot de passe | Vérifie `authenticated` via `RecoveryAuthProvider`. Si `loading` → `VerificationPageSkeleton`. Si non authentifié → redirige vers `/reccuperation-comptes`. Sinon rend les enfants. |
@@ -145,7 +145,7 @@ Seul `ROUTES.HOME` est utilisé (`NotFoundPage`). `USERS` pointe vers `/users` (
 ## Points d'attention
 
 - **Typage permissions** : les guards (`PermissionRoute`, `SelfOrPermissionRoute`), le menu (`AdminNavigation.config.ts`) et `usePermissions` sont typés `PermissionName` et reçoivent des constantes `PERM.*` — une faute de frappe est désormais une erreur TypeScript.
-- **Actions non contrôlées** : `usePermissions().hasPermission(perm, action)` ignore encore le bit d'action tant que `/auth/me` n'expose pas les masques (`totalActionsAccordees`).
+- **Actions contrôlées côté client** : `/auth/me` renvoie `permissions: PermissionSummary[]` (`totalActionsAccordees`) ; `usePermissions().hasPermission(perm, action)` teste donc réellement le bit d'action, sans appel `/roles/actions-map`.
 - **Formulaire de rôle migré** : l'affichage et le pré-remplissage des permissions/actions s'appuient désormais sur les masques `totalActions` / `totalActionsAccordees` (`/roles/permissions/actions`, `/roles/actions-map`), plus sur la liste `actions` dépréciée.
 - **Recovery redirect** : `RecoveryProtectedRoute` redirige vers `/reccuperation-comptes` (correction apportée vs ancienne version pointant vers `/forgot-password`).
 - **SelfOrPermissionRoute** : se base sur `userId` numérique et `id` URL (converti via `Number(id)`). À vérifier si `id` peut ne pas être un nombre valide.
