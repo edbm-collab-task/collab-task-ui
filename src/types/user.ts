@@ -129,6 +129,12 @@ export interface UserLoginReq{
     password: string;
 }
 
+export interface PermissionSummary {
+  name: string;
+  totalActions: number;
+  totalActionsAccordees: number;
+}
+
 export interface UserLoginRes {
   userId: number;
   role: string;
@@ -136,7 +142,7 @@ export interface UserLoginRes {
   firstname: string;
   lastname: string;
   email: string;
-  permissions: string[];
+  permissions: PermissionSummary[];
   accessToken?: string;
   refreshToken?: string;
 }

@@ -11,7 +11,7 @@ interface Props {
     /**
      * Action exigée sur la permission. Optionnelle : sans elle, la seule
      * présence de la permission suffit. Avec elle, le bit est testé sur le
-     * masque accordé reconstruit par `PermissionActionsProvider`.
+     * masque accordé porté par la session (`PermissionSummary`).
      */
     action?: ActionCode;
     /** Contenu affiché si l'utilisateur a la permission. */
