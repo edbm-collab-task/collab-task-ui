@@ -16,6 +16,9 @@ import { buildColumnTaskTrees, countColumnNodes } from "@/utils/taskTree";
 import type { UserResponse } from "@/types/user";
 import CommentPanel from "./CommentPanel";
 import { TaskTreeItem } from "./TaskTreeItem";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     projectId: number;
@@ -234,13 +237,15 @@ export default function KanbanBoard({
                                     {isCollapsed ? <ChevronRight size={17} /> : <ChevronDown size={17} />}
                                 </button>
                             </div>
-                            <button
-                                onClick={() => onCreateTask(id)}
-                                title={`Ajouter une tâche dans ${status.name}`}
-                                className="rounded-lg p-1.5 text-gray-500 transition hover:bg-white hover:text-accent"
-                            >
-                                <Plus size={18} />
-                            </button>
+                            <Allow perm={PERM.MANAGE_TASKS} action={ACT.INSERT}>
+                                <button
+                                    onClick={() => onCreateTask(id)}
+                                    title={`Ajouter une tâche dans ${status.name}`}
+                                    className="rounded-lg p-1.5 text-gray-500 transition hover:bg-white hover:text-accent"
+                                >
+                                    <Plus size={18} />
+                                </button>
+                            </Allow>
                         </div>
 
                         {/* Zone des cartes : masquée quand la colonne est repliée (isCollapsed).

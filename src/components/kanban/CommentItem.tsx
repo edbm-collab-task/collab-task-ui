@@ -15,6 +15,9 @@ import { getInitialsFromParts } from "@/utils/avatar";
 import { API_CONFIG } from "@/api/constants";
 import ReactionPicker from "./ReactionPicker";
 import FilePreviewModal from "./FilePreviewModal";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     comment: TaskComment;
@@ -318,33 +321,39 @@ export default function CommentItem({
                     {!editing && (
                         <div className="mt-1 flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
                             {!isReply && (
-                                <button
-                                    onClick={() => onReply(comment.commentId)}
-                                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                                >
-                                    <Reply size={12} />
-                                    Répondre
-                                </button>
+                                <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.INSERT}>
+                                    <button
+                                        onClick={() => onReply(comment.commentId)}
+                                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                                    >
+                                        <Reply size={12} />
+                                        Répondre
+                                    </button>
+                                </Allow>
                             )}
                             {isAuthor && (
                                 <>
-                                    <button
-                                        onClick={() => setEditing(true)}
-                                        className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-blue-600"
-                                        title="Modifier"
-                                    >
-                                        <Pencil size={12} />
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (window.confirm("Supprimer ce commentaire ?"))
-                                                onDelete(comment.commentId);
-                                        }}
-                                        className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-red-500"
-                                        title="Supprimer"
-                                    >
-                                        <Trash2 size={12} />
-                                    </button>
+                                    <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.UPDATE}>
+                                        <button
+                                            onClick={() => setEditing(true)}
+                                            className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-blue-600"
+                                            title="Modifier"
+                                        >
+                                            <Pencil size={12} />
+                                        </button>
+                                    </Allow>
+                                    <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.DELETE}>
+                                        <button
+                                            onClick={() => {
+                                                if (window.confirm("Supprimer ce commentaire ?"))
+                                                    onDelete(comment.commentId);
+                                            }}
+                                            className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-red-500"
+                                            title="Supprimer"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </Allow>
                                 </>
                             )}
                         </div>

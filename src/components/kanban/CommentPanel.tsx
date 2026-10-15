@@ -11,6 +11,9 @@ import MentionDropdown from "./MentionDropdown";
 import { formatDateFull } from "@/utils/date";
 import { useEscapeKey } from "@/hooks/useEscapeKey";
 import { getInitialsFromParts } from "@/utils/avatar";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     open: boolean;
@@ -335,13 +338,15 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
                                 style={{ minHeight: "42px", maxHeight: "120px" }}
                             />
                             <div className="absolute right-2 bottom-2 flex items-center gap-1 mb-1">
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
-                                    title="Joindre un fichier (image ou PDF)"
-                                >
-                                    <Paperclip size={16} />
-                                </button>
+                                <Allow perm={PERM.MANAGE_ATTACHMENTS} action={ACT.INSERT}>
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
+                                        title="Joindre un fichier (image ou PDF)"
+                                    >
+                                        <Paperclip size={16} />
+                                    </button>
+                                </Allow>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
@@ -353,14 +358,16 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
                                         e.target.value = "";
                                     }}
                                 />
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={(!newComment.trim() && !selectedFile) || submitting}
-                                    className="rounded-lg p-1.5 text-accent transition hover:bg-primary hover:text-bg disabled:opacity-30"
-                                    title="Envoyer"
-                                >
-                                    <Send size={16} />
-                                </button>
+                                <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.INSERT}>
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={(!newComment.trim() && !selectedFile) || submitting}
+                                        className="rounded-lg p-1.5 text-accent transition hover:bg-primary hover:text-bg disabled:opacity-30"
+                                        title="Envoyer"
+                                    >
+                                        <Send size={16} />
+                                    </button>
+                                </Allow>
                             </div>
                         </div>
                     </div>

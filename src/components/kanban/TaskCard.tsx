@@ -1,5 +1,8 @@
 import React from 'react';
 import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree, ChevronDown, ChevronRight } from 'lucide-react';
+import Allow from '@/components/common/Allow';
+import { PERM } from '@/constants/permissions';
+import { ACT } from '@/constants/actions';
 
 /**
  * Propriétés de la carte de tâche.
@@ -116,22 +119,26 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 {showActions && (
                     <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
                         {onEditTask && (
-                            <button
-                                onClick={() => onEditTask(task)}
-                                title="Modifier"
-                                className="rounded p-1 text-gray-400 transition hover:bg-blue-50 hover:text-accent"
-                            >
-                                <Pencil size={14} />
-                            </button>
+                            <Allow perm={PERM.MANAGE_TASKS} action={ACT.UPDATE}>
+                                <button
+                                    onClick={() => onEditTask(task)}
+                                    title="Modifier"
+                                    className="rounded p-1 text-gray-400 transition hover:bg-blue-50 hover:text-accent"
+                                >
+                                    <Pencil size={14} />
+                                </button>
+                            </Allow>
                         )}
                         {onDeleteTask && (
-                            <button
-                                onClick={() => onDeleteTask(task)}
-                                title="Archiver"
-                                className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-accent"
-                            >
-                                <Trash2 size={14} />
-                            </button>
+                            <Allow perm={PERM.MANAGE_TASKS} action={ACT.DELETE}>
+                                <button
+                                    onClick={() => onDeleteTask(task)}
+                                    title="Archiver"
+                                    className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-accent"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </Allow>
                         )}
                     </div>
                 )}

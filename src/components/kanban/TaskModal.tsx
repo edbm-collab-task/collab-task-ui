@@ -21,6 +21,9 @@ import { formatFileSizeFr } from "@/utils/format";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { ConfirmPopup } from "../common/ConfirmPopup";
 import { CarouselTabs } from "../common/CarouselTabs";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     open: boolean;
@@ -567,14 +570,16 @@ export default function TaskModal({
                                                                 >
                                                                     <Download size={14} />
                                                                 </a>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleDeleteAttachment(att.id, att.originalName)}
-                                                                    className="rounded-lg p-1.5 text-primary/60 transition hover:bg-primary/10 hover:text-accent"
-                                                                    title="Supprimer"
-                                                                >
-                                                                    <Trash2 size={14} />
-                                                                </button>
+                                                                <Allow perm={PERM.MANAGE_ATTACHMENTS} action={ACT.DELETE}>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleDeleteAttachment(att.id, att.originalName)}
+                                                                        className="rounded-lg p-1.5 text-primary/60 transition hover:bg-primary/10 hover:text-accent"
+                                                                        title="Supprimer"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </Allow>
                                                             </div>
                                                         </div>
                                                     ))}
@@ -582,15 +587,17 @@ export default function TaskModal({
                                             )}
 
                                             <div>
-                                                <button
-                                                    type="button"
-                                                    onClick={openFilePicker}
-                                                    disabled={uploading}
-                                                    className="inline-flex items-center gap-2 rounded-lg border border-dashed border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:border-accent hover:text-accent disabled:opacity-50"
-                                                >
-                                                    <Paperclip size={13} />
-                                                    {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
-                                                </button>
+                                                <Allow perm={PERM.MANAGE_ATTACHMENTS} action={ACT.INSERT}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={openFilePicker}
+                                                        disabled={uploading}
+                                                        className="inline-flex items-center gap-2 rounded-lg border border-dashed border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:border-accent hover:text-accent disabled:opacity-50"
+                                                    >
+                                                        <Paperclip size={13} />
+                                                        {uploading ? "Envoi en cours…" : "Ajouter un fichier"}
+                                                    </button>
+                                                </Allow>
                                             </div>
                                         </div>
                                     </div>
@@ -611,14 +618,19 @@ export default function TaskModal({
                                 Précédent
                             </button>
                             {isLastStep ? (
-                                <button
-                                    key="submit"
-                                    type="submit"
-                                    disabled={submitting || !form.title.trim()}
-                                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                                <Allow
+                                    perm={PERM.MANAGE_TASKS}
+                                    action={task ? ACT.UPDATE : ACT.INSERT}
                                 >
-                                    {task ? "Enregistrer" : "Créer la tâche"}
-                                </button>
+                                    <button
+                                        key="submit"
+                                        type="submit"
+                                        disabled={submitting || !form.title.trim()}
+                                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {task ? "Enregistrer" : "Créer la tâche"}
+                                    </button>
+                                </Allow>
                             ) : (
                                 <button
                                     key="next"
