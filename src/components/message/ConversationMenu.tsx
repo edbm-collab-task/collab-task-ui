@@ -1,4 +1,7 @@
 import { Archive, Check, Pin, Trash2, X } from "lucide-react";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     pinned: boolean;
@@ -23,15 +26,17 @@ const ConversationMenu = ({ pinned, archived, group, onClose, onMarkRead, onPin,
                     Marquer comme lu
                 </button>
 
-                <button type="button" onClick={onPin} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-primary transition-colors hover:bg-secondary/50">
-                    <Pin size={16} />
-                    {pinned ? "Désépingler" : "Épingler"}
-                </button>
+                <Allow perm={PERM.MANAGE_MESSAGES} action={ACT.UPDATE}>
+                    <button type="button" onClick={onPin} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-primary transition-colors hover:bg-secondary/50">
+                        <Pin size={16} />
+                        {pinned ? "Désépingler" : "Épingler"}
+                    </button>
 
-                <button type="button" onClick={onArchive} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-primary transition-colors hover:bg-secondary/50">
-                    <Archive size={16} />
-                    {archived ? "Désarchiver" : "Archiver"}
-                </button>
+                    <button type="button" onClick={onArchive} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-primary transition-colors hover:bg-secondary/50">
+                        <Archive size={16} />
+                        {archived ? "Désarchiver" : "Archiver"}
+                    </button>
+                </Allow>
 
                 {group && (
                     <button type="button" onClick={onLeave} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-accent transition-colors hover:bg-accent/10">
@@ -40,10 +45,12 @@ const ConversationMenu = ({ pinned, archived, group, onClose, onMarkRead, onPin,
                     </button>
                 )}
 
-                <button type="button" onClick={onDelete} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-red-600 transition-colors hover:bg-red-50">
-                    <Trash2 size={16} />
-                    Supprimer
-                </button>
+                <Allow perm={PERM.MANAGE_MESSAGES} action={ACT.DELETE}>
+                    <button type="button" onClick={onDelete} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-red-600 transition-colors hover:bg-red-50">
+                        <Trash2 size={16} />
+                        Supprimer
+                    </button>
+                </Allow>
             </div>
         </div>
     );

@@ -13,6 +13,9 @@ import DOMPurify from "dompurify";
 import type { Conversation, ChatUser, Message } from "@/types/message";
 import { getInitialsFromName } from "@/utils/avatar";
 import { getUserImageUrl } from "@/utils/image";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 /**
  * Convertit le contenu HTML d'un message en texte brut pour l'aperçu.
@@ -170,23 +173,27 @@ const ConversationSidebar = ({
                 </div>
 
                 <div className="flex items-center gap-1">
-                    <button
-                        type="button"
-                        onClick={onNewConversation}
-                        title="Nouvelle conversation"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    >
-                        <MessageSquarePlus size={18} />
-                    </button>
+                    <Allow perm={PERM.MANAGE_MESSAGES} action={ACT.INSERT}>
+                        <button
+                            type="button"
+                            onClick={onNewConversation}
+                            title="Nouvelle conversation"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        >
+                            <MessageSquarePlus size={18} />
+                        </button>
+                    </Allow>
 
-                    <button
-                        type="button"
-                        onClick={onCreateGroup}
-                        title="Créer un groupe"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    >
-                        <Users size={18} />
-                    </button>
+                    <Allow perm={PERM.MANAGE_MESSAGES} action={ACT.INSERT}>
+                        <button
+                            type="button"
+                            onClick={onCreateGroup}
+                            title="Créer un groupe"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        >
+                            <Users size={18} />
+                        </button>
+                    </Allow>
                 </div>
             </div>
 

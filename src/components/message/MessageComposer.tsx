@@ -4,6 +4,9 @@ import EmojiPicker from "./EmojiPicker";
 import MentionPicker from "./MentionPicker";
 import type { ChatUser } from "@/types/message";
 import { formatFileSizeEnShort } from "@/utils/format";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     users: ChatUser[];
@@ -224,11 +227,13 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
                     <div className="relative flex items-center gap-1">
 
                         {/* FILE */}
-                        <label title="Ajouter un fichier" className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary">
-                            <Paperclip size={17} />
+                        <Allow perm={PERM.MANAGE_ATTACHMENTS} action={ACT.INSERT}>
+                            <label title="Ajouter un fichier" className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary">
+                                <Paperclip size={17} />
 
-                            <input ref={fileRef} type="file" multiple className="hidden" onChange={handleFiles} disabled={sending} />
-                        </label>
+                                <input ref={fileRef} type="file" multiple className="hidden" onChange={handleFiles} disabled={sending} />
+                            </label>
+                        </Allow>
 
                         {/* EMOJI */}
                         <button type="button" title="Emoji" onClick={() => { setShowEmoji((value) => !value); setShowMention(false); }} disabled={sending} className="flex h-8 w-8 items-center justify-center rounded-full text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary disabled:opacity-40">
@@ -248,10 +253,12 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
                     </div>
 
                     {/* SEND BUTTON */}
-                    <button type="button" onClick={() => void send()} disabled={sending || (!content.replace(/<[^>]*>/g, "").trim() && files.length === 0)} className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-                        {sending ? "Envoi..." : "Envoyer"}
-                        <Send size={15} />
-                    </button>
+                    <Allow perm={PERM.MANAGE_MESSAGES} action={ACT.INSERT}>
+                        <button type="button" onClick={() => void send()} disabled={sending || (!content.replace(/<[^>]*>/g, "").trim() && files.length === 0)} className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                            {sending ? "Envoi..." : "Envoyer"}
+                            <Send size={15} />
+                        </button>
+                    </Allow>
                 </div>
             </div>
         </div>
