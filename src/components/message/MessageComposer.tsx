@@ -253,12 +253,10 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
                     </div>
 
                     {/* SEND BUTTON */}
-                    <Allow perm={PERM.MANAGE_MESSAGES} action={ACT.INSERT}>
-                        <button type="button" onClick={() => void send()} disabled={sending || (!content.replace(/<[^>]*>/g, "").trim() && files.length === 0)} className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-                            {sending ? "Envoi..." : "Envoyer"}
-                            <Send size={15} />
-                        </button>
-                    </Allow>
+                    <button type="button" onClick={() => void send()} disabled={sending || (!content.replace(/<[^>]*>/g, "").trim() && files.length === 0)} className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                        {sending ? "Envoi..." : "Envoyer"}
+                        <Send size={15} />
+                    </button>
                 </div>
             </div>
         </div>

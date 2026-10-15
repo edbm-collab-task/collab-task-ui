@@ -7,8 +7,6 @@
  * qui passaient jusque-là inaperçues (redirection silencieuse des guards).
  */
 export const PERM = {
-    /** Envoyer et gérer les messages. */
-    MANAGE_MESSAGES: "MANAGE_MESSAGES",
     /** Gérer les statuts. */
     MANAGE_STATUSES: "MANAGE_STATUSES",
     /** Gérer les directions. */
@@ -45,7 +43,6 @@ export type PermissionName = (typeof PERM)[keyof typeof PERM];
  * technique (`MANAGE_PROJECTS`…) dans l'interface, où il restait opaque.
  */
 export const PERMISSION_LABELS: Record<PermissionName, string> = {
-    MANAGE_MESSAGES: "Gérer les messages",
     MANAGE_STATUSES: "Gérer les statuts",
     MANAGE_DIRECTIONS: "Gérer les directions",
     MANAGE_ROLES: "Gérer les rôles",

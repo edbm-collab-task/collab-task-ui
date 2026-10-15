@@ -6,9 +6,6 @@ import useAuth from "@/hooks/useAuth";
 import { formatFileSizeEn } from "@/utils/format";
 import { getInitialsFromParts } from "@/utils/avatar";
 import { getUserImageUrl } from "@/utils/image";
-import Allow from "@/components/common/Allow";
-import { PERM } from "@/constants/permissions";
-import { ACT } from "@/constants/actions";
 
 interface Props {
     message: Message;
@@ -359,16 +356,14 @@ const MessageActions = ({ message, isMine, onReply, onDelete, onCopy }: MessageA
             )}
 
             {isMine && (
-                <Allow perm={PERM.MANAGE_MESSAGES} action={ACT.DELETE}>
-                    <button
-                        type="button"
-                        onClick={() => onDelete(message.id)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition hover:bg-accent/10 hover:text-accent"
-                        title="Supprimer"
-                    >
-                        <Trash2 size={14} />
-                    </button>
-                </Allow>
+                <button
+                    type="button"
+                    onClick={() => onDelete(message.id)}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition hover:bg-accent/10 hover:text-accent"
+                    title="Supprimer"
+                >
+                    <Trash2 size={14} />
+                </button>
             )}
 
             <button
