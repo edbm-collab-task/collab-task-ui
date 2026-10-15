@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/api-client";
+import type { RequestOptions } from "@/api/api-client";
 import { API_ENDPOINTS } from "@/api/constants";
 import type {
     Role,
@@ -45,8 +46,12 @@ export const roleService = {
      * Actions de tous les rôles, regroupées par permission, en un seul appel.
      * Chaque entrée porte `totalActions` et `totalActionsAccordees` (masques).
      */
-    getActionsMap: async (): Promise<RoleActionsMap> => {
-        return apiClient.get<RoleActionsMap>(API_ENDPOINTS.ROLES.ACTIONS_MAP);
+    getActionsMap: async (options?: RequestOptions): Promise<RoleActionsMap> => {
+        return apiClient.get<RoleActionsMap>(
+            API_ENDPOINTS.ROLES.ACTIONS_MAP,
+            undefined,
+            { silent: options?.silent }
+        );
     },
 
     /**
