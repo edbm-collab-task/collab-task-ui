@@ -176,8 +176,8 @@ Les permissions sont vérifiées côté backend.
 
 Chaque permission porte des actions identifiées par un code binaire (`INSERT = 1`, `SELECT = 2`, `UPDATE = 4`, …), combinées en un seul masque entier — sur le modèle des permissions Unix. Détails : [`docs/permissions-actions.md`](docs/permissions-actions.md).
 
-- Constantes : `src/constants/actions.ts` (`ACT`, `ALL_ACTIONS` calculé, helpers `hasAction`/`actionsToMask`) et `src/constants/permissions.ts` (`PERM`, `PERMISSION_LABELS`, `getPermissionLabel`).
-- Composant `src/components/common/Allow.tsx` : masque son contenu si la permission (et, à terme, l'action) manque.
+- Constantes : `src/constants/actions.ts` (`ACT`, `ALL_ACTIONS` calculé, helpers `hasAction`/`actionsToMask`) et `src/constants/permissions.ts` (`PERM`, `PERMISSION_LABELS`, `getPermissionLabel`). Masques accordés : `src/contexts/PermissionActionsProvider.tsx` + `src/hooks/usePermissionActions.ts`.
+- Composant `src/components/common/Allow.tsx` : masque son contenu si la permission (et l'action) manque.
 
 ```tsx
 <Allow perm={PERM.MANAGE_PROJECTS} action={ACT.INSERT}>
@@ -185,7 +185,7 @@ Chaque permission porte des actions identifiées par un code binaire (`INSERT = 
 </Allow>
 ```
 
-> `/auth/me` renvoie encore `permissions: string[]` (sans masques d'actions) : `hasPermission` ne teste pour l'instant que la présence de la permission. Le formulaire de rôle, lui, s'appuie sur les masques `totalActions` / `totalActionsAccordees`.
+> `/auth/me` renvoie encore `permissions: string[]` (sans masques d'actions) : les masques accordés sont reconstruits côté client par `PermissionActionsProvider` à partir de `GET /roles/actions-map` (match sur le nom du rôle). `<Allow perm action>` teste alors réellement le bit d'action ; un masque inconnu retombe sur la seule présence de la permission (fail-open). Le formulaire de rôle, lui, s'appuie directement sur les masques `totalActions` / `totalActionsAccordees`.
 
 ## Tests
 

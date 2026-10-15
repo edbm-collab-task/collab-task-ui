@@ -66,7 +66,7 @@ La liste de `PERM` est issue de `GET /roles/permissions/actions` (13 permissions
 | `action` | Action exigée sur la permission (`ActionCode`), optionnelle |
 | `fallback` | Contenu de repli si la permission manque (rien par défaut) |
 
-Le composant s'appuie sur `usePermissions().hasPermission(perm, action)`.
+Le composant s'appuie sur `usePermissions().hasPermission(perm, action)` : il ne monte son contenu que si la permission est présente et, lorsque `action` est fournie, le bit accordé correspondant (voir « Résolution côté client des masques accordés »).
 
 ## Forme des données reçues
 
@@ -105,8 +105,20 @@ Les noms d'actions se déduisent de ces masques via `maskToActions`. Types corre
 
 - **Formulaire de rôle migré** : `RoleForm` affiche les actions cochables depuis `totalActions` (`maskToActions` + `ACTION_LABELS`) et pré-remplit permissions/actions depuis `/roles/actions-map` (`totalActionsAccordees`), en édition comme via le sélecteur de modèle. Les permissions y sont titrées par `getPermissionLabel` (plus de nom technique).
 - **Écriture inchangée** : `PUT /roles/{id}/actions` attend toujours `Record<nomPermission, string[]>`. La sélection de l'UI (noms d'actions) y est transmise telle quelle.
-- **`/auth/me` renvoie `permissions: string[]`** : `usePermissions().hasPermission(perm, action)` **ne contrôle pas encore le bit d'action** — la seule présence de la permission vaut accord. Point d'extension : `getGrantedMask()` dans `src/hooks/usePermissions.ts` (TODO : lire `totalActionsAccordees`).
+- **`/auth/me` ne renvoie pas les masques d'actions** (seulement `permissions: string[]`) : les masques accordés sont **reconstruits côté client** par `PermissionActionsProvider` (voir ci-dessous). `usePermissions().hasPermission(perm, action)` teste alors réellement le bit d'action.
 - **À migrer** : les guards (`PermissionRoute`, `SelfOrPermissionRoute`), le menu (`AdminNavigation.config.ts`, `AdminMenu`) et `Dashboard` utilisent encore des chaînes littérales ; à basculer vers `PERM` (et un typage `PermissionName`).
+
+## Résolution côté client des masques accordés
+
+Le backend n'expose les masques accordés que **par rôle** (`GET /roles/actions-map`), jamais par utilisateur. `PermissionActionsProvider` (`src/contexts/PermissionActionsProvider.tsx`, monté sous `AuthProvider`) reconstruit donc les masques de la session :
+
+1. lit le rôle de l'utilisateur (`useAuth().user.role`) ;
+2. récupère une fois `GET /roles/actions-map` (le `label` d'une entrée correspond au **nom** du rôle, ex. `label: "ADMIN"` pour `user.role === "ADMIN"`) ;
+3. aplatit `totalActionsAccordees` par nom de permission dans `grantedMasks` (`{ MANAGE_PROJECTS: 15, … }`).
+
+`usePermissions` expose ce résultat via `getGrantedMask(perm)`, `grantedMasks`, `hasAction(perm, action)` et `hasPermission(perm, action)`. Le composant `<Allow>` (`src/components/common/Allow.tsx`) en dépend : il ne monte son contenu que si la permission est présente **et** le bit d'action accordé.
+
+**Repli (fail-open)** : si le masque est inconnu (chargement en cours, rôle absent de la map, permission absente), la seule présence de la permission vaut accord — l'UI ne cache rien. Un masque connu, y compris `0`, est en revanche appliqué strictement. `SUPER_ADMIN` court-circuite tout. Ce contrôle est **purement visuel** : le backend reste l'autorité.
 
 ## Points d'attention
 
@@ -114,3 +126,4 @@ Les noms d'actions se déduisent de ces masques via `maskToActions`. Types corre
 - **`PERM` doit rester synchronisée** avec la table des permissions du backend.
 - **`totalActions` ≠ `totalActionsAccordees`** : ne jamais tester une action contre `totalActions` (actions possibles) au lieu de `totalActionsAccordees` (actions accordées).
 - **Ne pas se fier au champ `actions`** des réponses API : il sera retiré, seuls les masques `totalActions` / `totalActionsAccordees` sont pérennes.
+- **Masques accordés résolus côté client** : ils reposent sur `entry.label === user.role` dans `/roles/actions-map`. Un rôle renommé ou absent de la map rend le masque inconnu (repli fail-open). Le backend reste l'autorité.
