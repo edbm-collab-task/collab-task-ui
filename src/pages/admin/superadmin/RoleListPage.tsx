@@ -26,6 +26,11 @@ interface RoleTable {
 export default function RoleListPage() {
 
     const [roles, setRoles] = useState<RoleTable[]>([]);
+    /**
+     * Rôles bruts (avec leurs permissions), conservés pour alimenter le
+     * sélecteur de modèle du formulaire sans dépendre de `actions-map`.
+     */
+    const [allRoles, setAllRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
@@ -69,6 +74,7 @@ export default function RoleListPage() {
             }));
 
             setRoles(tableData);
+            setAllRoles(rolesData);
             setAllPermissions(permsData);
             setActionsMap(actionsMapData);
             setAllRoleCodes(
@@ -98,6 +104,22 @@ export default function RoleListPage() {
 
         return [...fromApi, ...reserved];
     }, [allRoleCodes, editingRole]);
+
+    /**
+     * Rôles proposés comme modèle de création, avec leurs permissions (noms),
+     * hors SUPER_ADMIN.
+     */
+    const sourceRoles = useMemo(
+        () =>
+            allRoles
+                .filter(r => r.name !== "SUPER_ADMIN")
+                .map(r => ({
+                    id: r.id,
+                    name: r.name,
+                    permissions: r.permissions.map(p => p.name)
+                })),
+        [allRoles]
+    );
 
     /**
      * Soumission du formulaire : création ou mise à jour du rôle, puis
@@ -205,7 +227,7 @@ export default function RoleListPage() {
                     editingRole={editingRole}
                     allPermissions={allPermissions}
                     actionsMap={actionsMap}
-                    sourceRoles={roles.map(r => ({ id: r.id, name: r.name }))}
+                    sourceRoles={sourceRoles}
                     takenCodes={takenCodes}
                     onSubmit={handleSave}
                     onCancel={() => {

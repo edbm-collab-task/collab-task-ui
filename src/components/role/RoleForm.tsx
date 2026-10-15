@@ -61,6 +61,12 @@ export default function RoleForm({
      * sélectionnée est absente de la map.
      */
     const [selectedActions, setSelectedActions] = useState<Record<string, string[]>>({});
+    /**
+     * Permissions dont l'action « Voir » (`SELECT`) a été cochée
+     * automatiquement parce qu'une autre action a été sélectionnée. Permet de
+     * ne retirer ce `SELECT` que s'il n'a pas été choisi manuellement.
+     */
+    const [autoView, setAutoView] = useState<Set<string>>(() => new Set());
     /** Identifiant du rôle modèle choisi, ou `null` pour une création vierge. */
     const [templateRoleId, setTemplateRoleId] = useState<number | null>(null);
     const [saving, setSaving] = useState(false);
@@ -100,14 +106,47 @@ export default function RoleForm({
     };
 
     /**
-     * Applique les permissions et actions d'un rôle (masques) à l'état du
-     * formulaire. Utilisé au montage en édition et au choix d'un modèle.
+     * À partir des permissions d'un rôle et des masques d'actions accordées,
+     * résout l'ensemble des permissions à cocher et les actions associées.
+     *
+     * Les permissions dont le masque accordé vaut `0` sont écartées (une
+     * permission cochée sans aucune action n'a pas de sens). Celles absentes de
+     * la map (permission non exposée par `GET /roles/actions-map`) sont
+     * conservées, pour ne pas les détacher silencieusement du rôle.
+     */
+    const resolveRoleSelection = (
+        entry: RoleActionsMapEntry | undefined,
+        permissionNames: string[]
+    ): { kept: string[]; actions: Record<string, string[]> } => {
+        const kept = permissionNames.filter((name) => {
+            const grants = entry?.permissions[name];
+            return grants === undefined || grants.totalActionsAccordees > 0;
+        });
+
+        const allActions = toSelectedActions(entry);
+        const actions: Record<string, string[]> = {};
+        for (const name of kept) {
+            if (allActions[name]) actions[name] = allActions[name];
+        }
+
+        return { kept, actions };
+    };
+
+    /**
+     * Applique les permissions et actions d'un rôle au formulaire. Les
+     * permissions proviennent du rôle lui-même (`editingRole.permissions` ou
+     * permissions du modèle) et non des clés de `actionsMap`, qui diverge.
      * Sans entrée (rôle introuvable), l'état courant est conservé.
      */
-    const applyRoleGrants = (entry: RoleActionsMapEntry | undefined) => {
-        if (!entry) return;
-        setSelectedPermissions(Object.keys(entry.permissions));
-        setSelectedActions(toSelectedActions(entry));
+    const applyRoleGrants = (
+        entry: RoleActionsMapEntry | undefined,
+        permissionNames: string[]
+    ) => {
+        if (permissionNames.length === 0 && !entry) return;
+        const { kept, actions } = resolveRoleSelection(entry, permissionNames);
+        setSelectedPermissions(kept);
+        setSelectedActions(actions);
+        setAutoView(new Set());
     };
 
     /**
@@ -130,7 +169,15 @@ export default function RoleForm({
      */
     useEffect(() => {
         if (editingRole === null) return;
-        applyRoleGrants(actionsMap[editingRole.id]);
+        const entry = actionsMap[editingRole.id];
+        const permissionNames = editingRole.permissions.map((p) => p.name);
+        applyRoleGrants(entry, permissionNames);
+        setOpenCategories(
+            getDefaultOpenCategories(
+                permissionsByCategory,
+                resolveRoleSelection(entry, permissionNames).kept
+            )
+        );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -164,17 +211,19 @@ export default function RoleForm({
         if (id === null) {
             setSelectedPermissions([]);
             setSelectedActions({});
+            setAutoView(new Set());
             setOpenCategories(getDefaultOpenCategories(permissionsByCategory, []));
             return;
         }
 
+        const template = sourceRoles.find((r) => r.id === id);
         const entry = actionsMap[id];
-        const permissionNames = entry ? Object.keys(entry.permissions) : [];
-        setSelectedPermissions(permissionNames);
-        setSelectedActions(toSelectedActions(entry));
-        setOpenCategories(
-            getDefaultOpenCategories(permissionsByCategory, permissionNames)
-        );
+        const permissionNames =
+            template?.permissions ?? (entry ? Object.keys(entry.permissions) : []);
+        const { kept } = resolveRoleSelection(entry, permissionNames);
+
+        applyRoleGrants(entry, permissionNames);
+        setOpenCategories(getDefaultOpenCategories(permissionsByCategory, kept));
     };
 
     /**
@@ -198,6 +247,11 @@ export default function RoleForm({
                 return rest;
             });
             setSelectedPermissions((prev) => prev.filter((p) => p !== perm.name));
+            setAutoView((prev) => {
+                const next = new Set(prev);
+                next.delete(perm.name);
+                return next;
+            });
             return;
         }
 
@@ -205,35 +259,107 @@ export default function RoleForm({
         setSelectedPermissions((prev) =>
             prev.includes(perm.name) ? prev : [...prev, perm.name]
         );
+        setAutoView((prev) => {
+            const next = new Set(prev);
+            next.delete(perm.name);
+            return next;
+        });
     };
 
     /**
      * Coche / décoche une action pour une permission donnée.
      *
-     * La permission et ses actions restent synchronisées : cocher une action
-     * ajoute la permission, décocher la dernière action la retire. La permission
-     * est retirée de la map dès qu'elle ne porte plus aucune action, pour ne
-     * jamais transmettre d'entrée vide à `setActions`.
+     * Règle « Voir » (`SELECT`) : toute autre action implique le droit de voir.
+     * - cocher une action non-`SELECT` ajoute automatiquement `SELECT` (marqué
+     *   comme auto-ajouté) ;
+     * - décocher `SELECT` déclenche une cascade : toutes les actions de la
+     *   permission sont retirées ;
+     * - retirer la dernière action non-`SELECT` retire le `SELECT` uniquement
+     *   s'il avait été auto-ajouté (un `SELECT` choisi manuellement est
+     *   conservé).
+     *
+     * La permission et ses actions restent synchronisées : elle est retirée
+     * dès qu'elle ne porte plus aucune action.
      */
     const toggleAction = (perm: PermissionWithActionMask, action: string) => {
+        const available = maskToActions(perm.totalActions);
+        const hasView = available.includes("SELECT");
         const current = selectedActions[perm.name] ?? [];
-        const next = current.includes(action)
-            ? current.filter((a) => a !== action)
-            : [...current, action];
 
-        setSelectedActions((prev) => {
-            if (next.length === 0) {
+        const removePermission = () => {
+            setSelectedActions((prev) => {
                 const rest = { ...prev };
                 delete rest[perm.name];
                 return rest;
-            }
-            return { ...prev, [perm.name]: next };
-        });
+            });
+            setSelectedPermissions((prev) => prev.filter((p) => p !== perm.name));
+        };
 
-        setSelectedPermissions((prev) => {
-            if (next.length === 0) return prev.filter((p) => p !== perm.name);
-            return prev.includes(perm.name) ? prev : [...prev, perm.name];
-        });
+        const clearAutoView = () => {
+            setAutoView((prev) => {
+                if (!prev.has(perm.name)) return prev;
+                const next = new Set(prev);
+                next.delete(perm.name);
+                return next;
+            });
+        };
+
+        // Cas du « Voir » lui-même
+        if (action === "SELECT") {
+            if (current.includes("SELECT")) {
+                // Décocher Voir : cascade, on retire toutes les actions.
+                removePermission();
+                clearAutoView();
+                return;
+            }
+
+            // Cocher Voir manuellement : ce choix ne sera plus auto-retiré.
+            setSelectedActions((prev) => ({ ...prev, [perm.name]: [...current, "SELECT"] }));
+            setSelectedPermissions((prev) =>
+                prev.includes(perm.name) ? prev : [...prev, perm.name]
+            );
+            clearAutoView();
+            return;
+        }
+
+        // Décocher une autre action
+        if (current.includes(action)) {
+            let next = current.filter((a) => a !== action);
+            const noOtherAction = next.every((a) => a === "SELECT");
+            const isAuto = autoView.has(perm.name);
+
+            if (noOtherAction && isAuto) {
+                next = next.filter((a) => a !== "SELECT");
+            }
+
+            setSelectedActions((prev) => {
+                if (next.length === 0) {
+                    const rest = { ...prev };
+                    delete rest[perm.name];
+                    return rest;
+                }
+                return { ...prev, [perm.name]: next };
+            });
+            setSelectedPermissions((prev) => {
+                if (next.length === 0) return prev.filter((p) => p !== perm.name);
+                return prev.includes(perm.name) ? prev : [...prev, perm.name];
+            });
+            if (noOtherAction && isAuto) clearAutoView();
+            return;
+        }
+
+        // Cocher une autre action
+        const autoAddView = hasView && !current.includes("SELECT");
+        const next = autoAddView ? [...current, action, "SELECT"] : [...current, action];
+
+        setSelectedActions((prev) => ({ ...prev, [perm.name]: next }));
+        setSelectedPermissions((prev) =>
+            prev.includes(perm.name) ? prev : [...prev, perm.name]
+        );
+
+        if (autoAddView) {
+            setAutoView((prev) => new Set(prev).add(perm.name));
+        }
     };
 
     /**

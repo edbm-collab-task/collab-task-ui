@@ -8,11 +8,13 @@ import type {
 /**
  * Vue minimale d'un rôle, utilisée pour alimenter le sélecteur de modèle
  * ({@link RoleSummary} ne porte que ce qu'il faut pour afficher une option :
- * l'identifiant et le nom).
+ * l'identifiant, le nom et les permissions du rôle modèle, afin de pré-remplir
+ * le formulaire sans dépendre de `GET /roles/actions-map`, incomplet).
  */
 export interface RoleSummary {
     id: number;
     name: string;
+    permissions: string[];
 }
 
 /**
