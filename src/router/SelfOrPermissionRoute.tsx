@@ -2,10 +2,11 @@ import { Navigate, useParams } from "react-router-dom";
 import type { ReactNode } from "react";
 import usePermissions from "@/hooks/usePermissions";
 import useAuth from "@/hooks/useAuth";
+import type { PermissionName } from "@/constants/permissions";
 
 interface Props {
     children: ReactNode;
-    permission: string;
+    permission: PermissionName;
 }
 
 /**

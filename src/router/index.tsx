@@ -26,6 +26,7 @@ import NotificationsPage from "@/pages/admin/notification/NotificationsPage";
 import ActivityHistoryPage from "@/pages/admin/project/ActivityHistoryPage";
 import AdminListPage from "@/pages/admin/superadmin/AdminListPage";
 import RoleListPage from "@/pages/admin/superadmin/RoleListPage";
+import { PERM } from "@/constants/permissions";
 import SuperAdminRoute from "@/router/SuperAdminRoute";
 import PermissionRoute from "@/router/PermissionRoute";
 import SelfOrPermissionRoute from "@/router/SelfOrPermissionRoute";
@@ -53,41 +54,41 @@ export default function Router() {
                 <Route index element={<Dashboard />} />
 
                 <Route path="users" element={
-                    <PermissionRoute permission="VIEW_USERS"><UserListPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.VIEW_USERS}><UserListPage /></PermissionRoute>
                 } />
                 <Route path="users/create" element={
-                    <PermissionRoute permission="MANAGE_USERS"><CreateUserPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_USERS}><CreateUserPage /></PermissionRoute>
                 } />
                 <Route path="users/edit-role" element={
-                    <PermissionRoute permission="MANAGE_USERS"><EditUserRolePage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_USERS}><EditUserRolePage /></PermissionRoute>
                 } />
                 <Route path="users/profile" element={<UserProfile />} />
                 <Route path="users/:id/edit" element={
-                    <SelfOrPermissionRoute permission="MANAGE_USERS"><EditUserPage /></SelfOrPermissionRoute>
+                    <SelfOrPermissionRoute permission={PERM.MANAGE_USERS}><EditUserPage /></SelfOrPermissionRoute>
                 } />
                 <Route path="users/change-pwd" element={<ChangePwdPage />} />
 
                 <Route path="directions" element={
-                    <PermissionRoute permission="MANAGE_DIRECTIONS"><DirectionsListPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_DIRECTIONS}><DirectionsListPage /></PermissionRoute>
                 } />
                 <Route path="directions/create" element={
-                    <PermissionRoute permission="MANAGE_DIRECTIONS"><CreateDirection /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_DIRECTIONS}><CreateDirection /></PermissionRoute>
                 } />
 
                 <Route path="projects" element={
-                    <PermissionRoute permission="MANAGE_PROJECTS"><ProjectListPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS}><ProjectListPage /></PermissionRoute>
                 } />
                 <Route path="projects/create" element={
-                    <PermissionRoute permission="MANAGE_PROJECTS"><ProjectFormPage mode="create" /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS}><ProjectFormPage mode="create" /></PermissionRoute>
                 } />
                 <Route path="projects/:id" element={
-                    <PermissionRoute permission="MANAGE_PROJECTS"><ProjectDetailPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS}><ProjectDetailPage /></PermissionRoute>
                 } />
                 <Route path="projects/:id/edit" element={
-                    <PermissionRoute permission="MANAGE_PROJECTS"><ProjectFormPage mode="edit" /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS}><ProjectFormPage mode="edit" /></PermissionRoute>
                 } />
                 <Route path="projects/:id/history" element={
-                    <PermissionRoute permission="MANAGE_PROJECTS"><ActivityHistoryPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS}><ActivityHistoryPage /></PermissionRoute>
                 } />
 
                 <Route path="messages" element={<MessagePage />} />

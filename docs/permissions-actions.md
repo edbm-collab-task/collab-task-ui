@@ -106,7 +106,7 @@ Les noms d'actions se déduisent de ces masques via `maskToActions`. Types corre
 - **Formulaire de rôle migré** : `RoleForm` affiche les actions cochables depuis `totalActions` (`maskToActions` + `ACTION_LABELS`) et pré-remplit permissions/actions depuis `/roles/actions-map` (`totalActionsAccordees`), en édition comme via le sélecteur de modèle. Les permissions y sont titrées par `getPermissionLabel` (plus de nom technique).
 - **Écriture inchangée** : `PUT /roles/{id}/actions` attend toujours `Record<nomPermission, string[]>`. La sélection de l'UI (noms d'actions) y est transmise telle quelle.
 - **`/auth/me` ne renvoie pas les masques d'actions** (seulement `permissions: string[]`) : les masques accordés sont **reconstruits côté client** par `PermissionActionsProvider` (voir ci-dessous). `usePermissions().hasPermission(perm, action)` teste alors réellement le bit d'action.
-- **À migrer** : les guards (`PermissionRoute`, `SelfOrPermissionRoute`), le menu (`AdminNavigation.config.ts`, `AdminMenu`) et `Dashboard` utilisent encore des chaînes littérales ; à basculer vers `PERM` (et un typage `PermissionName`).
+- **Guards/menu migrés** : `PermissionRoute`, `SelfOrPermissionRoute`, `AdminNavigation.config.ts` et `Dashboard` utilisent `PERM.*` avec un typage `PermissionName` (aucune chaîne littérales de permission ne subsiste dans `src/`).
 
 ## Résolution côté client des masques accordés
 

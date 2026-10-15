@@ -1,11 +1,13 @@
 import { LayoutDashboard, Users, Building2, FolderKanban, MessageCircle, Bell, Shield, Settings, BarChart2 } from "lucide-react";
+import type { PermissionName } from "@/constants/permissions";
+import { PERM } from "@/constants/permissions";
 
 
 interface MenuItem {
     name: string;
     path: string;
     icon: typeof LayoutDashboard;
-    permission?: string;
+    permission?: PermissionName;
 }
 
 // Menu for all users
@@ -19,19 +21,19 @@ export const menus: MenuItem[] = [
         name: "Projets",
         path: "/admin/projects",
         icon: FolderKanban,
-        permission: "MANAGE_PROJECTS",
+        permission: PERM.MANAGE_PROJECTS,
     },
     {
         name: "Utilisateurs",
         path: "/admin/users",
         icon: Users,
-        permission: "VIEW_USERS",
+        permission: PERM.VIEW_USERS,
     },
     {
         name: "Directions",
         path: "/admin/directions",
         icon: Building2,
-        permission: "MANAGE_DIRECTIONS",
+        permission: PERM.MANAGE_DIRECTIONS,
     },
     {
         name: "Message",
