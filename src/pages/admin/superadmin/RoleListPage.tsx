@@ -15,6 +15,9 @@ import { roleService } from "@/services/role/role.service";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
 import { getPermissionLabel } from "@/constants/permissions";
 import { normalizeRoleCode } from "@/utils/roleCode";
+import usePermissions from "@/hooks/usePermissions";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface RoleTable {
     id: number;
@@ -26,6 +29,7 @@ interface RoleTable {
 export default function RoleListPage() {
 
     const [roles, setRoles] = useState<RoleTable[]>([]);
+    const { hasPermission } = usePermissions();
     /**
      * Rôles bruts (avec leurs permissions), conservés pour alimenter le
      * sélecteur de modèle du formulaire sans dépendre de `actions-map`.
@@ -178,25 +182,40 @@ export default function RoleListPage() {
         "permissions"
     ]);
 
-    const actions: TableAction<RoleTable>[] = [
-        {
+    /**
+     * Actions par ligne. Le masquage se fait ici, selon la permission et
+     * l'action requises.
+     */
+    const actions: TableAction<RoleTable>[] = [];
+
+    /**
+     * Modifier un rôle — nécessite `MANAGE_ROLES` + `UPDATE`.
+     */
+    if (hasPermission(PERM.MANAGE_ROLES, ACT.UPDATE)) {
+        actions.push({
             label: "Modifier",
             type: "edit",
             icon: <Pencil size={18} />,
-            roles: ["SUPER_ADMIN"],
             onClick: (role) => handleEdit(role)
-        }
-    ];
+        });
+    }
 
-    const headerActions: HeaderAction[] = [
-        {
+    /**
+     * Actions de l'en-tête.
+     */
+    const headerActions: HeaderAction[] = [];
+
+    /**
+     * Ajouter un rôle — nécessite `MANAGE_ROLES` + `INSERT`.
+     */
+    if (hasPermission(PERM.MANAGE_ROLES, ACT.INSERT)) {
+        headerActions.push({
             label: "Ajouter un rôle",
             icon: <Plus size={18} />,
             type: "primary",
-            roles: ["SUPER_ADMIN"],
             onClick: handleCreate
-        }
-    ];
+        });
+    }
 
     const filteredRoles = roles.filter(r => r.name !== "SUPER_ADMIN").filter(item => {
         const value = search.toLowerCase();
@@ -241,7 +260,6 @@ export default function RoleListPage() {
                 data={paginatedRoles}
                 columns={columns}
                 actions={actions}
-                roles={["SUPER_ADMIN"]}
                 loading={loading}
                 emptyMessage="Aucun rôle trouvé"
             />
