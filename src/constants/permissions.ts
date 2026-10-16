@@ -28,12 +28,10 @@ export const PERM = {
     /** Gérer les comptes administrateurs. */
     MANAGE_ADMINS: "MANAGE_ADMINS",
     /** Créer, modifier, supprimer des utilisateurs. */
-    MANAGE_USERS: "MANAGE_USERS",
-    /** Voir la liste des utilisateurs. */
-    VIEW_USERS: "VIEW_USERS"
+    MANAGE_USERS: "MANAGE_USERS"
 } as const;
 
-/** Nom d'une permission (`PERM.MANAGE_PROJECTS`, `PERM.VIEW_USERS`, …). */
+/** Nom d'une permission (`PERM.MANAGE_PROJECTS`, `PERM.MANAGE_USERS`, …). */
 export type PermissionName = (typeof PERM)[keyof typeof PERM];
 
 /**
@@ -53,8 +51,7 @@ export const PERMISSION_LABELS: Record<PermissionName, string> = {
     MANAGE_TASKS: "Gérer les tâches",
     VIEW_REPORTS: "Voir les rapports",
     MANAGE_ADMINS: "Gérer les administrateurs",
-    MANAGE_USERS: "Gérer les utilisateurs",
-    VIEW_USERS: "Voir les utilisateurs"
+    MANAGE_USERS: "Gérer les utilisateurs"
 };
 
 /**

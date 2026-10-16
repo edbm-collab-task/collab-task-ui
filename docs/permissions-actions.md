@@ -43,12 +43,12 @@ Tester une action revient à vérifier que son bit est positionné : `(masque & 
 
 | Export | Rôle |
 |---|---|
-| `PERM` | Les noms exacts des permissions renvoyées par l'API (`PERM.MANAGE_PROJECTS`, `PERM.VIEW_USERS`, …) |
+| `PERM` | Les noms exacts des permissions renvoyées par l'API (`PERM.MANAGE_PROJECTS`, `PERM.MANAGE_USERS`, …) |
 | `PermissionName` | Type dérivé de `PERM` |
 | `PERMISSION_LABELS` | Libellés FR affichables (`MANAGE_PROJECTS → "Gérer les projets"`), plus courts que les `description` de l'API |
 | `getPermissionLabel(name)` | Libellé d'une permission, ou nom technique en repli si inconnue |
 
-La liste de `PERM` est issue de `GET /roles/permissions/actions` (12 permissions). **Toute permission ajoutée côté backend doit y être reportée** (dans `PERM` et `PERMISSION_LABELS`).
+La liste de `PERM` est issue de `GET /roles/permissions/actions` (11 permissions). **Toute permission ajoutée côté backend doit y être reportée** (dans `PERM` et `PERMISSION_LABELS`).
 
 ## Composant `Allow`
 

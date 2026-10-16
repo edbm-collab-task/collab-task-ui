@@ -58,7 +58,7 @@ Documentation d'ingénierie du frontend `collab-task-ui`. Elle est **extraite du
 | **Moteur de formulaires** | Ensemble `FormField<T>` + `GlobalForm`/`GlobalEditForm` + `FormFieldControl` + `formLogic` |
 | **Schéma de formulaire** | Un tableau `FormField<T>[]` défini dans un fichier dédié (`src/components/...`) |
 | **`RoleType` / `RoleName`** | Codes de rôle (`U1S`, `A1D`, `S1ADM`) et noms (`USER`, `ADMIN`, `SUPER_ADMIN`) |
-| **Permission** | Chaîne fournie par le backend (`VIEW_USERS`…), testée par `usePermissions().hasPermission()` |
+| **Permission** | Chaîne fournie par le backend (`MANAGE_USERS`…), testée par `usePermissions().hasPermission()` |
 | **Bypass SUPER_ADMIN** | Un `role === "SUPER_ADMIN"` passe toutes les vérifications de permission front |
 | **Recovery** | Flux de récupération de mot de passe, protégé par son propre context (`RecoveryAuthProvider`) |
 | **`silent`** | Drapeau maison qui désactive le toast d'erreur global de l'intercepteur |
