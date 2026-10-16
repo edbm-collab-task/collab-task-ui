@@ -115,24 +115,30 @@ Le rôle `SUPER_ADMIN` y accède via le bypass de `usePermissions`. À noter : `
 
 Le menu est déclaré dans `src/components/admin/AdminNavigation.config.ts`.
 
+La visibilité des entrées est pilotée par un couple **permission + action** : une entrée portant `permission` n'est affichée que si l'utilisateur possède cette permission **et** le bit `action` (`usePermissions().hasPermission`). Plus aucune entrée n'est filtrée par le rôle brut : le `SUPER_ADMIN` voit tout via le bypass de `usePermissions`, mais tout rôle doté de la permission/action correspondante voit aussi l'entrée. Une entrée sans permission (Dashboard, Message, Notifications) s'affiche pour tout utilisateur connecté.
+
 ### Menu principal (`menus`)
-| Élément | Chemin | Icône | Permission requise |
+| Élément | Chemin | Icône | Permission + action |
 |---|---|---|---|
 | Dashboard | `/admin` | `LayoutDashboard` | — (toujours visible si connecté) |
-| Projets | `/admin/projects` | `FolderKanban` | `MANAGE_PROJECTS` |
-| Utilisateurs | `/admin/users` | `Users` | `VIEW_USERS` |
-| Directions | `/admin/directions` | `Building2` | `MANAGE_DIRECTIONS` |
+| Projets | `/admin/projects` | `FolderKanban` | `MANAGE_PROJECTS` + `SELECT` |
+| Utilisateurs | `/admin/users` | `Users` | `MANAGE_USERS` + `SELECT` |
+| Directions | `/admin/directions` | `Building2` | `MANAGE_DIRECTIONS` + `SELECT` |
 | Message | `/admin/messages` | `MessageCircle` | — |
 | Notifications | `/admin/notifications` | `Bell` | — |
 
-### Menu SuperAdmin (`superAdminMenus`)
-| Élément | Chemin | Icône | Notes |
+### Menu d'administration (`superAdminMenus`)
+| Élément | Chemin | Icône | Permission + action |
 |---|---|---|---|
-| Dashboard Admin | `/admin/dashboard-admin` | `BarChart2` | Affiché uniquement aux SUPER_ADMIN |
-| Administrateurs | `/admin/admins` | `Shield` | Gestion des admins |
-| Rôles & Permissions | `/admin/roles` | `Settings` | Gestion rôles/permissions |
+| Dashboard Admin | `/admin/dashboard-admin` | `BarChart2` | `VIEW_REPORTS` + `SELECT` |
+| Administrateurs | `/admin/admins` | `Shield` | `MANAGE_ADMINS` + `SELECT` |
+| Rôles & Permissions | `/admin/roles` | `Settings` | `MANAGE_ROLES` + `SELECT` |
 
-**Important** : `AdminNavigation.config.ts` et `router/index.tsx` doivent rester synchrones. C'est une "double source de vérité" relevée dans la documentation.
+**Important** : `AdminNavigation.config.ts` et `router/index.tsx` doivent rester synchrones (mêmes permission + action) ; un menu pointant vers une route plus restrictive redirige l'utilisateur vers `/admin`.
+
+**Cas « Utilisateurs »** : l'entrée est masquée dès que l'utilisateur détient `MANAGE_ADMINS` + `SELECT` (donc aussi le super-admin), car `UserListPage` le redirige alors vers la page plus large `/admin/admins`.
+
+**Section d'administration** : elle n'est rendue que si au moins une entrée `superAdminMenus` subsiste après filtrage par permission + action ; elle n'est plus conditionnée au rôle `SUPER_ADMIN`.
 
 ## Constantes de routes
 
@@ -145,7 +151,7 @@ Seul `ROUTES.HOME` est utilisé (`NotFoundPage`). `USERS` pointe vers `/users` (
 
 ## Points d'attention
 
-- **Typage permissions/actions** : `PermissionRoute` est typé `PermissionName` **+** `ActionCode` et reçoit des constantes `PERM.*` / `ACT.*` — une faute de frappe ou une action oubliée est une erreur TypeScript. `SelfRoute` ne prend aucune permission. `usePermissions` et le menu restent typés `PermissionName`.
+- **Typage permissions/actions** : `PermissionRoute` et les entrées de menu (`MenuItem`) sont typés `PermissionName` **+** `ActionCode` et reçoivent des constantes `PERM.*` / `ACT.*` — une faute de frappe ou une action oubliée est une erreur TypeScript. `SelfRoute` ne prend aucune permission. `usePermissions` reste typé `PermissionName`.
 - **Routes : permission + action obligatoires** : une route n'est plus protégée par la seule présence de la permission. Exemple : `/admin/users/create` exige `MANAGE_USERS` + `INSERT` — un rôle possédant `MANAGE_USERS` sans le bit `INSERT` est redirigé vers `/admin`.
 - **Actions contrôlées côté client** : `/auth/me` renvoie `permissions: PermissionSummary[]` (`totalActionsAccordees`) ; `usePermissions().hasPermission(perm, action)` teste donc réellement le bit d'action, sans appel `/roles/actions-map`.
 - **Formulaire de rôle migré** : l'affichage et le pré-remplissage des permissions/actions s'appuient désormais sur les masques `totalActions` / `totalActionsAccordees` (`/roles/permissions/actions`, `/roles/actions-map`), plus sur la liste `actions` dépréciée.
