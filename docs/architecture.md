@@ -34,7 +34,7 @@ index.html
             └─ src/router/index.tsx
                  ├─ routes publiques  (/, /login, /register, recovery…)
                  └─ /admin → ProtectedRoute → AdminLayout (<Outlet/>)
-                        └─ PermissionRoute | SelfOrPermissionRoute | SuperAdminRoute
+                        └─ PermissionRoute | SelfRoute (profil perso)
 
 Page  →  hook (useXxx) ou service (xxxService)
      →  apiClient  (retourne response.data)
@@ -70,7 +70,7 @@ Le reste de l'état vit dans les pages/composants (`useState` + `useEffect`), av
 | Dossier | Rôle |
 |---|---|
 | `src/api/` | Couche HTTP de bas niveau : instance axios, wrapper `apiClient`, table `API_ENDPOINTS` |
-| `src/router/` | Déclaration unique des routes (`index.tsx`) + les 5 guards (`ProtectedRoute`, `PermissionRoute`, `SelfOrPermissionRoute`, `SuperAdminRoute`, `RecoveryProtectedRoute`) |
+| `src/router/` | Déclaration unique des routes (`index.tsx`) + les 4 guards (`ProtectedRoute`, `PermissionRoute`, `SelfRoute`, `RecoveryProtectedRoute`) |
 | `src/pages/` | Écrans, un import = une route ; sous-dossiers `auth/`, `admin/<domaine>/`, `user/` |
 | `src/components/` | Composants regroupés **par domaine fonctionnel** : `admin/`, `kanban/`, `message/`, `table/`, `Form/`, `common/`, `details/`, `modal/`, `notification/`, `project/`, `user/`, `direction/` |
 | `src/services/` | 16 services (`xxx.service.ts` → objet `xxxService`), un par domaine métier |
@@ -101,8 +101,7 @@ src/
 │   ├── index.tsx         # <Routes> complet (imports statiques, pas de lazy)
 │   ├── ProtectedRoute.tsx
 │   ├── PermissionRoute.tsx
-│   ├── SelfOrPermissionRoute.tsx
-│   ├── SuperAdminRoute.tsx
+│   ├── SelfRoute.tsx
 │   └── RecoveryProtectedRoute.tsx
 │
 ├── pages/

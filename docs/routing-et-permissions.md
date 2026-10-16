@@ -27,9 +27,8 @@ Les guards sont définis dans `src/router/`.
 | Guard | Rôle | Comportement |
 |---|---|---|
 | `ProtectedRoute` | Authentification requise | Si `loading` (vérification session via `useAuth`) → affiche `AdminLayoutSkeleton`. Si aucun utilisateur → redirige vers `/login` (avec `replace`). Sinon rend les enfants. |
-| `PermissionRoute` | Permission requise | Reçoit `permission: PermissionName`. Vérifie via `usePermissions().hasPermission(permission)`. SUPER_ADMIN bypass (implémenté dans `usePermissions`). Si manquant → redirige vers `/admin`. |
-| `SelfOrPermissionRoute` | Soi-même OU permission | Compare `user.userId === Number(id)` (paramètre `:id` de l'URL) OU `hasPermission(permission)`. Autorise si l'un des deux est vrai. Sinon redirige vers `/admin`. Utilisé pour l'édition d'un utilisateur par lui-même ou par un gestionnaire. |
-| `SuperAdminRoute` | Rôle strict SUPER_ADMIN | Vérifie `user.role === "SUPER_ADMIN"`. Affiche un spinner pendant `loading`. Sinon redirige vers `/admin`. |
+| `PermissionRoute` | Permission + action requises | Reçoit `permission: PermissionName` **et** `action: ActionCode`. Vérifie via `usePermissions().hasPermission(permission, action)` : la permission doit être présente **et** son masque accordé doit contenir l'action. SUPER_ADMIN bypass (implémenté dans `usePermissions`). Si l'un des deux manque → redirige vers `/admin`. |
+| `SelfRoute` | Propriétaire de l'URL uniquement | N'autorise que l'utilisateur dont `user.userId === Number(id)` (paramètre `:id` de l'URL). **Aucune permission ni action n'est consultée** : un utilisateur modifie toujours son propre profil, et personne d'autre n'y accède — pas plus avec `MANAGE_USERS` (+ action) qu'en tant que `SUPER_ADMIN`. Sinon redirige vers `/admin`. |
 | `RecoveryProtectedRoute` | Flux récupération mot de passe | Vérifie `authenticated` via `RecoveryAuthProvider`. Si `loading` → `VerificationPageSkeleton`. Si non authentifié → redirige vers `/reccuperation-comptes`. Sinon rend les enfants. |
 
 ## Table des routes
@@ -70,27 +69,27 @@ L'élément parent est :
 #### Gestion des utilisateurs
 | Chemin | Guard | Composant | Notes |
 |---|---|---|---|
-| `/admin/users` | `PermissionRoute` (`VIEW_USERS`) | `UserListPage` | Liste des utilisateurs |
-| `/admin/users/create` | `PermissionRoute` (`MANAGE_USERS`) | `CreateUserPage` | Création d'utilisateur |
-| `/admin/users/edit-role` | `PermissionRoute` (`MANAGE_USERS`) | `EditUserRolePage` | Édition des rôles |
+| `/admin/users` | `PermissionRoute` (`MANAGE_USERS` + `SELECT`) | `UserListPage` | Liste des utilisateurs |
+| `/admin/users/create` | `PermissionRoute` (`MANAGE_USERS` + `INSERT`) | `CreateUserPage` | Création d'utilisateur |
+| `/admin/users/edit-role` | `PermissionRoute` (`MANAGE_USERS` + `UPDATE`) | `EditUserRolePage` | Édition des rôles |
 | `/admin/users/profile` | — | `UserProfile` | Profil utilisateur (sans guard explicite; sous `ProtectedRoute`) |
-| `/admin/users/:id/edit` | `SelfOrPermissionRoute` (`MANAGE_USERS`) | `EditUserPage` | Édition : soit soi-même, soit avec permission MANAGE_USERS |
+| `/admin/users/:id/edit` | `SelfRoute` | `EditUserPage` | Édition du **propre** profil uniquement : aucun autre utilisateur ni rôle n'y accède |
 | `/admin/users/change-pwd` | — | `ChangePwdPage` | Changement mot de passe (sous `ProtectedRoute`) |
 
 #### Gestion des directions
 | Chemin | Guard | Composant | Notes |
 |---|---|---|---|
-| `/admin/directions` | `PermissionRoute` (`MANAGE_DIRECTIONS`) | `DirectionsListPage` | Liste des directions |
-| `/admin/directions/create` | `PermissionRoute` (`MANAGE_DIRECTIONS`) | `CreateDirection` | Création d'une direction |
+| `/admin/directions` | `PermissionRoute` (`MANAGE_DIRECTIONS` + `SELECT`) | `DirectionsListPage` | Liste des directions |
+| `/admin/directions/create` | `PermissionRoute` (`MANAGE_DIRECTIONS` + `INSERT`) | `CreateDirection` | Création d'une direction |
 
 #### Gestion des projets
 | Chemin | Guard | Composant | Notes |
 |---|---|---|---|
-| `/admin/projects` | `PermissionRoute` (`MANAGE_PROJECTS`) | `ProjectListPage` | Liste des projets |
-| `/admin/projects/create` | `PermissionRoute` (`MANAGE_PROJECTS`) | `ProjectFormPage` (`mode="create"`) | Création de projet |
-| `/admin/projects/:id` | `PermissionRoute` (`MANAGE_PROJECTS`) | `ProjectDetailPage` | Détail d'un projet |
-| `/admin/projects/:id/edit` | `PermissionRoute` (`MANAGE_PROJECTS`) | `ProjectFormPage` (`mode="edit"`) | Édition de projet |
-| `/admin/projects/:id/history` | `PermissionRoute` (`MANAGE_PROJECTS`) | `ActivityHistoryPage` | Historique d'activité du projet |
+| `/admin/projects` | `PermissionRoute` (`MANAGE_PROJECTS` + `SELECT`) | `ProjectListPage` | Liste des projets |
+| `/admin/projects/create` | `PermissionRoute` (`MANAGE_PROJECTS` + `INSERT`) | `ProjectFormPage` (`mode="create"`) | Création de projet |
+| `/admin/projects/:id` | `PermissionRoute` (`MANAGE_PROJECTS` + `SELECT`) | `ProjectDetailPage` | Détail d'un projet |
+| `/admin/projects/:id/edit` | `PermissionRoute` (`MANAGE_PROJECTS` + `UPDATE`) | `ProjectFormPage` (`mode="edit"`) | Édition de projet |
+| `/admin/projects/:id/history` | `PermissionRoute` (`MANAGE_PROJECTS` + `SELECT`) | `ActivityHistoryPage` | Historique d'activité du projet |
 
 #### Messagerie & notifications
 | Chemin | Guard | Composant | Notes |
@@ -98,12 +97,14 @@ L'élément parent est :
 | `/admin/messages` | — | `MessagePage` | Messagerie (sous `ProtectedRoute` uniquement) |
 | `/admin/notifications` | — | `NotificationsPage` | Notifications (sous `ProtectedRoute` uniquement) |
 
-#### Administration (SuperAdmin uniquement)
+#### Administration (permission + action)
 | Chemin | Guard | Composant | Notes |
 |---|---|---|---|
-| `/admin/dashboard-admin` | `SuperAdminRoute` | `AdminDashboard` | Dashboard spécifique aux super-admins |
-| `/admin/admins` | `SuperAdminRoute` | `AdminListPage` | Gestion des administrateurs |
-| `/admin/roles` | `SuperAdminRoute` | `RoleListPage` | Gestion des rôles et permissions |
+| `/admin/dashboard-admin` | `PermissionRoute` (`VIEW_REPORTS` + `SELECT`) | `AdminDashboard` | Anciennement `SuperAdminRoute` |
+| `/admin/admins` | `PermissionRoute` (`MANAGE_ADMINS` + `SELECT`) | `AdminListPage` | Gestion des administrateurs |
+| `/admin/roles` | `PermissionRoute` (`MANAGE_ROLES` + `SELECT`) | `RoleListPage` | Gestion des rôles et permissions |
+
+Le rôle `SUPER_ADMIN` y accède via le bypass de `usePermissions`. À noter : `VIEW_REPORTS` étant accordé à plusieurs rôles (ADMIN, USER, …), `/admin/dashboard-admin` leur devient accessible — fuite assumée tant que le backend ne réserve pas une permission dédiée.
 
 ### Route fallback
 | Chemin | Composant | Notes |
@@ -144,10 +145,11 @@ Seul `ROUTES.HOME` est utilisé (`NotFoundPage`). `USERS` pointe vers `/users` (
 
 ## Points d'attention
 
-- **Typage permissions** : les guards (`PermissionRoute`, `SelfOrPermissionRoute`), le menu (`AdminNavigation.config.ts`) et `usePermissions` sont typés `PermissionName` et reçoivent des constantes `PERM.*` — une faute de frappe est désormais une erreur TypeScript.
+- **Typage permissions/actions** : `PermissionRoute` est typé `PermissionName` **+** `ActionCode` et reçoit des constantes `PERM.*` / `ACT.*` — une faute de frappe ou une action oubliée est une erreur TypeScript. `SelfRoute` ne prend aucune permission. `usePermissions` et le menu restent typés `PermissionName`.
+- **Routes : permission + action obligatoires** : une route n'est plus protégée par la seule présence de la permission. Exemple : `/admin/users/create` exige `MANAGE_USERS` + `INSERT` — un rôle possédant `MANAGE_USERS` sans le bit `INSERT` est redirigé vers `/admin`.
 - **Actions contrôlées côté client** : `/auth/me` renvoie `permissions: PermissionSummary[]` (`totalActionsAccordees`) ; `usePermissions().hasPermission(perm, action)` teste donc réellement le bit d'action, sans appel `/roles/actions-map`.
 - **Formulaire de rôle migré** : l'affichage et le pré-remplissage des permissions/actions s'appuient désormais sur les masques `totalActions` / `totalActionsAccordees` (`/roles/permissions/actions`, `/roles/actions-map`), plus sur la liste `actions` dépréciée.
 - **Recovery redirect** : `RecoveryProtectedRoute` redirige vers `/reccuperation-comptes` (correction apportée vs ancienne version pointant vers `/forgot-password`).
-- **SelfOrPermissionRoute** : se base sur `userId` numérique et `id` URL (converti via `Number(id)`). À vérifier si `id` peut ne pas être un nombre valide.
-- **SuperAdmin vs permissions** : `SuperAdminRoute` vérifie le rôle brut (`SUPER_ADMIN`), alors que `PermissionRoute` délègue à `usePermissions` qui inclut un bypass pour SUPER_ADMIN.
+- **SelfRoute** : se base sur `userId` numérique et `id` URL (converti via `Number(id)`). À vérifier si `id` peut ne pas être un nombre valide. Aucune permission ni action n'est consultée, y compris pour le `SUPER_ADMIN` (règle « seul moi »).
+- **SuperAdminRoute supprimé** : les pages `/admin/dashboard-admin`, `/admin/admins` et `/admin/roles` sont protégées par `PermissionRoute` (permission + action). Le `SUPER_ADMIN` y accède via le bypass de `usePermissions` (`user.role === "SUPER_ADMIN"` → `true`), plus par un garde de rôle dédié.
 - **Aucun lazy loading** : toutes les pages sont importées statiquement. Acceptable pour cette app, mais impacte la taille initiale du bundle.
