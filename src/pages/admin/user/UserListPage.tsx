@@ -55,11 +55,18 @@ export default function UserListPage() {
     const { user: currentUser } = useAuth();
     const { hasPermission } = usePermissions();
 
+    /**
+     * Un utilisateur ayant `MANAGE_ADMINS` + `SELECT` gère les comptes via la
+     * page dédiée (`/admin/admins`), qui couvre utilisateurs et admins : ce
+     * tableau d'utilisateurs ne lui est donc pas destiné.
+     */
+    const canManageAdmins = hasPermission(PERM.MANAGE_ADMINS, ACT.SELECT);
+
     useEffect(() => {
-        if (currentUser?.role === "SUPER_ADMIN") {
+        if (canManageAdmins) {
             navigate("/admin/admins", { replace: true });
         }
-    }, [currentUser, navigate]);
+    }, [canManageAdmins, navigate]);
 
 
     /**
@@ -267,8 +274,9 @@ export default function UserListPage() {
 
     /**
      * Après tous les hooks : jamais de return avant un hook.
+     * Un gestionnaire d'admins est redirigé vers `/admin/admins`.
      */
-    if (currentUser?.role === "SUPER_ADMIN") {
+    if (canManageAdmins) {
         return null;
     }
 
