@@ -112,11 +112,13 @@ Les noms d'actions se déduisent de ces masques via `maskToActions`. Types corre
 
 `/auth/me` expose `permissions: PermissionSummary[]` (nom + `totalActions` + `totalActionsAccordees`). Les masques accordés de l'utilisateur sont donc disponibles **directement dans la session**, sans appel dédié :
 
-1. `usePermissions` lit `user.permissions` et résout, pour une permission, son `totalActionsAccordees` (`getGrantedMask`) ;
+1. `usePermissions` lit `user.permissions` (normalisées) et résout, pour une permission, son `totalActionsAccordees` (`getGrantedMask`) ;
 2. `hasPermission(perm)` vérifie la présence du nom ; `hasPermission(perm, action)` teste ensuite `(masque & action) === action` ;
 3. le composant `<Allow>` (`src/components/common/Allow.tsx`) en dépend : il ne monte son contenu que si la permission est présente **et** le bit d'action accordé.
 
 Un masque connu, y compris `0`, est appliqué strictement. `SUPER_ADMIN` court-circuite tout. Ce contrôle est **purement visuel** : le backend reste l'autorité.
+
+**Repli (fail-open)** : `usePermissions` tolère la forme historique de la session (nom seul, `string`) en la normalisant en `{ name, totalActionsAccordees: undefined }`. Un masque absent ⇒ la seule présence de la permission vaut accord, ce qui évite de masquer toute l'interface si le backend ne renvoie pas encore les masques.
 
 ## Points d'attention
 

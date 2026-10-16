@@ -2,6 +2,23 @@ import useAuth from "@/hooks/useAuth";
 import type { ActionCode } from "@/constants/actions";
 import { hasAction as hasActionBit } from "@/constants/actions";
 import type { PermissionName } from "@/constants/permissions";
+import type { PermissionSummary } from "@/types/user";
+
+/**
+ * Normalise une permission de session en {@link PermissionSummary}.
+ *
+ * La session expose normalement des objets `PermissionSummary` porteurs du
+ * masque `totalActionsAccordees`; la forme historique ne fournissait que le
+ * nom (`string`). Une entrée sans masque est ramenée à un
+ * `totalActionsAccordees` absent, ce qui laisse `hasPermission` retomber sur
+ * « présence seule » (fail-open) plutôt que de masquer toute l'interface.
+ */
+const normalizePermission = (
+    permission: PermissionSummary | string
+): PermissionSummary =>
+    typeof permission === "string"
+        ? { name: permission, totalActions: 0 }
+        : permission;
 
 /**
  * Accès aux permissions de l'utilisateur connecté.
@@ -14,7 +31,7 @@ import type { PermissionName } from "@/constants/permissions";
 export default function usePermissions() {
     const { user } = useAuth();
 
-    const permissions = user?.permissions ?? [];
+    const permissions = (user?.permissions ?? []).map(normalizePermission);
 
     /**
      * Masque d'actions accordées pour une permission, ou `undefined` si la

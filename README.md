@@ -185,7 +185,7 @@ Chaque permission porte des actions identifiées par un code binaire (`INSERT = 
 </Allow>
 ```
 
-> `/auth/me` renvoie encore `permissions: string[]` (sans masques d'actions) : les masques accordés sont reconstruits côté client par `PermissionActionsProvider` à partir de `GET /roles/actions-map` (match sur le nom du rôle). `<Allow perm action>` teste alors réellement le bit d'action ; un masque inconnu retombe sur la seule présence de la permission (fail-open). Le formulaire de rôle, lui, s'appuie directement sur les masques `totalActions` / `totalActionsAccordees`.
+> `/auth/me` (et `login`/`refresh`) renvoie `permissions: PermissionSummary[]` — `{ name, totalActions, totalActionsAccordees }`. `<Allow perm action>` teste alors réellement le bit d'action. **Repli** : si une entrée est encore au format historique (nom seul, sans masque), `usePermissions` la laisse passer sur la seule présence de la permission (fail-open) — jamais de masquage involontaire. Le formulaire de rôle, lui, s'appuie directement sur les masques `totalActions` / `totalActionsAccordees`.
 
 ## Tests
 
