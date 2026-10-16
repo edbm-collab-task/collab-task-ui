@@ -19,6 +19,9 @@ import type { ProjectRes } from "@/types/project";
 import type { TaskRes } from "@/types/task";
 import { ConfirmPopup } from "@/components/common/ConfirmPopup";
 import { formatDateFull } from "@/utils/date";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 export default function ProjectListPage() {
     const navigate = useNavigate();
@@ -157,13 +160,15 @@ export default function ProjectListPage() {
                             {showArchived ? "Archivés" : "Actifs"}
                         </button>
 
-                        <button
-                            onClick={() => navigate("/admin/projects/create")}
-                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-[6.5px] text-sm font-semibold text-white shadow transition hover:bg-accent border border-primary hover:border-accent"
-                        >
-                            <Plus size={16} />
-                             Projet
-                        </button>
+                        <Allow perm={PERM.MANAGE_PROJECTS} action={ACT.INSERT}>
+                            <button
+                                onClick={() => navigate("/admin/projects/create")}
+                                className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-[6.5px] text-sm font-semibold text-white shadow transition hover:bg-accent border border-primary hover:border-accent"
+                            >
+                                <Plus size={16} />
+                                 Projet
+                            </button>
+                        </Allow>
                     </div>
                 </div>
             </div>
@@ -179,13 +184,15 @@ export default function ProjectListPage() {
                                 : "Aucun projet pour le moment"}
                     </p>
                     {!search && !showArchived && (
-                        <button
-                            onClick={() => navigate("/admin/projects/create")}
-                            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-primary to-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                        >
-                            <Plus size={16} />
-                            Créer le premier projet
-                        </button>
+                        <Allow perm={PERM.MANAGE_PROJECTS} action={ACT.INSERT}>
+                            <button
+                                onClick={() => navigate("/admin/projects/create")}
+                                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-primary to-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                            >
+                                <Plus size={16} />
+                                Créer le projet
+                            </button>
+                        </Allow>
                     )}
                 </div>
             ) : (
@@ -252,13 +259,15 @@ export default function ProjectListPage() {
 
                                 <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4">
                                     {project.isOwner && (
-                                        <button
-                                            onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
-                                            title="Modifier"
-                                            className="rounded-lg p-2 text-gray-400 transition  hover:text-accent"
-                                        >
-                                            <Pencil size={16} />
-                                        </button>
+                                        <Allow perm={PERM.MANAGE_PROJECTS} action={ACT.UPDATE}>
+                                            <button
+                                                onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
+                                                title="Modifier"
+                                                className="rounded-lg p-2 text-gray-400 transition  hover:text-accent"
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                        </Allow>
                                     )}
                                     <button
                                         onClick={() => navigate(`/admin/projects/${project.projectId}`)}
@@ -266,23 +275,25 @@ export default function ProjectListPage() {
                                     >
                                         Voir le tableau
                                     </button>
-                                    {showArchived ? (
-                                        <button
-                                            onClick={() => handleUnarchive(project)}
-                                            title="Désarchiver"
-                                            className="rounded-lg p-2 text-gray-400 transition hover:text-accent"
-                                        >
-                                            <ArchiveRestore size={16} />
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleArchive(project)}
-                                            title="Archiver"
-                                            className="rounded-lg p-2 text-gray-400 transition hover:text-accent"
-                                        >
-                                            <Archive size={16} />
-                                        </button>
-                                    )}
+                                    <Allow perm={PERM.MANAGE_PROJECTS} action={ACT.UPDATE}>
+                                        {showArchived ? (
+                                            <button
+                                                onClick={() => handleUnarchive(project)}
+                                                title="Désarchiver"
+                                                className="rounded-lg p-2 text-gray-400 transition hover:text-accent"
+                                            >
+                                                <ArchiveRestore size={16} />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleArchive(project)}
+                                                title="Archiver"
+                                                className="rounded-lg p-2 text-gray-400 transition hover:text-accent"
+                                            >
+                                                <Archive size={16} />
+                                            </button>
+                                        )}
+                                    </Allow>
                                 </div>
                             </div>
                         );

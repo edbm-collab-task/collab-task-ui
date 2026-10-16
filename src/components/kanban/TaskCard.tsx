@@ -3,6 +3,7 @@ import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree
 import Allow from '@/components/common/Allow';
 import { PERM } from '@/constants/permissions';
 import { ACT } from '@/constants/actions';
+import usePermissions from '@/hooks/usePermissions';
 
 /**
  * Propriétés de la carte de tâche.
@@ -76,6 +77,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     const isNested = depth > 0;
     // Une sous-tâche (parentTaskId renseigné) n'est pas déplaçable.
     const isSubtask = Boolean(task.parentTaskId);
+    // Le glisser-déposer (déplacement de tâche) exige `MANAGE_TASKS` + `UPDATE`.
+    const { hasPermission } = usePermissions();
+    const canDrag = !isSubtask && hasPermission(PERM.MANAGE_TASKS, ACT.UPDATE);
     // Le badge "Sous-tâche" n'est utile que pour une sous-tâche rendue en tête
     // de colonne (parent dans une autre colonne), pas pour une carte imbriquée.
     const showSubtaskBadge = isSubtask && !isNested;
@@ -91,19 +95,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     return (
         <div
             key={`${projectId}-${task.taskId}`}
-            draggable={!isSubtask}
+            draggable={canDrag}
             onClick={handleClick}
-            onDragStart={isSubtask ? undefined : () => setDraggedTask?.(task)}
+            onDragStart={canDrag ? () => setDraggedTask?.(task) : undefined}
             onDragEnd={
-                isSubtask
-                    ? undefined
-                    : () => {
+                canDrag
+                    ? () => {
                           setDraggedTask?.(null);
                           setOverColumn?.(null);
                       }
+                    : undefined
             }
             className={`group rounded-xl ${isSubtask ? 'bg-white/80' : 'bg-white'} shadow-sm ring-1 transition hover:shadow-md hover:ring-primary ${
-                isSubtask ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
+                canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
             } ${isNested ? 'p-3 ring-violet-100' : 'p-4 ring-gray-100'}`}
         >
             <div className="flex items-start justify-between gap-2">

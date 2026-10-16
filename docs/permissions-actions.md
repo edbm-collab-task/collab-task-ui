@@ -68,6 +68,16 @@ La liste de `PERM` est issue de `GET /roles/permissions/actions` (11 permissions
 
 Le composant s'appuie sur `usePermissions().hasPermission(perm, action)` : il ne monte son contenu que si la permission est présente et, lorsque `action` est fournie, le bit accordé correspondant (voir « Masques d'actions portés par la session »).
 
+Sites gardés par `<Allow>` (permission + action) :
+
+| Zone | Action gardée | Permission + action |
+|---|---|---|
+| Commentaires / pièces jointes (`CommentPanel`, `CommentItem`, `TaskModal`, `MessageComposer`) | insertion / modification / suppression | `MANAGE_COMMENTS`, `MANAGE_ATTACHMENTS` |
+| Statuts de projet (`ProjectStatusSection`, `ProjectDetailPage`) | création / suppression | `MANAGE_STATUSES` + `INSERT` / `DELETE` |
+| Tâches (`KanbanBoard`, `TaskCard`) | création / modification / suppression / glisser-déposer | `MANAGE_TASKS` + `INSERT` / `UPDATE` / `DELETE` |
+| Projets (`ProjectListPage`, `ProjectDetailPage`) | création / édition / archivage | `MANAGE_PROJECTS` + `INSERT` / `UPDATE` |
+| Rôles (`RoleForm`) | soumission | `MANAGE_ROLES` + `INSERT` / `UPDATE` |
+
 ## Forme des données reçues
 
 ### `GET /roles/actions`

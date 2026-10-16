@@ -9,10 +9,11 @@ import {
     groupPermissionsByCategory
 } from "@/components/role/rolePermissions";
 import type { RoleFormProps } from "@/components/role/roleForm.types";
-import { ACTION_LABELS, maskToActions } from "@/constants/actions";
+import { ACTION_LABELS, ACT, maskToActions } from "@/constants/actions";
 import { getPermissionCategoryLabel } from "@/constants/permissionCategoryLabels";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
-import { getPermissionLabel } from "@/constants/permissions";
+import { getPermissionLabel, PERM } from "@/constants/permissions";
+import Allow from "@/components/common/Allow";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
 import type { PermissionWithActionMask, RoleActionsMapEntry } from "@/types/role";
 import {
@@ -628,14 +629,16 @@ export default function RoleForm({
                 >
                     Annuler
                 </button>
-                <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                    {isEditing ? "Mettre à jour" : "Créer"}
-                </button>
+                <Allow perm={PERM.MANAGE_ROLES} action={isEditing ? ACT.UPDATE : ACT.INSERT}>
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                        {isEditing ? "Mettre à jour" : "Créer"}
+                    </button>
+                </Allow>
             </div>
         </div>
     );
