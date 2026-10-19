@@ -197,7 +197,7 @@ export default function AdminListPage() {
     /**
      * Modifier le rôle — nécessite `MANAGE_USERS` + `UPDATE`.
      */
-    if (hasPermission(PERM.MANAGE_USERS, ACT.UPDATE)) {
+    if (hasPermission(PERM.MANAGE_USERS, ACT.UPDATE) || hasPermission(PERM.MANAGE_ADMINS, ACT.UPDATE)) {
 
         actions.push({
 
@@ -230,7 +230,7 @@ export default function AdminListPage() {
     /**
      * Activer / désactiver — nécessite `MANAGE_USERS` + `UPDATE`.
      */
-    if (hasPermission(PERM.MANAGE_USERS, ACT.UPDATE)) {
+    if (hasPermission(PERM.MANAGE_USERS, ACT.UPDATE) || hasPermission(PERM.MANAGE_ADMINS, ACT.UPDATE)) {
 
         actions.push(
 
@@ -252,11 +252,11 @@ export default function AdminListPage() {
     /**
      * Ajouter un utilisateur — nécessite `MANAGE_USERS` + `INSERT`.
      */
-    if (hasPermission(PERM.MANAGE_USERS, ACT.INSERT)) {
+    if (hasPermission(PERM.MANAGE_USERS, ACT.INSERT) || hasPermission(PERM.MANAGE_ADMINS, ACT.INSERT)) {
 
         headerActions.push({
 
-            label: "Ajouter un utilisateur",
+            label: "Ajouter",
 
             icon: <Plus size={18} />,
 
@@ -375,10 +375,10 @@ export default function AdminListPage() {
                     value={statusFilter}
 
                     options={[
-                        {
-                            label: "Tous",
-                            value: "all"
-                        },
+                        // {
+                        //     label: "Tous",
+                        //     value: "all"
+                        // },
                         {
                             label: "Actifs",
                             value: "active"
