@@ -19,13 +19,13 @@ On conserve le modèle existant (session stockée uniquement dans le contexte Re
 
 Fichier sans dépendance React (utilisable dans `axios.ts`). Il expose un bus d'événements léger :
 
-- `type SessionResyncReason = "navigation" | "focus" | "403" | "token-refresh"`
+- `type SessionResyncReason = "navigation" | "focus" | "sidebar" | "403" | "token-refresh"`
 - `onSessionResync(listener)` → retourne une fonction `unsubscribe`
 - `requestSessionResync(reason, options?)` → notifie tous les listeners
 
 **Throttling / dédoublonnage (conformément au comportement demandé) :**
 
-- **`navigation` / `focus`** : throttlés à **1 appel maximum toutes les 30 s**. Si l'utilisateur clique 10 pages en 5 secondes, un seul appel `GET /auth/me` est émis (évite le spam serveur).
+- **`navigation` / `focus` / `sidebar`** : throttlés à **1 appel maximum toutes les 60 s** (1 min). Si l'utilisateur clique 10 pages en 5 secondes, un seul appel `GET /auth/me` est émis (évite le spam serveur).
 - **`403` avec `force: true`** : contourne le throttle des raisons « douces », mais est **dédoublonné à 2 s** (plusieurs 403 simultanés n'envoient qu'une seule demande). Cela évite une rafale si une page effectue plusieurs requêtes refusées.
 - **`token-refresh` avec `user` fourni** : **aucun throttle**. Le `UserLoginRes` complet est déjà disponible dans la réponse `/auth/refresh` → `AuthProvider` l'injecte directement via `setUser` **sans appel HTTP supplémentaire** (optimisation + cohérence immédiate). Le test `deliversSession` vérifie la présence de `permissions` pour décider du bypass.
 
@@ -43,7 +43,8 @@ Modifications principales :
   - `token-refresh` + `refreshed.permissions` → `setUser(refreshed)` direct (zéro requête).
   - `403` → `const before = userRef.current`; `const after = await refreshUser({ resync: true })`; si `before` et `after` existent et que `sessionChanged(before, after)` détecte un changement (`role/codeRole` ou `permissions` sérialisées) → `toast.success("Vos droits ont été mis à jour.")`. Sinon : **aucun toast** (le toast « Accès refusé » existant dans `axios.ts` reste suffisant).
   - `navigation` / `focus` → `await refreshUser({ resync: true })` (aucun toast).
-- **Focus / visibilité de l'onglet** (effet `[]`) : écoute `visibilitychange` + `focus`. Si l'onglet redevient visible **et qu'une session est active** (`userRef.current`), appelle `requestSessionResync("focus")` (throttlé 30 s).
+- **Focus / visibilité de l'onglet** (effet `[]`) : écoute `visibilitychange` + `focus`. Si l'onglet redevient visible **et qu'une session est active** (`userRef.current`), appelle `requestSessionResync("focus")` (throttlé 60 s).
+- **Ouverture du sidebar** (`AdminLayout`, effet sur `sidebarOpen`) : à chaque ouverture du sidebar (bouton hamburger, mobile), appelle `requestSessionResync("sidebar")` (throttlé 60 s partagé) — les menus reflètent les derniers droits avant que l'utilisateur ne navigue.
 - **Synchronisation multi-onglets** (effet `[]`) : `storage` event. Si `accessToken` devient `null` dans un autre onglet → `setUser(null)` (logout propagé entre onglets). Les autres onglets se déconnectent naturellement sans reload forcé.
 
 **Comparaison de sessions :** `sessionChanged(a,b)` compare `role`, `codeRole` et `JSON.stringify(a.permissions)` (masques `totalActionsAccordées` inclus). Cela évite de spammer un toast quand aucun droit n'a réellement évolué.
@@ -66,7 +67,7 @@ useEffect(() => {
 ```
 
 - **Skip du 1er montage** : `AuthProvider` exécute déjà `refreshUser()` à son `useEffect([])`. On évite donc un double appel HTTP au chargement initial de l'app.
-- **Déclenché sur `location.pathname` uniquement** : un changement de route sous `/admin/*` provoque une demande de resync (throttlée 30 s côté bus). Comme **toutes** les routes `/admin` passent par `ProtectedRoute`, ce seul effet couvre 100 % des navigations dans la zone admin.
+- **Déclenché sur `location.pathname` uniquement** : un changement de route sous `/admin/*` provoque une demande de resync (throttlée 60 s côté bus). Comme **toutes** les routes `/admin` passent par `ProtectedRoute`, ce seul effet couvre 100 % des navigations dans la zone admin.
 
 ### 4. Intercepteur HTTP : `src/api/axios.ts`
 
@@ -78,7 +79,7 @@ useEffect(() => {
 ## Comportement attendu (scénario validé)
 
 1. **Admin modifie les droits** d'un utilisateur connecté (backend). La session côté navigateur est inchangée à cet instant.
-2. **Utilisateur navigue** vers une autre route sous `/admin` → `ProtectedRoute` détecte le changement de `pathname` → `requestSessionResync("navigation")` (throttlé 30 s). `GET /auth/me` est appelé → `AuthProvider.setUser` reçoit la **nouvelle session**.
+2. **Utilisateur navigue** vers une autre route sous `/admin` → `ProtectedRoute` détecte le changement de `pathname` → `requestSessionResync("navigation")` (throttlé 60 s). `GET /auth/me` est appelé → `AuthProvider.setUser` reçoit la **nouvelle session**.
 3. **State mis à jour → UI se réévalue seule.** `usePermissions()`, `Allow`, `AdminMenu`, `TaskCard`, `Dashboard`, `PermissionRoute` lisent tous `user` du contexte React. Un bouton/entrée de menu qui doit disparaître disparaît immédiatement au re-render.
 4. **Pas de toast automatique sur navigation/focus** (conformément au choix). Seul le **cas 403 avec changement effectif** peut afficher `toast.success("Vos droits ont été mis à jour.")`.
 5. **Navigation vers une route non autorisée** : l'utilisateur clique → React rend **d'abord** avec les anciens droits (très court flash possible, le temps du réseau). Le `GET /auth/me` revient → `setUser(nouveaux droits)` → `PermissionRoute` re-rend et redirige vers `/admin` (`Navigate to="/admin" replace />`). **Important :** la sécurité reste assurée côté backend (tout appel d'API non autorisé renverra 403). Ce mécanisme est purement de **cohérence UI** (évite d'afficher une page inaccessible avant la resync).
@@ -93,7 +94,7 @@ useEffect(() => {
 ## Points de vérification (manuel)
 
 - [ ] Ouvrir 2 onglets `/admin`. Changer les droits d'un utilisateur via un compte admin (autre onglet ou autre session). Revenir sur l'onglet ciblé (focus) → droits mis à jour (sans reload).
-- [ ] Navigation rapide sur 10 pages `/admin/*` → 1 seul appel `GET /auth/me` visible dans Network (throttle 30 s).
+- [ ] Navigation rapide sur 10 pages `/admin/*` → 1 seul appel `GET /auth/me` visible dans Network (throttle 60 s).
 - [ ] Retirer une permission à un utilisateur connecté. Celui-ci tente une action → reçoit 403, un resync forcé se déclenche ; si les droits ont changé → toast « Vos droits ont été mis à jour. », puis redirection naturelle par les guards si sur une route perdue.
 - [ ] Logout dans onglet 1 → onglet 2 passe automatiquement à `/login` (via `storage`).
 - [ ] Mise hors-ligne, bascule d'onglet → pas de déconnexion.
