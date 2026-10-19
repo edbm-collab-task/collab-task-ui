@@ -1,6 +1,7 @@
 import { API_CONFIG, API_ENDPOINTS } from "@/api/constants";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { requestSessionResync } from "@/services/auth/sessionSync";
 
 export const api = axios.create({
     baseURL: API_CONFIG.BASE_URL,
@@ -72,6 +73,7 @@ const { data } = await axios.post(
                 );
                 if (data?.accessToken) localStorage.setItem("accessToken", data.accessToken);
                 if (data?.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
+                if (data?.permissions) requestSessionResync("token-refresh", { user: data });
                 processQueue(null);
                 return api(originalRequest);
             } catch (refreshError) {
@@ -83,6 +85,10 @@ const { data } = await axios.post(
             } finally {
                 isRefreshing = false;
             }
+        }
+
+        if (status === 403 && !originalRequest.url.includes("/auth/")) {
+            requestSessionResync("403", { force: true });
         }
 
         if (!originalRequest.silent) {

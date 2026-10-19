@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useToggle } from "@/hooks/useToggle";
+import { requestSessionResync } from "@/services/auth/sessionSync";
 
 export default function AdminLayout() {
 
     const [sidebarOpen, toggleSidebar, setSidebarOpen] = useToggle();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+    /**
+     * Resynchronise les droits à chaque ouverture du sidebar (throttlé 1 min
+     * par sessionSync) : les menus reflètent les derniers permissions avant
+     * que l'utilisateur ne navigue.
+     */
+    useEffect(() => {
+        if (sidebarOpen) requestSessionResync("sidebar");
+    }, [sidebarOpen]);
 
     return (
         <div className="flex h-screen overflow-hidden bg-gray-100">

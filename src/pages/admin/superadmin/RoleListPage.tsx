@@ -10,10 +10,14 @@ import RoleForm from "@/components/role/RoleForm";
 import { ROLE_FORM_LABELS } from "@/components/role/roleForm.constants";
 
 import type { TableAction, HeaderAction } from "@/types/table";
-import type { Role, RoleFormData } from "@/types/role";
+import type { Role, RoleFormData, PermissionWithActionMask, RoleActionsMap } from "@/types/role";
 import { roleService } from "@/services/role/role.service";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
+import { getPermissionLabel } from "@/constants/permissions";
 import { normalizeRoleCode } from "@/utils/roleCode";
+import usePermissions from "@/hooks/usePermissions";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface RoleTable {
     id: number;
@@ -25,6 +29,12 @@ interface RoleTable {
 export default function RoleListPage() {
 
     const [roles, setRoles] = useState<RoleTable[]>([]);
+    const { hasPermission } = usePermissions();
+    /**
+     * Rôles bruts (avec leurs permissions), conservés pour alimenter le
+     * sélecteur de modèle du formulaire sans dépendre de `actions-map`.
+     */
+    const [allRoles, setAllRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
@@ -37,17 +47,24 @@ export default function RoleListPage() {
      */
     const [allRoleCodes, setAllRoleCodes] = useState<{ id: number; codeRole: string }[]>([]);
     /**
-     * Catalogue complet des permissions, transmis au formulaire de rôle.
+     * Catalogue complet des permissions (avec leurs actions possibles),
+     * transmis au formulaire de rôle.
      */
-    const [allPermissions, setAllPermissions] = useState<Role["permissions"]>([]);
+    const [allPermissions, setAllPermissions] = useState<PermissionWithActionMask[]>([]);
+    /**
+     * Actions accordées de chaque rôle (masques), pour pré-remplir le
+     * formulaire sans un appel par rôle.
+     */
+    const [actionsMap, setActionsMap] = useState<RoleActionsMap>({});
     const pageSize = 5;
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const [rolesData, permsData] = await Promise.all([
+            const [rolesData, permsData, actionsMapData] = await Promise.all([
                 roleService.getAll(),
-                roleService.getAllPermissions()
+                roleService.getPermissionsWithActionMasks(),
+                roleService.getActionsMap()
             ]);
 
             const filtered = rolesData.filter(r => r.name !== "SUPER_ADMIN");
@@ -56,12 +73,14 @@ export default function RoleListPage() {
                 name: r.name,
                 codeRole: r.codeRole || "—",
                 permissions: r.permissions.length > 0
-                    ? r.permissions.map(p => p.name).join(", ")
+                    ? r.permissions.map(p => getPermissionLabel(p.name)).join(", ")
                     : "Aucune permission"
             }));
 
             setRoles(tableData);
+            setAllRoles(rolesData);
             setAllPermissions(permsData);
+            setActionsMap(actionsMapData);
             setAllRoleCodes(
                 rolesData.map(r => ({ id: r.id, codeRole: r.codeRole ?? "" }))
             );
@@ -91,16 +110,38 @@ export default function RoleListPage() {
     }, [allRoleCodes, editingRole]);
 
     /**
-     * Soumission du formulaire : création ou mise à jour selon `editingRole`,
-     * puis fermeture et rechargement de la liste.
+     * Rôles proposés comme modèle de création, avec leurs permissions (noms),
+     * hors SUPER_ADMIN.
+     */
+    const sourceRoles = useMemo(
+        () =>
+            allRoles
+                .filter(r => r.name !== "SUPER_ADMIN")
+                .map(r => ({
+                    id: r.id,
+                    name: r.name,
+                    permissions: r.permissions.map(p => p.name)
+                })),
+        [allRoles]
+    );
+
+    /**
+     * Soumission du formulaire : création ou mise à jour du rôle, puis
+     * enregistrement de ses actions (endpoint dédié). Les actions sont
+     * retirées du corps envoyé à `create`/`update`, qui ne les accepte pas.
      */
     const handleSave = async (data: RoleFormData) => {
         try {
+            const { actions, ...rolePayload } = data;
+            const saved = editingRole
+                ? await roleService.update(editingRole.id, rolePayload)
+                : await roleService.create(rolePayload);
+
+            await roleService.setActions(saved.id, actions);
+
             if (editingRole) {
-                await roleService.update(editingRole.id, data);
                 toast.success("Rôle mis à jour avec succès");
             } else {
-                await roleService.create(data);
                 toast.success("Rôle créé avec succès");
             }
             setShowForm(false);
@@ -141,25 +182,40 @@ export default function RoleListPage() {
         "permissions"
     ]);
 
-    const actions: TableAction<RoleTable>[] = [
-        {
+    /**
+     * Actions par ligne. Le masquage se fait ici, selon la permission et
+     * l'action requises.
+     */
+    const actions: TableAction<RoleTable>[] = [];
+
+    /**
+     * Modifier un rôle — nécessite `MANAGE_ROLES` + `UPDATE`.
+     */
+    if (hasPermission(PERM.MANAGE_ROLES, ACT.UPDATE)) {
+        actions.push({
             label: "Modifier",
             type: "edit",
             icon: <Pencil size={18} />,
-            roles: ["SUPER_ADMIN"],
             onClick: (role) => handleEdit(role)
-        }
-    ];
+        });
+    }
 
-    const headerActions: HeaderAction[] = [
-        {
+    /**
+     * Actions de l'en-tête.
+     */
+    const headerActions: HeaderAction[] = [];
+
+    /**
+     * Ajouter un rôle — nécessite `MANAGE_ROLES` + `INSERT`.
+     */
+    if (hasPermission(PERM.MANAGE_ROLES, ACT.INSERT)) {
+        headerActions.push({
             label: "Ajouter un rôle",
             icon: <Plus size={18} />,
             type: "primary",
-            roles: ["SUPER_ADMIN"],
             onClick: handleCreate
-        }
-    ];
+        });
+    }
 
     const filteredRoles = roles.filter(r => r.name !== "SUPER_ADMIN").filter(item => {
         const value = search.toLowerCase();
@@ -189,7 +245,8 @@ export default function RoleListPage() {
                     key={editingRole?.id ?? "create"}
                     editingRole={editingRole}
                     allPermissions={allPermissions}
-                    sourceRoles={roles.map(r => ({ id: r.id, name: r.name }))}
+                    actionsMap={actionsMap}
+                    sourceRoles={sourceRoles}
                     takenCodes={takenCodes}
                     onSubmit={handleSave}
                     onCancel={() => {
@@ -203,7 +260,6 @@ export default function RoleListPage() {
                 data={paginatedRoles}
                 columns={columns}
                 actions={actions}
-                roles={["SUPER_ADMIN"]}
                 loading={loading}
                 emptyMessage="Aucun rôle trouvé"
             />

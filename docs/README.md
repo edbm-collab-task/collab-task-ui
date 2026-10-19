@@ -9,6 +9,7 @@ Documentation d'ingénierie du frontend `collab-task-ui`. Elle est **extraite du
 | [getting-started.md](./getting-started.md) | Prérequis, installation, variables d'environnement, scripts npm, premiers pas et pièges de démarrage |
 | [architecture.md](./architecture.md) | Vue d'ensemble, couches et flux de données, rôle de chaque dossier, arborescence réelle, alias `@` |
 | [routing-et-permissions.md](./routing-et-permissions.md) | Table des routes, les 5 guards, layout et menu, modèle de permissions et de rôles |
+| [permissions-actions.md](./permissions-actions.md) | Modèle binaire des actions (codes `ACT`), constantes `PERM`, composant `<Allow>`, masques API `totalActions` / `totalActionsAccordees` |
 | [authentification-et-session.md](./authentification-et-session.md) | Cycle de session, stockage des tokens, intercepteurs, providers, récupération de mot de passe |
 | [couche-api.md](./couche-api.md) | Instance axios, `apiClient`, refresh automatique, `API_ENDPOINTS`, conventions des 15 services, multipart |
 | [types-enums-donnees.md](./types-enums-donnees.md) | Types `*Req`/`*Res`, enums, libellés, duplications `constant`/`constants`, mappers |
@@ -57,7 +58,7 @@ Documentation d'ingénierie du frontend `collab-task-ui`. Elle est **extraite du
 | **Moteur de formulaires** | Ensemble `FormField<T>` + `GlobalForm`/`GlobalEditForm` + `FormFieldControl` + `formLogic` |
 | **Schéma de formulaire** | Un tableau `FormField<T>[]` défini dans un fichier dédié (`src/components/...`) |
 | **`RoleType` / `RoleName`** | Codes de rôle (`U1S`, `A1D`, `S1ADM`) et noms (`USER`, `ADMIN`, `SUPER_ADMIN`) |
-| **Permission** | Chaîne fournie par le backend (`VIEW_USERS`…), testée par `usePermissions().hasPermission()` |
+| **Permission** | Chaîne fournie par le backend (`MANAGE_USERS`…), testée par `usePermissions().hasPermission()` |
 | **Bypass SUPER_ADMIN** | Un `role === "SUPER_ADMIN"` passe toutes les vérifications de permission front |
 | **Recovery** | Flux de récupération de mot de passe, protégé par son propre context (`RecoveryAuthProvider`) |
 | **`silent`** | Drapeau maison qui désactive le toast d'erreur global de l'intercepteur |

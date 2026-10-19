@@ -71,7 +71,7 @@ src/
 ├── store/                # État global
 ├── types/                # Types et interfaces TypeScript
 ├── utils/                # Fonctions utilitaires
-├── constants/            # Constantes globales
+├── constants/            # Constantes globales (actions, permissions, libellés)
 ├── layouts/              # Layouts principaux
 ├── styles/               # Styles globaux
 ├── App.tsx
@@ -171,6 +171,21 @@ Les pages nécessitant une authentification sont encapsulées par le composant `
 | USER | Accès aux projets et tâches qui lui sont attribués |
 
 Les permissions sont vérifiées côté backend.
+
+### Permissions et actions (frontend)
+
+Chaque permission porte des actions identifiées par un code binaire (`INSERT = 1`, `SELECT = 2`, `UPDATE = 4`, …), combinées en un seul masque entier — sur le modèle des permissions Unix. Détails : [`docs/permissions-actions.md`](docs/permissions-actions.md).
+
+- Constantes : `src/constants/actions.ts` (`ACT`, `ALL_ACTIONS` calculé, helpers `hasAction`/`actionsToMask`) et `src/constants/permissions.ts` (`PERM`, `PERMISSION_LABELS`, `getPermissionLabel`). Masques accordés : `src/contexts/PermissionActionsProvider.tsx` + `src/hooks/usePermissionActions.ts`.
+- Composant `src/components/common/Allow.tsx` : masque son contenu si la permission (et l'action) manque.
+
+```tsx
+<Allow perm={PERM.MANAGE_PROJECTS} action={ACT.INSERT}>
+    <AddButton />
+</Allow>
+```
+
+> `/auth/me` (et `login`/`refresh`) renvoie `permissions: PermissionSummary[]` — `{ name, totalActions, totalActionsAccordees }`. `<Allow perm action>` teste alors réellement le bit d'action. **Repli** : si une entrée est encore au format historique (nom seul, sans masque), `usePermissions` la laisse passer sur la seule présence de la permission (fail-open) — jamais de masquage involontaire. Le formulaire de rôle, lui, s'appuie directement sur les masques `totalActions` / `totalActionsAccordees`.
 
 ## Tests
 

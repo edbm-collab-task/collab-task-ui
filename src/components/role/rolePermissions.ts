@@ -23,10 +23,10 @@ export const getPermissionCategoryKey = (perm: Permission): PermissionCategory =
  * de repli « Autres » est reléguée en fin de liste pour ne pas parasiter
  * l'affichage des catégories métier.
  */
-export const groupPermissionsByCategory = (
-    allPermissions: Permission[]
-): [PermissionCategory, Permission[]][] => {
-    const groups = new Map<PermissionCategory, Permission[]>();
+export const groupPermissionsByCategory = <T extends Permission>(
+    allPermissions: T[]
+): [PermissionCategory, T[]][] => {
+    const groups = new Map<PermissionCategory, T[]>();
 
     for (const perm of allPermissions) {
         const key = getPermissionCategoryKey(perm);
@@ -61,3 +61,20 @@ export const getCategoriesWithSelection = (
             perms.some(perm => selectedPermissions.includes(perm.name))
         )
         .map(([category]) => category);
+
+/**
+ * Catégories à déplier par défaut : celles qui portent au moins une permission
+ * cochée. Si aucune ne l'est, seule la première catégorie est dépliée.
+ *
+ * Sert à l'état initial (montage, choix d'un modèle) : l'utilisateur reste
+ * ensuite libre de replier/déplier manuellement.
+ */
+export const getDefaultOpenCategories = (
+    groups: [PermissionCategory, Permission[]][],
+    selectedPermissions: string[]
+): PermissionCategory[] => {
+    const withSelection = getCategoriesWithSelection(groups, selectedPermissions);
+    if (withSelection.length > 0) return withSelection;
+
+    return groups.length > 0 ? [groups[0][0]] : [];
+};

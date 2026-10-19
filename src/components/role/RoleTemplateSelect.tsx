@@ -57,8 +57,8 @@ export default function RoleTemplateSelect({
                 />
             </div>
             <p className="mt-1 text-xs text-gray-500">
-                Les permissions du rôle sélectionné seront pré-remplies. Le nom
-                et le code restent à saisir.
+                Les permissions et actions du rôle sélectionné seront
+                pré-remplies. Le nom et le code restent à saisir.
             </p>
         </div>
     );

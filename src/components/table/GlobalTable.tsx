@@ -14,8 +14,6 @@ interface Props<T> {
 
     actions?: TableAction<T>[];
 
-    roles?: string[];
-
     loading?: boolean;
 
     emptyMessage?: string;
@@ -26,8 +24,7 @@ interface Props<T> {
 export default function GlobalTable<T>({
     data,
     columns,
-    actions = [],
-    roles = []
+    actions = []
 }: Props<T>) {
 
     return (
@@ -102,7 +99,6 @@ export default function GlobalTable<T>({
                                         <TableActions
                                             row={row}
                                             actions={actions}
-                                            roles={roles}
                                         />
 
                                     </td>

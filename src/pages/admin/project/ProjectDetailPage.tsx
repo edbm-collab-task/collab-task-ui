@@ -24,6 +24,9 @@ import type { UserResponse } from "@/types/user";
 import type { ConfirmConfig } from "@/components/project/confirmConfig";
 import { STATUSES } from "@/types/task";
 import { toStatusListFromSeed } from "@/mappers/status.mapper";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 function formatDate(date: string | null) {
     if (!date) return "—";
@@ -319,22 +322,26 @@ export default function ProjectDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2 box-border w-full max-w-full overflow-hidden">
-                    <button
-                        onClick={() => setShowNewStatus(!showNewStatus)}
-                        className="inline-flex min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent max-sm:text-sm"
-                    >
-                        <Plus size={15} />
-                        {showNewStatus ? "Fermer" : "Statut"}
-                    </button>
+                    <Allow perm={PERM.MANAGE_STATUSES} action={ACT.INSERT}>
+                        <button
+                            onClick={() => setShowNewStatus(!showNewStatus)}
+                            className="inline-flex min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent max-sm:text-sm"
+                        >
+                            <Plus size={15} />
+                            {showNewStatus ? "Fermer" : "Statut"}
+                        </button>
+                    </Allow>
 
                     {project.isOwner && (
-                        <button
-                            onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
-                            className="inline-flex 	min-w-0 max-sm:text-sm items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
-                        >
-                            <Pencil size={15} />
-                            Modifier le projet
-                        </button>
+                        <Allow perm={PERM.MANAGE_PROJECTS} action={ACT.UPDATE}>
+                            <button
+                                onClick={() => navigate(`/admin/projects/${project.projectId}/edit`)}
+                                className="inline-flex 	min-w-0 max-sm:text-sm items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-accent hover:text-accent"
+                            >
+                                <Pencil size={15} />
+                                Modifier le projet
+                            </button>
+                        </Allow>
                     )}
 
                     <button

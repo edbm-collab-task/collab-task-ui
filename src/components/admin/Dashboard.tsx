@@ -7,6 +7,7 @@ import { projectService } from "@/services/project/project.service";
 import { StatsNotAvailableError } from "@/services/dashboard/errors";
 import type { DashboardData, DashboardPeriodParams } from "@/types/dashboard";
 import usePermissions from "@/hooks/usePermissions";
+import { PERM } from "@/constants/permissions";
 import { useDashboardPeriod } from "@/hooks/useDashboardPeriod";
 import type { ProjectRes } from "@/types/project";
 
@@ -21,7 +22,7 @@ import OverdueTasksModal from "./dashboard/OverdueTasksModal";
 export default function Dashboard() {
 
     const { hasPermission } = usePermissions();
-    const canView = hasPermission("VIEW_REPORTS");
+    const canView = hasPermission(PERM.VIEW_REPORTS);
 
     const { period, setPeriod, startDate, setStartDate, endDate, setEndDate, shouldFetch, periodParams } = useDashboardPeriod();
     const [data, setData] = useState<DashboardData | null>(null);

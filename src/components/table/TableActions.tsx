@@ -4,7 +4,6 @@ import type { TableAction } from "@/types/table";
 interface Props<T> {
     row: T;
     actions: TableAction<T>[];
-    roles: string[];
 }
 
 const actionStyles: Record<string, string> = {
@@ -17,8 +16,7 @@ const actionStyles: Record<string, string> = {
 
 export default function TableActions<T>({
     row,
-    actions,
-    roles
+    actions
 }: Props<T>) {
 
     return (
@@ -27,10 +25,6 @@ export default function TableActions<T>({
 
             {
                 actions
-                    .filter(action =>
-                        !action.roles ||
-                        action.roles.some(role => roles.includes(role))
-                    )
                     .map(action => {
 
                         const icon = action.icon as ReactNode | ((row: T) => ReactNode);

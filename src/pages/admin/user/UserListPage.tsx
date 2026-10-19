@@ -17,6 +17,9 @@ import { userDetailFields } from "@/components/details/userDetails";
 import { userService } from "@/services/user/user.service";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import usePermissions from "@/hooks/usePermissions";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 type StatusFilter = "all" | "active" | "disable";
 
@@ -50,12 +53,20 @@ export default function UserListPage() {
     const navigate = useNavigate();
 
     const { user: currentUser } = useAuth();
+    const { hasPermission } = usePermissions();
+
+    /**
+     * Un utilisateur ayant `MANAGE_ADMINS` + `SELECT` gère les comptes via la
+     * page dédiée (`/admin/admins`), qui couvre utilisateurs et admins : ce
+     * tableau d'utilisateurs ne lui est donc pas destiné.
+     */
+    const canManageAdmins = hasPermission(PERM.MANAGE_ADMINS, ACT.SELECT);
 
     useEffect(() => {
-        if (currentUser?.role === "SUPER_ADMIN") {
+        if (canManageAdmins) {
             navigate("/admin/admins", { replace: true });
         }
-    }, [currentUser, navigate]);
+    }, [canManageAdmins, navigate]);
 
 
     /**
@@ -133,20 +144,25 @@ export default function UserListPage() {
 
     /**
      * Actions disponibles pour chaque utilisateur.
+     *
+     * Chaque action est ajoutée selon la permission et l'action requises :
+     * le masquage se fait donc ici, au niveau de la page.
      */
-    const actions: TableAction<UserTable>[] = [
+    const actions: TableAction<UserTable>[] = [];
 
-        /**
-          * Voir les détails.
-          */
-        {
+
+    /**
+     * Voir les détails — nécessite `MANAGE_USERS` + `SELECT`.
+     */
+    if (hasPermission(PERM.MANAGE_USERS, ACT.SELECT)) {
+
+        actions.push({
+
             label: "Voir plus",
 
             type: "view",
 
             icon: <Eye size={18} />,
-
-            roles: ["ADMIN"],
 
             onClick: async (user) => {
 
@@ -167,38 +183,51 @@ export default function UserListPage() {
                     );
                 }
             },
-        },
+        });
+    }
 
 
-        createAccountStatusAction<UserTable, StatusFilter>({
-            label: "Activer / Désactiver",
-            roles: ["ADMIN"],
-            statusFilter,
-            onReload: loadUsers,
-        })
-    ];
+    /**
+     * Activer / désactiver — nécessite `MANAGE_USERS` + `UPDATE`.
+     */
+    if (hasPermission(PERM.MANAGE_USERS, ACT.UPDATE)) {
+
+        actions.push(
+
+            createAccountStatusAction<UserTable, StatusFilter>({
+                label: "Activer / Désactiver",
+                statusFilter,
+                onReload: loadUsers,
+            })
+        );
+    }
 
 
     /**
      * Actions de l'en-tête.
      */
-    const headerActions: HeaderAction[] = [
+    const headerActions: HeaderAction[] = [];
 
-        {
+
+    /**
+     * Ajouter un utilisateur — nécessite `MANAGE_USERS` + `INSERT`.
+     */
+    if (hasPermission(PERM.MANAGE_USERS, ACT.INSERT)) {
+
+        headerActions.push({
+
             label: "Ajouter",
 
             icon: <Plus size={18} />,
 
             type: "primary",
 
-            roles: ["USER", "ADMIN"],
-
             onClick: () => {
 
                 navigate("/admin/users/create");
             }
-        }
-    ];
+        });
+    }
 
 
     /**
@@ -245,8 +274,9 @@ export default function UserListPage() {
 
     /**
      * Après tous les hooks : jamais de return avant un hook.
+     * Un gestionnaire d'admins est redirigé vers `/admin/admins`.
      */
-    if (currentUser?.role === "SUPER_ADMIN") {
+    if (canManageAdmins) {
         return null;
     }
 
@@ -332,8 +362,6 @@ export default function UserListPage() {
                 columns={columns}
 
                 actions={actions}
-
-                roles={["ADMIN"]}
 
                 loading={loading}
 

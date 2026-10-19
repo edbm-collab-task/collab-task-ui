@@ -7,13 +7,15 @@ import { useState, useEffect } from "react";
 import { directionService } from "@/services/direction/direction.service";
 import { roleService } from "@/services/role/role.service";
 import { createUserFormFields } from "@/components/user/createUserForm"
-import useAuth from "@/hooks/useAuth";
+import usePermissions from "@/hooks/usePermissions";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 export default function CreateUserPage() {
 
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const isSuperAdmin = user?.role === "SUPER_ADMIN";
+    const { hasPermission } = usePermissions();
+    const canManageAdmins = hasPermission(PERM.MANAGE_ADMINS, ACT.SELECT);
     const [directions, setDirections] = useState<DirectionRes[]>([]);
     const [roles, setRoles] = useState<{ label: string; value: string }[]>([]);
 
@@ -22,7 +24,7 @@ export default function CreateUserPage() {
         try {
             await authService.create(data);
 
-            navigate(isSuperAdmin ? "/admin/admins" : "/admin/users");
+            navigate(canManageAdmins ? "/admin/admins" : "/admin/users");
 
         } catch (error) {
 
@@ -48,7 +50,7 @@ export default function CreateUserPage() {
         const loadRoles = async () => {
             try {
                 const allRoles = await roleService.getAll();
-                const filtered = isSuperAdmin
+                const filtered = canManageAdmins
                     ? allRoles
                     : allRoles.filter(r => r.name === "USER");
                 setRoles(filtered.map(r => ({ label: r.name, value: r.codeRole })));
@@ -57,7 +59,7 @@ export default function CreateUserPage() {
             }
         };
         loadRoles();
-    }, [isSuperAdmin]);
+    }, [canManageAdmins]);
 
     return (
         <div className="mx-auto  mt-10">

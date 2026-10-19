@@ -4,6 +4,9 @@ import EmojiPicker from "./EmojiPicker";
 import MentionPicker from "./MentionPicker";
 import type { ChatUser } from "@/types/message";
 import { formatFileSizeEnShort } from "@/utils/format";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     users: ChatUser[];
@@ -224,11 +227,13 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
                     <div className="relative flex items-center gap-1">
 
                         {/* FILE */}
-                        <label title="Ajouter un fichier" className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary">
-                            <Paperclip size={17} />
+                        <Allow perm={PERM.MANAGE_ATTACHMENTS} action={ACT.INSERT}>
+                            <label title="Ajouter un fichier" className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary">
+                                <Paperclip size={17} />
 
-                            <input ref={fileRef} type="file" multiple className="hidden" onChange={handleFiles} disabled={sending} />
-                        </label>
+                                <input ref={fileRef} type="file" multiple className="hidden" onChange={handleFiles} disabled={sending} />
+                            </label>
+                        </Allow>
 
                         {/* EMOJI */}
                         <button type="button" title="Emoji" onClick={() => { setShowEmoji((value) => !value); setShowMention(false); }} disabled={sending} className="flex h-8 w-8 items-center justify-center rounded-full text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary disabled:opacity-40">

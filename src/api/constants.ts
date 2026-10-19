@@ -97,6 +97,10 @@ export const API_ENDPOINTS = {
         UPDATE: "/roles",
         DELETE: "/roles",
         PERMISSIONS: "/roles/permissions",
+        PERMISSIONS_ACTIONS: "/roles/permissions/actions",
+        ACTIONS: "/roles/actions",
+        ACTIONS_MAP: "/roles/actions-map",
+        ROLE_ACTIONS: (id: number) => `/roles/${id}/actions`,
     },
 
     ADMINS: {

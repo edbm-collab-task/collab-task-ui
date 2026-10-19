@@ -34,7 +34,7 @@ index.html
             └─ src/router/index.tsx
                  ├─ routes publiques  (/, /login, /register, recovery…)
                  └─ /admin → ProtectedRoute → AdminLayout (<Outlet/>)
-                        └─ PermissionRoute | SelfOrPermissionRoute | SuperAdminRoute
+                        └─ PermissionRoute | SelfRoute (profil perso)
 
 Page  →  hook (useXxx) ou service (xxxService)
      →  apiClient  (retourne response.data)
@@ -70,7 +70,7 @@ Le reste de l'état vit dans les pages/composants (`useState` + `useEffect`), av
 | Dossier | Rôle |
 |---|---|
 | `src/api/` | Couche HTTP de bas niveau : instance axios, wrapper `apiClient`, table `API_ENDPOINTS` |
-| `src/router/` | Déclaration unique des routes (`index.tsx`) + les 5 guards (`ProtectedRoute`, `PermissionRoute`, `SelfOrPermissionRoute`, `SuperAdminRoute`, `RecoveryProtectedRoute`) |
+| `src/router/` | Déclaration unique des routes (`index.tsx`) + les 4 guards (`ProtectedRoute`, `PermissionRoute`, `SelfRoute`, `RecoveryProtectedRoute`) |
 | `src/pages/` | Écrans, un import = une route ; sous-dossiers `auth/`, `admin/<domaine>/`, `user/` |
 | `src/components/` | Composants regroupés **par domaine fonctionnel** : `admin/`, `kanban/`, `message/`, `table/`, `Form/`, `common/`, `details/`, `modal/`, `notification/`, `project/`, `user/`, `direction/` |
 | `src/services/` | 16 services (`xxx.service.ts` → objet `xxxService`), un par domaine métier |
@@ -79,7 +79,7 @@ Le reste de l'état vit dans les pages/composants (`useState` + `useEffect`), av
 | `src/types/` | 18 fichiers de contrats API, convention `*Req` (corps envoyé) / `*Res` (réponse reçue) + types UI (`table.ts`) |
 | `src/enum/` | Codes énumérés en objets `as const` (`role.enum.ts`, `gender.enum.ts`) — les `enum` TS sont interdits (voir contraintes plus bas) |
 | `src/mappers/` | Conversions DTO ↔ type UI, fonctions `toXxx` (`auth.mapper.ts`, `direction.mapper.ts`, `status.mapper.ts`) |
-| `src/constants/` | Libellés d'affichage (`roleLabels.ts`, `permissionCategoryLabels.ts`) |
+| `src/constants/` | Constantes partagées : libellés (`roleLabels.ts`, `permissionCategoryLabels.ts`) et permissions/actions (`actions.ts`, `permissions.ts`) |
 | `src/constant/` | **Homonyme singulier** : `routes.ts` uniquement, quasi inutilisé — vérifier l'orthographe avant d'importer |
 | `src/utils/` | Fonctions pures : `avatar`, `date`, `format`, `image`, `roleCode`, `sparkline`, `taskTree`, `time` |
 | `src/assets/` | Images importées en modules (`logo.png`, `hero.png`) |
@@ -101,8 +101,7 @@ src/
 │   ├── index.tsx         # <Routes> complet (imports statiques, pas de lazy)
 │   ├── ProtectedRoute.tsx
 │   ├── PermissionRoute.tsx
-│   ├── SelfOrPermissionRoute.tsx
-│   ├── SuperAdminRoute.tsx
+│   ├── SelfRoute.tsx
 │   └── RecoveryProtectedRoute.tsx
 │
 ├── pages/
@@ -119,7 +118,7 @@ src/
 │   ├── table/            # GlobalTable<T>, createColumns, Header/Filter/Pagination/Search/Actions
 │   ├── kanban/           # KanbanBoard, TaskCard, TaskModal, CommentPanel, Mention*, ReactionPicker…
 │   ├── message/          # ConversationSidebar, Message*, modales + message.socket.ts (STOMP)
-│   ├── common/           # BackButton, ConfirmPopup, EmptyState, ErrorBoundary, Spinner…
+│   ├── common/           # BackButton, ConfirmPopup, EmptyState, ErrorBoundary, Spinner, Allow…
 │   ├── details/          # globalDetail.tsx (DetailModal), userDetails.tsx
 │   ├── modal/            # confirmDelete.ts (SweetAlert2)
 │   ├── notification/     # NotificationBell.tsx
@@ -137,7 +136,7 @@ src/
 ├── types/                # 18 fichiers de contrats (*Req/*Res…)
 ├── enum/                 # role.enum.ts, gender.enum.ts (objets as const)
 ├── mappers/              # auth.mapper.ts, direction.mapper.ts, status.mapper.ts
-├── constants/            # roleLabels.ts, permissionCategoryLabels.ts
+├── constants/            # actions.ts, permissions.ts, roleLabels.ts, permissionCategoryLabels.ts
 ├── constant/             # routes.ts (singulier — homonyme déroutant)
 ├── utils/                # avatar, date, format, image, roleCode, sparkline, taskTree, time
 └── assets/               # logo.png, hero.png

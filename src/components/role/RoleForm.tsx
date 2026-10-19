@@ -5,15 +5,17 @@ import toast from "react-hot-toast";
 import RoleTemplateSelect from "@/components/role/RoleTemplateSelect";
 import { ROLE_CODE_MESSAGES } from "@/components/role/roleForm.constants";
 import {
-    getCategoriesWithSelection,
+    getDefaultOpenCategories,
     groupPermissionsByCategory
 } from "@/components/role/rolePermissions";
 import type { RoleFormProps } from "@/components/role/roleForm.types";
+import { ACTION_LABELS, ACT, maskToActions } from "@/constants/actions";
 import { getPermissionCategoryLabel } from "@/constants/permissionCategoryLabels";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
+import { getPermissionLabel, PERM } from "@/constants/permissions";
+import Allow from "@/components/common/Allow";
 import { RESERVED_ROLE_CODES } from "@/enum/role.enum";
-import type { Permission } from "@/types/role";
-import { roleService } from "@/services/role/role.service";
+import type { PermissionWithActionMask, RoleActionsMapEntry } from "@/types/role";
 import {
     ROLE_CODE_PATTERN,
     generateRoleCode,
@@ -36,6 +38,7 @@ import {
 export default function RoleForm({
     editingRole,
     allPermissions,
+    actionsMap,
     sourceRoles,
     takenCodes,
     onSubmit,
@@ -53,9 +56,20 @@ export default function RoleForm({
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
         editingRole?.permissions.map((p) => p.name) ?? []
     );
+    /**
+     * Actions cochées par permission. La clé est le nom de la permission, la
+     * valeur la liste des actions accordées. Une permission sans action
+     * sélectionnée est absente de la map.
+     */
+    const [selectedActions, setSelectedActions] = useState<Record<string, string[]>>({});
+    /**
+     * Permissions dont l'action « Voir » (`SELECT`) a été cochée
+     * automatiquement parce qu'une autre action a été sélectionnée. Permet de
+     * ne retirer ce `SELECT` que s'il n'a pas été choisi manuellement.
+     */
+    const [autoView, setAutoView] = useState<Set<string>>(() => new Set());
     /** Identifiant du rôle modèle choisi, ou `null` pour une création vierge. */
     const [templateRoleId, setTemplateRoleId] = useState<number | null>(null);
-    const [loadingTemplate, setLoadingTemplate] = useState(false);
     const [saving, setSaving] = useState(false);
     /**
      * Catégories dépliées. Synchronisées à chaque montage plutôt que dérivées
@@ -75,25 +89,95 @@ export default function RoleForm({
     );
 
     /**
-     * Catégories contenant au moins une permission cochée, à déplier
-     * automatiquement pour ne pas masquer une permission déjà attribuée.
+     * Convertit les actions accordées d'un rôle (masques `totalActionsAccordees`)
+     * en la map `permission → actions` attendue par les cases à cocher. Les
+     * permissions sans action accordée sont omises, comme après une saisie.
      */
-    const categoriesWithSelection = useMemo(
-        () => getCategoriesWithSelection(permissionsByCategory, selectedPermissions),
-        [permissionsByCategory, selectedPermissions]
-    );
+    const toSelectedActions = (
+        entry: RoleActionsMapEntry | undefined
+    ): Record<string, string[]> => {
+        const result: Record<string, string[]> = {};
+        if (!entry) return result;
+
+        for (const [name, grants] of Object.entries(entry.permissions)) {
+            const actions = maskToActions(grants.totalActionsAccordees);
+            if (actions.length > 0) result[name] = actions;
+        }
+        return result;
+    };
 
     /**
-     * Déploiement initial des catégories : celles qui portent une sélection en
-     * édition/modèle, toutes en création vierge. Les dépendances sont
+     * À partir des permissions d'un rôle et des masques d'actions accordées,
+     * résout l'ensemble des permissions à cocher et les actions associées.
+     *
+     * Les permissions dont le masque accordé vaut `0` sont écartées (une
+     * permission cochée sans aucune action n'a pas de sens). Celles absentes de
+     * la map (permission non exposée par `GET /roles/actions-map`) sont
+     * conservées, pour ne pas les détacher silencieusement du rôle.
+     */
+    const resolveRoleSelection = (
+        entry: RoleActionsMapEntry | undefined,
+        permissionNames: string[]
+    ): { kept: string[]; actions: Record<string, string[]> } => {
+        const kept = permissionNames.filter((name) => {
+            const grants = entry?.permissions[name];
+            return grants === undefined || grants.totalActionsAccordees > 0;
+        });
+
+        const allActions = toSelectedActions(entry);
+        const actions: Record<string, string[]> = {};
+        for (const name of kept) {
+            if (allActions[name]) actions[name] = allActions[name];
+        }
+
+        return { kept, actions };
+    };
+
+    /**
+     * Applique les permissions et actions d'un rôle au formulaire. Les
+     * permissions proviennent du rôle lui-même (`editingRole.permissions` ou
+     * permissions du modèle) et non des clés de `actionsMap`, qui diverge.
+     * Sans entrée (rôle introuvable), l'état courant est conservé.
+     */
+    const applyRoleGrants = (
+        entry: RoleActionsMapEntry | undefined,
+        permissionNames: string[]
+    ) => {
+        if (permissionNames.length === 0 && !entry) return;
+        const { kept, actions } = resolveRoleSelection(entry, permissionNames);
+        setSelectedPermissions(kept);
+        setSelectedActions(actions);
+        setAutoView(new Set());
+    };
+
+    /**
+     * Déploiement initial des catégories : celles qui portent une permission
+     * cochée, ou la première catégorie si aucune ne l'est. Les dépendances sont
      * volontairement omises : l'effet ne doit s'exécuter qu'au montage, pas à
      * chaque permission cochée/décochée (ce qui écraserait les replis manuels).
      */
     useEffect(() => {
         setOpenCategories(
-            isEditing
-                ? categoriesWithSelection
-                : permissionsByCategory.map(([category]) => category)
+            getDefaultOpenCategories(permissionsByCategory, selectedPermissions)
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    /**
+     * En édition, pré-remplit les permissions et actions déjà accordées au rôle
+     * depuis `actionsMap` (masques). Les dépendances sont volontairement omises :
+     * l'identifiant du rôle édité ne change pas pendant la vie du formulaire.
+     */
+    useEffect(() => {
+        if (editingRole === null) return;
+        const entry = actionsMap[editingRole.id];
+        const permissionNames = editingRole.permissions.map((p) => p.name);
+        applyRoleGrants(entry, permissionNames);
+        setOpenCategories(
+            getDefaultOpenCategories(
+                permissionsByCategory,
+                resolveRoleSelection(entry, permissionNames).kept
+            )
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -118,41 +202,165 @@ export default function RoleForm({
     const codeError = validateCode();
 
     /**
-     * Sélection d'un rôle modèle : charge ses permissions et les coche.
-     * Le nom et le code ne sont jamais modifiés (voir {@link RoleTemplateSelect}).
+     * Sélection d'un rôle modèle : pré-remplit permissions et actions depuis
+     * `actionsMap` (masques). Le nom et le code restent à saisir (voir
+     * {@link RoleTemplateSelect}).
      */
-    const handleTemplateChange = async (id: number | null) => {
+    const handleTemplateChange = (id: number | null) => {
         setTemplateRoleId(id);
 
         if (id === null) {
             setSelectedPermissions([]);
+            setSelectedActions({});
+            setAutoView(new Set());
+            setOpenCategories(getDefaultOpenCategories(permissionsByCategory, []));
             return;
         }
 
-        try {
-            setLoadingTemplate(true);
-            const template = await roleService.getById(id);
-            setSelectedPermissions(template.permissions.map((p) => p.name));
-            setOpenCategories(
-                getCategoriesWithSelection(
-                    permissionsByCategory,
-                    template.permissions.map((p) => p.name)
-                )
-            );
-        } catch (error) {
-            console.error("Erreur lors du chargement du rôle modèle :", error);
-            toast.error("Erreur lors du chargement du rôle modèle");
-        } finally {
-            setLoadingTemplate(false);
-        }
+        const template = sourceRoles.find((r) => r.id === id);
+        const entry = actionsMap[id];
+        const permissionNames =
+            template?.permissions ?? (entry ? Object.keys(entry.permissions) : []);
+        const { kept } = resolveRoleSelection(entry, permissionNames);
+
+        applyRoleGrants(entry, permissionNames);
+        setOpenCategories(getDefaultOpenCategories(permissionsByCategory, kept));
     };
 
-    const togglePermission = (permName: string) => {
+    /**
+     * Coche / décoche la permission parente.
+     *
+     * Le parent agit comme un « tout cocher / tout décocher » de ses propres
+     * actions : si toutes les actions de la permission sont déjà cochées, elles
+     * sont toutes retirées (ainsi que la permission) ; sinon elles sont toutes
+     * cochées (et la permission ajoutée). Portée limitée à cette permission.
+     */
+    const togglePermission = (perm: PermissionWithActionMask) => {
+        const actions = maskToActions(perm.totalActions);
+        const current = selectedActions[perm.name] ?? [];
+        const allChecked =
+            actions.length > 0 && actions.every((a) => current.includes(a));
+
+        if (allChecked) {
+            setSelectedActions((prev) => {
+                const rest = { ...prev };
+                delete rest[perm.name];
+                return rest;
+            });
+            setSelectedPermissions((prev) => prev.filter((p) => p !== perm.name));
+            setAutoView((prev) => {
+                const next = new Set(prev);
+                next.delete(perm.name);
+                return next;
+            });
+            return;
+        }
+
+        setSelectedActions((prev) => ({ ...prev, [perm.name]: [...actions] }));
         setSelectedPermissions((prev) =>
-            prev.includes(permName)
-                ? prev.filter((p) => p !== permName)
-                : [...prev, permName]
+            prev.includes(perm.name) ? prev : [...prev, perm.name]
         );
+        setAutoView((prev) => {
+            const next = new Set(prev);
+            next.delete(perm.name);
+            return next;
+        });
+    };
+
+    /**
+     * Coche / décoche une action pour une permission donnée.
+     *
+     * Règle « Voir » (`SELECT`) : toute autre action implique le droit de voir.
+     * - cocher une action non-`SELECT` ajoute automatiquement `SELECT` (marqué
+     *   comme auto-ajouté) ;
+     * - décocher `SELECT` déclenche une cascade : toutes les actions de la
+     *   permission sont retirées ;
+     * - retirer la dernière action non-`SELECT` retire le `SELECT` uniquement
+     *   s'il avait été auto-ajouté (un `SELECT` choisi manuellement est
+     *   conservé).
+     *
+     * La permission et ses actions restent synchronisées : elle est retirée
+     * dès qu'elle ne porte plus aucune action.
+     */
+    const toggleAction = (perm: PermissionWithActionMask, action: string) => {
+        const available = maskToActions(perm.totalActions);
+        const hasView = available.includes("SELECT");
+        const current = selectedActions[perm.name] ?? [];
+
+        const removePermission = () => {
+            setSelectedActions((prev) => {
+                const rest = { ...prev };
+                delete rest[perm.name];
+                return rest;
+            });
+            setSelectedPermissions((prev) => prev.filter((p) => p !== perm.name));
+        };
+
+        const clearAutoView = () => {
+            setAutoView((prev) => {
+                if (!prev.has(perm.name)) return prev;
+                const next = new Set(prev);
+                next.delete(perm.name);
+                return next;
+            });
+        };
+
+        // Cas du « Voir » lui-même
+        if (action === "SELECT") {
+            if (current.includes("SELECT")) {
+                // Décocher Voir : cascade, on retire toutes les actions.
+                removePermission();
+                clearAutoView();
+                return;
+            }
+
+            // Cocher Voir manuellement : ce choix ne sera plus auto-retiré.
+            setSelectedActions((prev) => ({ ...prev, [perm.name]: [...current, "SELECT"] }));
+            setSelectedPermissions((prev) =>
+                prev.includes(perm.name) ? prev : [...prev, perm.name]
+            );
+            clearAutoView();
+            return;
+        }
+
+        // Décocher une autre action
+        if (current.includes(action)) {
+            let next = current.filter((a) => a !== action);
+            const noOtherAction = next.every((a) => a === "SELECT");
+            const isAuto = autoView.has(perm.name);
+
+            if (noOtherAction && isAuto) {
+                next = next.filter((a) => a !== "SELECT");
+            }
+
+            setSelectedActions((prev) => {
+                if (next.length === 0) {
+                    const rest = { ...prev };
+                    delete rest[perm.name];
+                    return rest;
+                }
+                return { ...prev, [perm.name]: next };
+            });
+            setSelectedPermissions((prev) => {
+                if (next.length === 0) return prev.filter((p) => p !== perm.name);
+                return prev.includes(perm.name) ? prev : [...prev, perm.name];
+            });
+            if (noOtherAction && isAuto) clearAutoView();
+            return;
+        }
+
+        // Cocher une autre action
+        const autoAddView = hasView && !current.includes("SELECT");
+        const next = autoAddView ? [...current, action, "SELECT"] : [...current, action];
+
+        setSelectedActions((prev) => ({ ...prev, [perm.name]: next }));
+        setSelectedPermissions((prev) =>
+            prev.includes(perm.name) ? prev : [...prev, perm.name]
+        );
+
+        if (autoAddView) {
+            setAutoView((prev) => new Set(prev).add(perm.name));
+        }
     };
 
     /**
@@ -182,10 +390,22 @@ export default function RoleForm({
 
         try {
             setSaving(true);
+            /**
+             * Seules les actions des permissions effectivement accordées sont
+             * transmises : une action cochée sous une permission décochée n'a
+             * pas de sens pour le rôle.
+             */
+            const actionsForSelection = Object.fromEntries(
+                Object.entries(selectedActions).filter(([permName]) =>
+                    selectedPermissions.includes(permName)
+                )
+            );
+
             await onSubmit({
                 name: roleName,
                 codeRole: normalizeRoleCode(codeRole),
                 permissions: selectedPermissions,
+                actions: actionsForSelection,
             });
         } finally {
             setSaving(false);
@@ -269,7 +489,6 @@ export default function RoleForm({
                     roles={sourceRoles}
                     value={templateRoleId}
                     onChange={handleTemplateChange}
-                    disabled={loadingTemplate}
                 />
             )}
 
@@ -325,36 +544,74 @@ export default function RoleForm({
                                     aria-label={label}
                                     className="grid grid-cols-1 gap-2"
                                 >
-                                    {perms.map((perm: Permission) => {
+                                    {perms.map((perm: PermissionWithActionMask) => {
                                         const isChecked = selectedPermissions.includes(perm.name);
+                                        const selectedForPerm = selectedActions[perm.name] ?? [];
+                                        const availableActions = maskToActions(perm.totalActions);
 
                                         return (
-                                            <label
+                                            <div
                                                 key={perm.id}
-                                                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all ${
-                                                    isChecked
-                                                        ? "border-0 bg-accent/10"
-                                                        : "border-0 hover:border hover:border-accent"
+                                                className={`rounded-lg p-3 transition-all ${
+                                                    isChecked ? "bg-accent/10" : ""
                                                 }`}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isChecked}
-                                                    onChange={() => togglePermission(perm.name)}
-                                                    className="hidden"
-                                                />
-                                                <div
-                                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-                                                        isChecked ? "bg-primary" : "border-gray-300"
-                                                    }`}
-                                                >
-                                                    {isChecked && <Check size={12} className="text-white" />}
+                                                <label className="flex cursor-pointer items-center gap-3">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={() => togglePermission(perm)}
+                                                        className="hidden"
+                                                    />
+                                                    <div
+                                                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+                                                            isChecked ? "bg-primary" : "border-gray-300"
+                                                        }`}
+                                                    >
+                                                        {isChecked && <Check size={12} className="text-white" />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-700">{getPermissionLabel(perm.name)}</p>
+                                                        <p className="text-xs text-gray-500">{perm.description}</p>
+                                                    </div>
+                                                </label>
+
+                                                {/*
+                                                    Actions offertes par la permission : 3 lignes
+                                                    et autant de colonnes que nécessaire (flux par
+                                                    colonne). Sous le breakpoint `sm`, bascule sur
+                                                    2 colonnes et autant de lignes que nécessaire.
+                                                */}
+                                                <div className="mt-2 grid grid-flow-col grid-rows-3 gap-1.5 pl-8 max-sm:grid-flow-row max-sm:grid-rows-none max-sm:grid-cols-2">
+                                                    {availableActions.map((action) => {
+                                                        const isActionChecked = selectedForPerm.includes(action);
+
+                                                        return (
+                                                            <label
+                                                                key={action}
+                                                                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors hover:bg-secondary/40"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isActionChecked}
+                                                                    onChange={() => toggleAction(perm, action)}
+                                                                    className="hidden"
+                                                                />
+                                                                <span
+                                                                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                                                        isActionChecked ? "bg-primary" : "border-gray-300"
+                                                                    }`}
+                                                                >
+                                                                    {isActionChecked && (
+                                                                        <Check size={10} className="text-white" />
+                                                                    )}
+                                                                </span>
+                                                                <span className="text-gray-600">{ACTION_LABELS[action]}</span>
+                                                            </label>
+                                                        );
+                                                    })}
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-700">{perm.name}</p>
-                                                    <p className="text-xs text-gray-500">{perm.description}</p>
-                                                </div>
-                                            </label>
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -372,14 +629,16 @@ export default function RoleForm({
                 >
                     Annuler
                 </button>
-                <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                    {isEditing ? "Mettre à jour" : "Créer"}
-                </button>
+                <Allow perm={PERM.MANAGE_ROLES} action={isEditing ? ACT.UPDATE : ACT.INSERT}>
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                        {isEditing ? "Mettre à jour" : "Créer"}
+                    </button>
+                </Allow>
             </div>
         </div>
     );

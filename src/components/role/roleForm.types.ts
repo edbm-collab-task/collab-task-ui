@@ -1,13 +1,20 @@
-import type { Permission, Role, RoleFormData } from "@/types/role";
+import type {
+    PermissionWithActionMask,
+    Role,
+    RoleActionsMap,
+    RoleFormData
+} from "@/types/role";
 
 /**
  * Vue minimale d'un rôle, utilisée pour alimenter le sélecteur de modèle
  * ({@link RoleSummary} ne porte que ce qu'il faut pour afficher une option :
- * l'identifiant et le nom).
+ * l'identifiant, le nom et les permissions du rôle modèle, afin de pré-remplir
+ * le formulaire sans dépendre de `GET /roles/actions-map`, incomplet).
  */
 export interface RoleSummary {
     id: number;
     name: string;
+    permissions: string[];
 }
 
 /**
@@ -23,8 +30,13 @@ export interface RoleFormProps {
      * le sélecteur de modèle est affiché.
      */
     editingRole: Role | null;
-    /** Catalogue complet des permissions, regroupées par catégorie à l'affichage. */
-    allPermissions: Permission[];
+    /** Catalogue complet des permissions (avec leurs actions), regroupées par catégorie à l'affichage. */
+    allPermissions: PermissionWithActionMask[];
+    /**
+     * Actions de chaque rôle (masques `totalActions` / `totalActionsAccordees`),
+     * servant au pré-remplissage en édition et via le sélecteur de modèle.
+     */
+    actionsMap: RoleActionsMap;
     /** Rôles existants proposés comme modèle de création (hors SUPER_ADMIN). */
     sourceRoles: RoleSummary[];
     /** Codes de rôle indisponibles (API + codes système réservés). */

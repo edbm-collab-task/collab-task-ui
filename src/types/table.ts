@@ -29,7 +29,6 @@ export interface TableAction<T> {
     label: string;
     type: string;
     icon: TableActionIcon<T>;
-    roles?: string[];
     onClick: (row: T) => void | Promise<void>;
 }
 
@@ -45,8 +44,6 @@ export interface HeaderAction{
     | "secondary"
     | "danger";
 
-
-    roles?:string[];
 
     onClick:()=>void;
 

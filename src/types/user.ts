@@ -129,6 +129,17 @@ export interface UserLoginReq{
     password: string;
 }
 
+export interface PermissionSummary {
+  name: string;
+  totalActions: number;
+  /**
+   * Masque des actions accordées. Optionnel : la forme historique de la
+   * session ne fournissait que le nom (`string`), auquel cas le masque est
+   * absent et la présence seule de la permission vaut accord (repli fail-open).
+   */
+  totalActionsAccordees?: number;
+}
+
 export interface UserLoginRes {
   userId: number;
   role: string;
@@ -136,7 +147,7 @@ export interface UserLoginRes {
   firstname: string;
   lastname: string;
   email: string;
-  permissions: string[];
+  permissions: PermissionSummary[];
   accessToken?: string;
   refreshToken?: string;
 }

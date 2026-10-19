@@ -13,6 +13,9 @@ import type {
 import { useNavigate } from "react-router-dom";
 import  { directionTr, type DirectionRes } from "@/types/direction";
 import { directionService } from "@/services/direction/direction.service";
+import usePermissions from "@/hooks/usePermissions";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 export default function DirectionsListPage() {
 
@@ -22,6 +25,7 @@ export default function DirectionsListPage() {
     const [page, setPage] = useState(1);
     const pageSize = 5;
     const navigate = useNavigate();
+    const { hasPermission } = usePermissions();
 
     useEffect(() => {
 
@@ -53,38 +57,57 @@ export default function DirectionsListPage() {
 
     const columns = createColumns(directions, directionTr);
 
-    const actions: TableAction<DirectionRes>[] = [
+    /**
+     * Actions par ligne. Le masquage se fait ici, selon la permission et
+     * l'action requises.
+     */
+    const actions: TableAction<DirectionRes>[] = [];
 
-        {
+    /**
+     * Supprimer une direction — nécessite `MANAGE_DIRECTIONS` + `DELETE`.
+     */
+    if (hasPermission(PERM.MANAGE_DIRECTIONS, ACT.DELETE)) {
+
+        actions.push({
+
             label: "Supprimer",
+
             type: "delete",
+
             icon: <Trash size={18} />,
-            roles: ["ADMIN"],
 
             onClick: async (direction) => {
                 await directionService.delete(direction.directionId);
                 setDirections(directions.filter(u => u.directionId !== direction.directionId));
             }
 
-        }
+        });
+    }
 
-    ];
+    /**
+     * Actions de l'en-tête.
+     */
+    const headerActions: HeaderAction[] = [];
 
-    const headerActions: HeaderAction[] = [
+    /**
+     * Ajouter une direction — nécessite `MANAGE_DIRECTIONS` + `INSERT`.
+     */
+    if (hasPermission(PERM.MANAGE_DIRECTIONS, ACT.INSERT)) {
 
-        {
+        headerActions.push({
+
             label: "Ajouter",
+
             icon: <Plus size={18} />,
+
             type: "primary",
-            roles: ["USER", "ADMIN"],
 
             onClick: () => {
                 navigate("/admin/directions/create");
             }
 
-        }
-
-    ];
+        });
+    }
 
     const filteredDirections = directions.filter(direction => {
 
@@ -118,7 +141,6 @@ export default function DirectionsListPage() {
                 data={paginatedDirections}
                 columns={columns}
                 actions={actions}
-                roles={["ADMIN"]}
                 loading={loading}
                 emptyMessage="Aucun utilisateur trouvé"
             />

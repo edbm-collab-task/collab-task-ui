@@ -4,7 +4,6 @@ import { userService } from "@/services/user/user.service";
 
 interface AccountStatusActionProps<S = string> {
     label?: string | ((statusFilter: S) => string);
-    roles?: string[];
     statusFilter: S;
     onReload: (statusFilter: S) => Promise<void>;
 }
@@ -12,7 +11,7 @@ interface AccountStatusActionProps<S = string> {
 export function createAccountStatusAction<T extends { email: string; isActive: boolean }, S = string>(
     props: AccountStatusActionProps<S>
 ): TableAction<T> {
-    const { label, roles = ["SUPER_ADMIN"], statusFilter, onReload } = props;
+    const { label, statusFilter, onReload } = props;
 
     const resolvedLabel = typeof label === "function" ? label(statusFilter) : (label ?? "Activer / Désactiver");
 
@@ -24,7 +23,6 @@ export function createAccountStatusAction<T extends { email: string; isActive: b
                 <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${item.isActive ? "right-0.5" : "left-0.5"}`} />
             </div>
         ),
-        roles,
         onClick: async (item: T) => {
             const newStatus = !item.isActive;
 

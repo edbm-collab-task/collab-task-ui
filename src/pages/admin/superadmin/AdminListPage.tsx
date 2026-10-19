@@ -19,6 +19,9 @@ import { userService } from "@/services/user/user.service";
 import { roleService } from "@/services/role/role.service";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import usePermissions from "@/hooks/usePermissions";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 const adminTr = {
     firstname: "Prénom",
@@ -49,6 +52,7 @@ export default function AdminListPage() {
 
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
+    const { hasPermission } = usePermissions();
 
 
     /**
@@ -143,20 +147,29 @@ export default function AdminListPage() {
 
     /**
      * Actions disponibles pour chaque administrateur.
+     *
+     * Le masquage se fait ici, au niveau de la page, selon la permission et
+     * l'action requises.
      */
-    const actions: TableAction<UserTable>[] = [
+    const actions: TableAction<UserTable>[] = [];
 
-        /**
-         * Voir plus.
-         */
-        {
+
+    /**
+     * Voir plus — accessible avec `MANAGE_ADMINS` **ou** `MANAGE_USERS`
+     * (action `SELECT`).
+     */
+    if (
+        hasPermission(PERM.MANAGE_ADMINS, ACT.SELECT) ||
+        hasPermission(PERM.MANAGE_USERS, ACT.SELECT)
+    ) {
+
+        actions.push({
+
             label: "Voir plus",
 
             type: "view",
 
             icon: <Eye size={18} />,
-
-            roles: ["SUPER_ADMIN"],
 
             onClick: async (admin) => {
 
@@ -177,13 +190,17 @@ export default function AdminListPage() {
                     );
                 }
             },
-        },
+        });
+    }
 
 
-        /**
-         * Modifier le rôle.
-         */
-        {
+    /**
+     * Modifier le rôle — nécessite `MANAGE_USERS` + `UPDATE`.
+     */
+    if (hasPermission(PERM.MANAGE_USERS, ACT.UPDATE) || hasPermission(PERM.MANAGE_ADMINS, ACT.UPDATE)) {
+
+        actions.push({
+
             label: "Modifier le rôle",
 
             type: "edit",
@@ -194,8 +211,6 @@ export default function AdminListPage() {
                     className="text-accent/80 hover:text-accent"
                 />
             ),
-
-            roles: ["SUPER_ADMIN"],
 
             onClick: (admin) => {
 
@@ -208,31 +223,44 @@ export default function AdminListPage() {
                     }
                 );
             }
-        },
+        });
+    }
 
 
-        createAccountStatusAction<UserTable, StatusFilter>({
-            label: (sf) => (sf === "disable" ? "Activer" : "Désactiver"),
-            roles: ["SUPER_ADMIN"],
-            statusFilter,
-            onReload: loadAdmins,
-        })
-    ];
+    /**
+     * Activer / désactiver — nécessite `MANAGE_USERS` + `UPDATE`.
+     */
+    if (hasPermission(PERM.MANAGE_USERS, ACT.UPDATE) || hasPermission(PERM.MANAGE_ADMINS, ACT.UPDATE)) {
+
+        actions.push(
+
+            createAccountStatusAction<UserTable, StatusFilter>({
+                label: (sf) => (sf === "disable" ? "Activer" : "Désactiver"),
+                statusFilter,
+                onReload: loadAdmins,
+            })
+        );
+    }
 
 
     /**
      * Actions de l'en-tête.
      */
-    const headerActions: HeaderAction[] = [
+    const headerActions: HeaderAction[] = [];
 
-        {
-            label: "Ajouter un utilisateur",
+
+    /**
+     * Ajouter un utilisateur — nécessite `MANAGE_USERS` + `INSERT`.
+     */
+    if (hasPermission(PERM.MANAGE_USERS, ACT.INSERT) || hasPermission(PERM.MANAGE_ADMINS, ACT.INSERT)) {
+
+        headerActions.push({
+
+            label: "Ajouter",
 
             icon: <Plus size={18} />,
 
             type: "primary",
-
-            roles: ["SUPER_ADMIN"],
 
             onClick: () => {
 
@@ -240,8 +268,8 @@ export default function AdminListPage() {
                     "/admin/users/create"
                 );
             }
-        }
-    ];
+        });
+    }
 
 
     /**
@@ -347,10 +375,10 @@ export default function AdminListPage() {
                     value={statusFilter}
 
                     options={[
-                        {
-                            label: "Tous",
-                            value: "all"
-                        },
+                        // {
+                        //     label: "Tous",
+                        //     value: "all"
+                        // },
                         {
                             label: "Actifs",
                             value: "active"
@@ -401,8 +429,6 @@ export default function AdminListPage() {
                 columns={columns}
 
                 actions={actions}
-
-                roles={["SUPER_ADMIN"]}
 
                 loading={loading}
 

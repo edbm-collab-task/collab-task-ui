@@ -15,6 +15,9 @@ import { getInitialsFromParts } from "@/utils/avatar";
 import { API_CONFIG } from "@/api/constants";
 import ReactionPicker from "./ReactionPicker";
 import FilePreviewModal from "./FilePreviewModal";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     comment: TaskComment;
@@ -208,25 +211,27 @@ export default function CommentItem({
                                             e.currentTarget.style.display = "none";
                                         }}
                                     />
-                                    <div className="p-2 border-t border-gray-100 bg-gray-50 flex items-center gap-1">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPreview(true)}
-                                            className={eyeButtonClass}
-                                            title="Visualiser"
-                                        >
-                                            <Eye size={16} />
-                                        </button>
-                                        <a
-                                            href={`${viewUrl}?download=true`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={downloadButtonClass}
-                                            title="Télécharger"
-                                        >
-                                            <Download size={16} />
-                                        </a>
-                                    </div>
+                                        <div className="p-2 border-t border-gray-100 bg-gray-50 flex items-center gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPreview(true)}
+                                                className={eyeButtonClass}
+                                                title="Visualiser"
+                                            >
+                                                <Eye size={16} />
+                                            </button>
+                                            <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.DOWNLOAD}>
+                                                <a
+                                                    href={`${viewUrl}?download=true`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={downloadButtonClass}
+                                                    title="Télécharger"
+                                                >
+                                                    <Download size={16} />
+                                                </a>
+                                            </Allow>
+                                        </div>
                                 </div>
                             ) : (
                                 <div className="flex max-w-[260px] items-center gap-3 rounded-xl border border-gray-200 bg-white p-3">
@@ -318,33 +323,39 @@ export default function CommentItem({
                     {!editing && (
                         <div className="mt-1 flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
                             {!isReply && (
-                                <button
-                                    onClick={() => onReply(comment.commentId)}
-                                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                                >
-                                    <Reply size={12} />
-                                    Répondre
-                                </button>
+                                <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.INSERT}>
+                                    <button
+                                        onClick={() => onReply(comment.commentId)}
+                                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                                    >
+                                        <Reply size={12} />
+                                        Répondre
+                                    </button>
+                                </Allow>
                             )}
                             {isAuthor && (
                                 <>
-                                    <button
-                                        onClick={() => setEditing(true)}
-                                        className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-blue-600"
-                                        title="Modifier"
-                                    >
-                                        <Pencil size={12} />
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (window.confirm("Supprimer ce commentaire ?"))
-                                                onDelete(comment.commentId);
-                                        }}
-                                        className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-red-500"
-                                        title="Supprimer"
-                                    >
-                                        <Trash2 size={12} />
-                                    </button>
+                                    <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.UPDATE}>
+                                        <button
+                                            onClick={() => setEditing(true)}
+                                            className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-blue-600"
+                                            title="Modifier"
+                                        >
+                                            <Pencil size={12} />
+                                        </button>
+                                    </Allow>
+                                    <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.DELETE}>
+                                        <button
+                                            onClick={() => {
+                                                if (window.confirm("Supprimer ce commentaire ?"))
+                                                    onDelete(comment.commentId);
+                                            }}
+                                            className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-red-500"
+                                            title="Supprimer"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </Allow>
                                 </>
                             )}
                         </div>
