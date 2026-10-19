@@ -48,19 +48,25 @@ export function onSessionResync(listener: Listener): () => void {
  *   30 s pour ne pas spammer le serveur quand l'utilisateur navigue vite.
  * - `force: true` (403) : contourne le throttle 30 s mais reste dédoublonné
  *   à 2 s (une page peut déclencher plusieurs 403 d'un coup).
+ * - Payload `user` déjà complet (refresh 401) : aucun throttle, l'AuthProvider
+ *   l'injecte directement sans appel HTTP supplémentaire.
  */
 export function requestSessionResync(
     reason: SessionResyncReason,
     options?: { force?: boolean; user?: UserLoginRes }
 ): void {
-    const now = Date.now();
+    const deliversSession = Boolean(options?.user?.permissions);
 
-    if (options?.force) {
-        if (now - lastForcedAt < DEDUPE_MS) return;
-        lastForcedAt = now;
-    } else {
-        if (now - lastThrottledAt < THROTTLE_MS) return;
-        lastThrottledAt = now;
+    if (!deliversSession) {
+        const now = Date.now();
+
+        if (options?.force) {
+            if (now - lastForcedAt < DEDUPE_MS) return;
+            lastForcedAt = now;
+        } else {
+            if (now - lastThrottledAt < THROTTLE_MS) return;
+            lastThrottledAt = now;
+        }
     }
 
     if (listeners.size === 0) return;
