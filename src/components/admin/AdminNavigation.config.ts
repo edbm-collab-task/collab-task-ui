@@ -97,13 +97,6 @@ export const superAdminMenus: MenuItem[] = [
         action: ACT.SELECT,
     },
     {
-        name: "Utilisateurs",
-        path: "/admin/admins",
-        icon: Shield,
-        permission: PERM.MANAGE_USERS,
-        action: ACT.SELECT,
-    },
-    {
         name: "Rôles & Permissions",
         path: "/admin/roles",
         icon: Settings,
