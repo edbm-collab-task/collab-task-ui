@@ -8,6 +8,7 @@ import {
 import { getRegisterOptions } from "@/components/Form/formLogic";
 import FormFieldControl from "@/components/Form/FormFieldControl";
 import type { FormField } from "@/components/Form/Forms";
+import { useNavigate } from "react-router-dom";
 
 interface GlobalEditFormProps<T extends FieldValues> {
     title?: string;
@@ -67,19 +68,20 @@ export default function GlobalEditForm<T extends FieldValues>({
         }
     };
 
+    const navigate = useNavigate();
     return (
         <div className="mx-auto max-w-5xl">
 
             <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
 
-                <div className="bg-gradient-to-r py-8 text-center">
+                <div className="bg-gradient-to-r py-8 text-center bg-primary">
 
-                    <h2 className="text-3xl font-bold text-black/80">
+                    <h2 className="text-3xl font-bold text-bg">
                         {title}
                     </h2>
 
                     {subtitle && (
-                        <p className="pt-2 text-black">
+                        <p className="pt-2 text-bg">
                             {subtitle}
                         </p>
                     )}
@@ -139,20 +141,27 @@ export default function GlobalEditForm<T extends FieldValues>({
                             }`}
                         >
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="min-w-44 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white shadow-lg transition duration-300 hover:scale-105 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
-                            >
-
-                                {loading
-                                    ? `${submitLabel}...`
-                                    : submitLabel}
-
-                            </button>
 
                         </div>
 
+                    </div>
+
+                    {/* Boutton d'enregistrement */}
+                    <div className=" mt-10 gap-5 flex items-center justify-end">
+                        <button className="hover:bg-bg px-5 py-3 rounded-xl" onClick={() => navigate(-1)}>
+                            Annuler
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="min-w-44 rounded-xl bg-primary px-8 py-3 font-semibold text-white shadow-lg transition duration-300 hover:scale-105 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+
+                            {loading
+                                ? `${submitLabel}...`
+                                : submitLabel}
+
+                        </button>
                     </div>
 
                 </form>
