@@ -201,18 +201,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         </span>
                     )}
 
+                    {/* COmmentaires btn */}
                     {showActions && setCommentTaskId && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setCommentTaskId(task.taskId);
-                            }}
-                            className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
-                            title="Commentaires"
-                        >
-                            <MessageSquare size={11} />
-                            {commentCount}
-                        </button>
+                        <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.SELECT}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCommentTaskId(task.taskId);
+                                }}
+                                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
+                                title="Commentaires"
+                            >
+                                <MessageSquare size={11} />
+                                {commentCount}
+                            </button>
+                        </Allow>
                     )}
                 </div>
 

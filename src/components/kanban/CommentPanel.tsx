@@ -313,65 +313,67 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
                 )}
 
                 {/* Input */}
-                <div className="border-t bg-white border-gray-200 px-6 py-4 rounded-b-2xl">
-                    <div className="relative flex items-start gap-2">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-bg">
-                            {currentUserInitials || currentUserId.toString().slice(-2)}
-                        </div>
-                        <div className="relative flex-1">
-                            {mentionQuery !== null && (
-                                <MentionDropdown
-                                    users={users}
-                                    query={mentionQuery}
-                                    onSelect={handleMentionSelect}
-                                    onClose={() => setMentionQuery(null)}
+                <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.INSERT}>
+                    <div className="border-t bg-white border-gray-200 px-6 py-4 rounded-b-2xl">
+                        <div className="relative flex items-start gap-2">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-bg">
+                                {currentUserInitials || currentUserId.toString().slice(-2)}
+                            </div>
+                            <div className="relative flex-1">
+                                {mentionQuery !== null && (
+                                    <MentionDropdown
+                                        users={users}
+                                        query={mentionQuery}
+                                        onSelect={handleMentionSelect}
+                                        onClose={() => setMentionQuery(null)}
+                                    />
+                                )}
+                                <textarea
+                                    ref={inputRef}
+                                    value={newComment}
+                                    onChange={handleInputChange}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder={placeholders[placeholderIndex]}
+                                    rows={1}
+                                    className="w-full bg-bg resize-none rounded-xl border border-gray-300 px-4 py-2.5 pr-24 text-sm outline-none transition placeholder:truncate focus:border-primary focus:ring-2 focus:ring-primary/30"
+                                    style={{ minHeight: "42px", maxHeight: "120px" }}
                                 />
-                            )}
-                            <textarea
-                                ref={inputRef}
-                                value={newComment}
-                                onChange={handleInputChange}
-                                onKeyDown={handleKeyDown}
-                                placeholder={placeholders[placeholderIndex]}
-                                rows={1}
-                                className="w-full bg-bg resize-none rounded-xl border border-gray-300 px-4 py-2.5 pr-24 text-sm outline-none transition placeholder:truncate focus:border-primary focus:ring-2 focus:ring-primary/30"
-                                style={{ minHeight: "42px", maxHeight: "120px" }}
-                            />
-                            <div className="absolute right-2 bottom-2 flex items-center gap-1 mb-1">
-                                <Allow perm={PERM.MANAGE_ATTACHMENTS} action={ACT.INSERT}>
-                                    <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
-                                        title="Joindre un fichier (image ou PDF)"
-                                    >
-                                        <Paperclip size={16} />
-                                    </button>
-                                </Allow>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0] ?? null;
-                                        setSelectedFile(file);
-                                        e.target.value = "";
-                                    }}
-                                />
-                                <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.INSERT}>
-                                    <button
-                                        onClick={handleSubmit}
-                                        disabled={(!newComment.trim() && !selectedFile) || submitting}
-                                        className="rounded-lg p-1.5 text-accent transition hover:bg-primary hover:text-bg disabled:opacity-30"
-                                        title="Envoyer"
-                                    >
-                                        <Send size={16} />
-                                    </button>
-                                </Allow>
+                                <div className="absolute right-2 bottom-2 flex items-center gap-1 mb-1">
+                                    <Allow perm={PERM.MANAGE_ATTACHMENTS} action={ACT.INSERT}>
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-primary"
+                                            title="Joindre un fichier (image ou PDF)"
+                                        >
+                                            <Paperclip size={16} />
+                                        </button>
+                                    </Allow>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0] ?? null;
+                                            setSelectedFile(file);
+                                            e.target.value = "";
+                                        }}
+                                    />
+                                    
+                                        <button
+                                            onClick={handleSubmit}
+                                            disabled={(!newComment.trim() && !selectedFile) || submitting}
+                                            className="rounded-lg p-1.5 text-accent transition hover:bg-primary hover:text-bg disabled:opacity-30"
+                                            title="Envoyer"
+                                        >
+                                            <Send size={16} />
+                                        </button>
+                                    
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </Allow>
             </div>
         </>
     );
