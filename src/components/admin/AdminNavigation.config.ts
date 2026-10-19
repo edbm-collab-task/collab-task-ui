@@ -1,8 +1,7 @@
 import { LayoutDashboard, Users, Building2, FolderKanban, MessageCircle, Bell, Shield, Settings, BarChart2 } from "lucide-react";
 import type { PermissionName } from "@/constants/permissions";
 import { PERM } from "@/constants/permissions";
-import type { ActionCode } from "@/constants/actions";
-import { ACT } from "@/constants/actions";
+import type { ActionName } from "@/constants/actions";
 
 /**
  * Élément de navigation de la barre latérale.
@@ -12,8 +11,12 @@ import { ACT } from "@/constants/actions";
  * `action` sur son masque accordé (`usePermissions().hasPermission`).
  *
  * - `permission` et `action` vont de pair : dès qu'une permission est déclarée,
- *   l'action l'est aussi (l'entrée ouvre une page, donc `ACT.SELECT`).
+ *   l'action l'est aussi (l'entrée ouvre une page, donc `SELECT`).
  * - Une entrée sans `permission` est toujours visible (fonction personnelle).
+ *
+ * `action` porte le **nom** de l'action (et non son code binaire) : ce module
+ * est évalué au chargement, avant l'hydratation du catalogue `ACT` depuis
+ * l'API. `AdminMenu` résout le nom en code au moment du filtrage.
  */
 interface MenuItem {
     name: string;
@@ -22,10 +25,11 @@ interface MenuItem {
     /** Permission requise pour afficher l'élément (absente = toujours visible). */
     permission?: PermissionName;
     /**
-     * Action exigée sur {@link MenuItem.permission}. Requise dès qu'une
-     * permission est déclarée ; ignorée lorsqu'il n'y a pas de permission.
+     * Nom de l'action exigée sur {@link MenuItem.permission} (`SELECT`, …).
+     * Requise dès qu'une permission est déclarée ; ignorée lorsqu'il n'y a
+     * pas de permission.
      */
-    action?: ActionCode;
+    action?: ActionName;
 }
 
 /**
@@ -45,21 +49,21 @@ export const menus: MenuItem[] = [
         path: "/admin/projects",
         icon: FolderKanban,
         permission: PERM.MANAGE_PROJECTS,
-        action: ACT.SELECT,
+        action: "SELECT",
     },
     {
         name: "Utilisateurs",
         path: "/admin/users",
         icon: Users,
         permission: PERM.MANAGE_USERS,
-        action: ACT.SELECT,
+        action: "SELECT",
     },
     {
         name: "Directions",
         path: "/admin/directions",
         icon: Building2,
         permission: PERM.MANAGE_DIRECTIONS,
-        action: ACT.SELECT,
+        action: "SELECT",
     },
     {
         name: "Message",
@@ -87,20 +91,20 @@ export const superAdminMenus: MenuItem[] = [
         path: "/admin/dashboard-admin",
         icon: BarChart2,
         permission: PERM.VIEW_REPORTS,
-        action: ACT.SELECT,
+        action: "SELECT",
     },
     {
         name: "Administrateurs",
         path: "/admin/admins",
         icon: Shield,
         permission: PERM.MANAGE_ADMINS,
-        action: ACT.SELECT,
+        action: "SELECT",
     },
     {
         name: "Rôles & Permissions",
         path: "/admin/roles",
         icon: Settings,
         permission: PERM.MANAGE_ROLES,
-        action: ACT.SELECT,
+        action: "SELECT",
     },
 ];

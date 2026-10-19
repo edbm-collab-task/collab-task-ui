@@ -1,63 +1,105 @@
 /**
- * Codes binaires des actions, sur le modèle des permissions Unix.
+ * Catalogue des actions (codes binaires), sur le modèle des permissions Unix.
  *
- * Chaque action possède un bit unique et donc une puissance de deux comme
- * code. Les actions accordées pour une permission sont ensuite combinées par
- * un OU binaire (« somme ») afin de ne former qu'un seul entier : c'est ce
- * masque qui est comparé et transmis à l'API.
+ * Les codes ne sont **jamais écrits à la main** : le fichier ne déclare que
+ * la liste des noms (`ACTION_NAMES`, clés de `ACT`). Les valeurs sont
+ * hydratées au démarrage depuis `GET /roles/actions` (table de conversion
+ * backend) par {@link hydrateActionCatalog}, qui associe chaque nom au
+ * `codeAction` renvoyé par l'API — la comparaison se fait sur le nom
+ * (plain text), l'ordre de la réponse n'a aucune importance.
  *
- *  AJOUTER UNIQUEMENT À LA FIN. Jamais d'insertion, de réordonnancement,
+ * Tant que l'API n'a pas répondu (ou en cas d'échec), les codes restent à
+ * `0` : aucune action n'est alors détectée dans les masques (fail-closed).
+ *
+ * Les actions accordées pour une permission sont combinées par un OU
+ * binaire (« somme ») afin de ne former qu'un seul entier : c'est ce masque
+ * qui est comparé et transmis à l'API.
  */
-export const ACT = {
-    /** Créer une ressource. */
-    INSERT: 1,
-    /** Lire / consulter une ressource. */
-    SELECT: 2,
-    /** Modifier une ressource existante. */
-    UPDATE: 4,
-    /** Supprimer une ressource. */
-    DELETE: 8,
-    /** Générer un rapport. */
-    GENERATE_REPORT: 16,
-    /** Exporter des données. */
-    EXPORT: 32
-    // ← nouvelles actions ici, jamais au-dessus
-} as const;
+
+/**
+ * Liste statique des noms d'actions — sert de référence pour les clés de
+ * {@link ACT} et d'ordre d'affichage dans l'UI.
+ */
+export const ACTION_NAMES = [
+    "INSERT",
+    "SELECT",
+    "UPDATE",
+    "DELETE",
+    "EXPORT",
+    "DOWNLOAD",
+    "ARCHIVE"
+] as const;
 
 /** Nom d'une action (`INSERT`, `SELECT`, …). */
-export type ActionName = keyof typeof ACT;
-
-/** Code binaire d'une action (`ACT.INSERT`, `ACT.SELECT`, …). */
-export type ActionCode = (typeof ACT)[keyof typeof ACT];
+export type ActionName = (typeof ACTION_NAMES)[number];
 
 /**
- * Masque de toutes les actions disponibles, calculé depuis {@link ACT}.
- *
- * Vaut `63` tant que la table compte six actions ; la valeur se met à jour
- * automatiquement dès qu'une action est ajoutée ou retirée.
+ * Code binaire d'une action — **fourni par le backend**, jamais écrit à la
+ * main. Typé `number` car la valeur n'est connue qu'après hydration.
  */
-export const ALL_ACTIONS: number = Object.values(ACT).reduce(
-    (mask, code) => mask | code,
-    0
-);
-
-/** Libellés lisibles des actions, alignés sur ceux renvoyés par l'API. */
-export const ACTION_LABELS: Record<ActionName, string> = {
-    INSERT: "Insérer",
-    SELECT: "Voir",
-    UPDATE: "Modifier",
-    DELETE: "Supprimer",
-    GENERATE_REPORT: "Générer un rapport",
-    EXPORT: "Exporter au format pdf"
-};
+export type ActionCode = number;
 
 /**
- * Noms des actions dans leur ordre d'affichage (ordre croissant des codes).
+ * Codes binaires des actions, indexés par nom.
  *
- * Dérivé de {@link ACT} : l'ordre d'insertion de l'objet suit les codes, un
- * ajout d'action se répercute donc sans intervention.
+ * Les clés sont statiques (autocomplete `ACT.INSERT`, `ACT.SELECT`, …) ; les
+ * valeurs sont remplies par {@link hydrateActionCatalog} depuis le catalogue
+ * backend. Muté **sur place** : la référence objet reste la même, les ~24
+ * fichiers importeurs continuent de fonctionner sans changement.
  */
-export const ACTION_NAMES: ActionName[] = Object.keys(ACT) as ActionName[];
+export const ACT: Record<ActionName, number> = Object.fromEntries(
+    ACTION_NAMES.map((name) => [name, 0])
+) as Record<ActionName, number>;
+
+/** Libellés lisibles des actions, remplis depuis le catalogue backend. */
+export const ACTION_LABELS: Record<string, string> = {};
+
+/**
+ * Masque de toutes les actions disponibles, recalculé par
+ * {@link hydrateActionCatalog} (OU binaire de tous les codes reçus).
+ */
+export let ALL_ACTIONS = 0;
+
+/**
+ * Entrée du catalogue backend (`ActionResDto`, `GET /roles/actions`).
+ */
+export interface ActionCatalogEntry {
+    /** Nom technique de l'action (`INSERT`, `SELECT`, …). */
+    name: string;
+    /** Code binaire attribué par le backend. */
+    codeAction: number;
+    /** Libellé lisible, affiché dans l'UI. */
+    label: string;
+}
+
+/**
+ * Remplit le catalogue ({@link ACT}, {@link ACTION_LABELS},
+ * {@link ALL_ACTIONS}) depuis la réponse de `GET /roles/actions`.
+ *
+ * Chaque entrée est appariée à `ACT` **par nom** (plain text) : si l'ordre
+ * ou le nombre d'actions diffère côté backend, seuls les noms comptent. Les
+ * noms inconnus du front sont ajoutés à `ACT` afin de rester décodables
+ * dans les masques (`maskToActions`).
+ *
+ * En cas d'échec de l'appel, ne rien faire : les codes restent à `0`
+ * (fail-closed, aucun élément permissionné n'est affiché).
+ *
+ * @param catalog Table de conversion nom → code binaire + libellé.
+ */
+export function hydrateActionCatalog(catalog: ActionCatalogEntry[]): void {
+    if (!Array.isArray(catalog) || catalog.length === 0) return;
+
+    const act = ACT as Record<string, number>;
+    let mask = 0;
+
+    for (const { name, codeAction, label } of catalog) {
+        act[name] = codeAction;
+        ACTION_LABELS[name] = label;
+        mask |= codeAction;
+    }
+
+    ALL_ACTIONS = mask;
+}
 
 /**
  * Vérifie qu'une action est incluse dans un masque de permissions.
@@ -98,9 +140,18 @@ export function actionsToMask(actions: ActionName[]): number {
  * d'une permission à partir de `totalActions` (actions possibles) ou de
  * `totalActionsAccordees` (actions accordées) renvoyés par l'API.
  *
+ * Parcourt {@link ACTION_NAMES} puis les éventuels noms ajoutés par
+ * l'hydration ({@link hydrateActionCatalog}) : une action connue du backend
+ * mais pas du front reste décodable.
+ *
  * @param mask Masque binaire, ou `undefined` (donnée non fournie).
  * @returns Les noms des actions présentes, dans l'ordre de {@link ACTION_NAMES}.
  */
 export function maskToActions(mask: number | undefined): ActionName[] {
-    return ACTION_NAMES.filter((name) => hasAction(mask, ACT[name]));
+    const known: string[] = [...ACTION_NAMES];
+    const act = ACT as Record<string, number>;
+    const extra = Object.keys(act).filter((name) => !known.includes(name));
+    return [...known, ...extra].filter((name) =>
+        hasAction(mask, act[name])
+    ) as ActionName[];
 }

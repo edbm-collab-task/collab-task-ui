@@ -6,7 +6,8 @@ import type {
     RoleBody,
     RoleActionsMap,
     RoleActionsMapEntry,
-    PermissionWithActionMask
+    PermissionWithActionMask,
+    Action
 } from "@/types/role";
 
 export const roleService = {
@@ -29,6 +30,20 @@ export const roleService = {
 
     delete: async (id: number): Promise<void> => {
         await apiClient.delete(`${API_ENDPOINTS.ROLES.DELETE}/${id}`);
+    },
+
+    /**
+     * Table de conversion des actions (`ActionResDto`) : nom technique,
+     * code binaire (`codeAction`) et libellé. Sert à hydrater le catalogue
+     * `ACT` côté front (`hydrateActionCatalog`).
+     *
+     * Appel `silent` : en cas d'échec le front garde ses codes à 0
+     * (fail-closed) sans toast au démarrage.
+     */
+    getActions: async (): Promise<Action[]> => {
+        return apiClient.get<Action[]>(API_ENDPOINTS.ROLES.ACTIONS, undefined, {
+            silent: true
+        });
     },
 
     /**

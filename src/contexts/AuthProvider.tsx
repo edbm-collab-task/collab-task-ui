@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import type {UserLoginReq,UserLoginRes} from "@/types/user";
 import {authService} from "@/services/auth/auth.service";
 import {onSessionResync,requestSessionResync} from "@/services/auth/sessionSync";
+import {roleService} from "@/services/role/role.service";
+import {hydrateActionCatalog} from "@/constants/actions";
 
 
 interface AuthContextType {
@@ -120,9 +122,35 @@ export default function AuthProvider({children}: Props) {
     }
 
 
+    /**
+     * Montage : hydrate le catalogue des actions (`ACT`, codes binaires) depuis
+     * `GET /roles/actions` **puis** charge la session. `loading` ne passe à
+     * `false` qu'une fois les deux terminés : les pages ne rendent jamais avec
+     * un catalogue vide (codes à 0 → éléments permissionnés masqués).
+     *
+     * Un échec du catalogue est silencieux (appel `silent`) : les codes restent
+     * à 0, fail-closed.
+     */
     useEffect(()=>{
 
-        refreshUser();
+        (async ()=>{
+
+            try {
+
+                const catalog = await roleService.getActions();
+
+                hydrateActionCatalog(catalog);
+
+            }
+            catch{
+
+                /* catalogue laissé à 0 : fail-closed */
+
+            }
+
+            await refreshUser();
+
+        })();
 
     },[]);
 

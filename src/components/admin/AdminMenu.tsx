@@ -33,12 +33,16 @@ export default function AdminMenu({ collapsed, expand }: Props) {
      * « Utilisateurs » est masqué dès que l'utilisateur peut gérer les
      * administrateurs (`MANAGE_ADMINS` + `SELECT`) : la page `/admin/admins`,
      * plus large, est celle vers laquelle `UserListPage` le redirige déjà.
+     *
+     * `m.action` porte le nom de l'action (le config est chargé avant
+     * l'hydratation du catalogue `ACT`) : le nom est résolu en code binaire
+     * ici, au moment du filtrage.
      */
     const visibleMenus = menus.filter((m) => {
         if (m.path === "/admin/users" && hasPermission(PERM.MANAGE_ADMINS, ACT.SELECT)) {
             return false;
         }
-        return !m.permission || hasPermission(m.permission, m.action);
+        return !m.permission || hasPermission(m.permission, m.action ? ACT[m.action] : undefined);
     });
 
     /**
@@ -46,7 +50,7 @@ export default function AdminMenu({ collapsed, expand }: Props) {
      * rendue que si au moins une entrée subsiste après filtrage.
      */
     const visibleSuperAdminMenus = superAdminMenus.filter((m) =>
-        !m.permission || hasPermission(m.permission, m.action)
+        !m.permission || hasPermission(m.permission, m.action ? ACT[m.action] : undefined)
     );
 
     return (
