@@ -6,6 +6,9 @@ import TableFilter from "@/components/table/TableFilter";
 import { projectService } from "@/services/project/project.service";
 import type { ProjectRes } from "@/types/project";
 import { useClickOutside } from "@/hooks/useClickOutside";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     period: DashboardPeriod;
@@ -157,19 +160,21 @@ export default function DashboardHeader({
                             </div>
                         )}
                     </div>
-                    <button
-                        onClick={handleExportPdf}
-                        disabled={selectedProjectId === "all"}
-                        className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm transition max-sm:text-xs ${
-                            selectedProjectId === "all"
-                                ? "hidden!"
-                                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md"
-                        }`}
-                        title={selectedProjectId === "all" ? "Sélectionnez un projet pour exporter" : "Exporter en PDF"}
-                    >
-                        <Download size={16} />
-                        Exporter en PDF
-                    </button>
+                    <Allow perm={PERM.VIEW_REPORTS} action={ACT.EXPORT}>
+                        <button
+                            onClick={handleExportPdf}
+                            disabled={selectedProjectId === "all"}
+                            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm transition max-sm:text-xs ${
+                                selectedProjectId === "all"
+                                    ? "hidden!"
+                                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md"
+                            }`}
+                            title={selectedProjectId === "all" ? "Sélectionnez un projet pour exporter" : "Exporter en PDF"}
+                        >
+                            <Download size={16} />
+                            Exporter en PDF
+                        </button>
+                    </Allow>
 
                 </div>
             </div>

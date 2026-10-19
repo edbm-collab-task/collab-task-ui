@@ -211,25 +211,27 @@ export default function CommentItem({
                                             e.currentTarget.style.display = "none";
                                         }}
                                     />
-                                    <div className="p-2 border-t border-gray-100 bg-gray-50 flex items-center gap-1">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPreview(true)}
-                                            className={eyeButtonClass}
-                                            title="Visualiser"
-                                        >
-                                            <Eye size={16} />
-                                        </button>
-                                        <a
-                                            href={`${viewUrl}?download=true`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={downloadButtonClass}
-                                            title="Télécharger"
-                                        >
-                                            <Download size={16} />
-                                        </a>
-                                    </div>
+                                        <div className="p-2 border-t border-gray-100 bg-gray-50 flex items-center gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPreview(true)}
+                                                className={eyeButtonClass}
+                                                title="Visualiser"
+                                            >
+                                                <Eye size={16} />
+                                            </button>
+                                            <Allow perm={PERM.MANAGE_COMMENTS} action={ACT.DOWNLOAD}>
+                                                <a
+                                                    href={`${viewUrl}?download=true`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={downloadButtonClass}
+                                                    title="Télécharger"
+                                                >
+                                                    <Download size={16} />
+                                                </a>
+                                            </Allow>
+                                        </div>
                                 </div>
                             ) : (
                                 <div className="flex max-w-[260px] items-center gap-3 rounded-xl border border-gray-200 bg-white p-3">
