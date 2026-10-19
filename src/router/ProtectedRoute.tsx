@@ -1,6 +1,8 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import useAuth from "@/hooks/useAuth";
 import AdminLayoutSkeleton from "@/components/admin/skeleton/AdminLayoutSkeleton";
+import { requestSessionResync } from "@/services/auth/sessionSync";
 
 
 interface Props {
@@ -30,6 +32,27 @@ function LoadingScreen() {
 export default function ProtectedRoute({ children }: Props) {
 
     const { user, loading } = useAuth();
+
+    const location = useLocation();
+
+    const mounted = useRef(false);
+
+
+    /**
+     * Resynchronise les droits à chaque changement de route (throttlé 30 s
+     * par sessionSync). Le premier montage est ignoré : refreshUser() vient
+     * déjà de charger la session au montage d'AuthProvider.
+     */
+    useEffect(() => {
+
+        if (!mounted.current) {
+            mounted.current = true;
+            return;
+        }
+
+        requestSessionResync("navigation");
+
+    }, [location.pathname]);
 
 
     if (loading) {
