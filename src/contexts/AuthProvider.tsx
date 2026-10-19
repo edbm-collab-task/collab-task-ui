@@ -63,7 +63,7 @@ export default function AuthProvider({children}: Props) {
      * Recharge la session depuis GET /auth/me.
      *
      * - Mode normal (montage) : un échec déconnecte l'utilisateur.
-     * - Mode `resync` (navigation / focus / 403) : un échec réseau conserve la
+     * - Mode `resync` (navigation / focus / sidebar / 403) : un échec réseau conserve la
      *   session courante pour ne pas déconnecter à la moindre coupure.
      */
     async function refreshUser(options?: {resync?: boolean}): Promise<UserLoginRes | null>{
@@ -129,7 +129,7 @@ export default function AuthProvider({children}: Props) {
 
     /**
      * Resynchronisation demandée par le bus `sessionSync` (intercepteur axios,
-     * ProtectedRoute, focus de fenêtre).
+     * ProtectedRoute, focus de fenêtre, ouverture du sidebar).
      */
     useEffect(()=>{
 
@@ -167,7 +167,7 @@ export default function AuthProvider({children}: Props) {
 
 
     /**
-     * Resync au retour de l'onglet (throttlé 30 s par sessionSync).
+     * Resync au retour de l'onglet (throttlé 1 min par sessionSync).
      */
     useEffect(()=>{
 

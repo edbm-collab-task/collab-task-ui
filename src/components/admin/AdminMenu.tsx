@@ -35,12 +35,7 @@ export default function AdminMenu({ collapsed, expand }: Props) {
      * plus large, est celle vers laquelle `UserListPage` le redirige déjà.
      */
     const visibleMenus = menus.filter((m) => {
-        if (m.path === "/admin/users") {
-            const canUsers = hasPermission(PERM.MANAGE_USERS, ACT.SELECT);
-            const canAdmins = hasPermission(PERM.MANAGE_ADMINS, ACT.SELECT);
-            if (canAdmins && !canUsers) return false;
-            if (canAdmins && canUsers) return false;
-            if (canUsers && !canAdmins) return canUsers;
+        if (m.path === "/admin/users" && hasPermission(PERM.MANAGE_ADMINS, ACT.SELECT)) {
             return false;
         }
         return !m.permission || hasPermission(m.permission, m.action);
@@ -50,22 +45,9 @@ export default function AdminMenu({ collapsed, expand }: Props) {
      * Entrées d'administration visibles (permission + action). La section n'est
      * rendue que si au moins une entrée subsiste après filtrage.
      */
-    const visibleSuperAdminMenus = superAdminMenus
-        .filter((m) => !m.permission || hasPermission(m.permission, m.action))
-        .map((m) => {
-            if (m.path === "/admin/admins") {
-                const canUsers = hasPermission(PERM.MANAGE_USERS, ACT.SELECT);
-                const canAdmins = hasPermission(PERM.MANAGE_ADMINS, ACT.SELECT);
-                if (canAdmins && canUsers) {
-                    return { ...m, name: "Administrateurs et utilisateurs" };
-                }
-                if (canUsers && !canAdmins) {
-                    return { ...m, name: "Utilisateurs" };
-                }
-                return { ...m, name: "Administrateurs" };
-            }
-            return m;
-        });
+    const visibleSuperAdminMenus = superAdminMenus.filter((m) =>
+        !m.permission || hasPermission(m.permission, m.action)
+    );
 
     return (
         <nav className={`mt-4 flex-1 overflow-y-auto transition-all duration-300 ${

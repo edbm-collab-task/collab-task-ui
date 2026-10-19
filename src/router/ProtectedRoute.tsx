@@ -39,7 +39,7 @@ export default function ProtectedRoute({ children }: Props) {
 
 
     /**
-     * Resynchronise les droits à chaque changement de route (throttlé 30 s
+     * Resynchronise les droits à chaque changement de route (throttlé 1 min
      * par sessionSync). Le premier montage est ignoré : refreshUser() vient
      * déjà de charger la session au montage d'AuthProvider.
      */
