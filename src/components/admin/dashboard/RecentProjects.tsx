@@ -2,6 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, FolderKanban } from "lucide-react";
 import type { DashboardRecentProject } from "@/types/dashboard";
 import EmptyState from "@/components/common/EmptyState";
+import Allow from "@/components/common/Allow";
+import { PERM } from "@/constants/permissions";
+import { ACT } from "@/constants/actions";
 
 interface Props {
     projects: DashboardRecentProject[] | null;
@@ -14,16 +17,18 @@ export default function RecentProjects({ projects }: Props) {
 
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex items-center justify-between">
-                <h3 className="font-bold text-primary">Projets récents</h3>
-                <button
-                    onClick={() => navigate("/admin/projects")}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-accent/80 transition hover:text-accent"
-                >
-                    Tout voir
-                    <ArrowRight size={14} />
-                </button>
-            </div>
+            <Allow perm={PERM.MANAGE_PROJECTS} action={ACT.SELECT}>
+                <div className="mb-5 flex items-center justify-between">
+                    <h3 className="font-bold text-primary">Projets récents</h3>
+                    <button
+                        onClick={() => navigate("/admin/projects")}
+                        className="inline-flex items-center gap-1 text-sm font-medium text-accent/80 transition hover:text-accent"
+                    >
+                        Tout voir
+                        <ArrowRight size={14} />
+                    </button>
+                </div>
+            </Allow>
 
             {list.length === 0 ? (
                 <EmptyState
