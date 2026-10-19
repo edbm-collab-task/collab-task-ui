@@ -6,7 +6,7 @@
  * un OU binaire (« somme ») afin de ne former qu'un seul entier : c'est ce
  * masque qui est comparé et transmis à l'API.
  *
- * Exemple : `ACT.INSERT | ACT.UPDATE` vaut `1 | 4` = `5`.
+ *  AJOUTER UNIQUEMENT À LA FIN. Jamais d'insertion, de réordonnancement,
  */
 export const ACT = {
     /** Créer une ressource. */
@@ -21,6 +21,7 @@ export const ACT = {
     GENERATE_REPORT: 16,
     /** Exporter des données. */
     EXPORT: 32
+    // ← nouvelles actions ici, jamais au-dessus
 } as const;
 
 /** Nom d'une action (`INSERT`, `SELECT`, …). */
@@ -47,7 +48,7 @@ export const ACTION_LABELS: Record<ActionName, string> = {
     UPDATE: "Modifier",
     DELETE: "Supprimer",
     GENERATE_REPORT: "Générer un rapport",
-    EXPORT: "Exporter"
+    EXPORT: "Exporter au format pdf"
 };
 
 /**
