@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, RefreshCw } from "lucide-react";
+import { Check, ChevronDown, RefreshCw, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 import RoleTemplateSelect from "@/components/role/RoleTemplateSelect";
@@ -516,8 +516,18 @@ export default function RoleForm({
                 <label className="mb-2 block font-medium">
                     Permissions
                 </label>
-                <div className="mb-3">
+                <div className="mb-3 flex items-center gap-2">
                     <TableSearch value={permSearch} onChange={setPermSearch} />
+                    {isSearching && (
+                        <button
+                            type="button"
+                            onClick={() => setPermSearch("")}
+                            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        >
+                            <X size={14} />
+                            Réinitialiser
+                        </button>
+                    )}
                 </div>
 
                 {isSearching ? (
