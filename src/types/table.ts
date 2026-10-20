@@ -14,6 +14,8 @@ export interface Column<T>{
 
     header:string;
 
+    className?:string;
+
     render?:(
         value:unknown,
         row:T

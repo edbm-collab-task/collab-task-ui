@@ -46,7 +46,7 @@ export default function GlobalTable<T>({
                                 return (
                                     <th
                                         key={String(column.key)}
-                                        className={`min-w-0 max-w-full wrap-break-word px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-primary ${
+                                        className={`min-w-0 max-w-full wrap-break-word px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-primary ${column.className ?? ""} ${
                                             isVisibleOnMobile ? "" : "max-sm:hidden"
                                         }`}
                                     >
@@ -81,7 +81,7 @@ export default function GlobalTable<T>({
                                             return (
                                                 <td
                                                     key={String(column.key)}
-                                                    className={`px-5 py-4 text-primary/80 wrap-break-word max-sm:text-xs ${
+                                                    className={`px-5 py-4 text-primary/80 wrap-break-word max-sm:text-xs ${column.className ?? ""} ${
                                                         isVisibleOnMobile ? "" : "max-sm:hidden"
                                                     }`}
                                                 >

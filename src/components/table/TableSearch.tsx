@@ -19,25 +19,25 @@ export default function TableSearch({
 
 return (
 
-<div className="relative w-full sm:w-64">
+<div className="relative w-full">
 
-<Search
-size={18}
-className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-primary/40"
-/>
+    <Search
+    size={18}
+    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-primary/40"
+    />
 
 
-<input
+    <input
 
-value={value}
+    value={value}
 
-onChange={(e)=>onChange(e.target.value)}
+    onChange={(e)=>onChange(e.target.value)}
 
-placeholder="Rechercher..."
+    placeholder="Rechercher..."
 
-className="h-10 w-full rounded-xl border border-secondary/60 bg-secondary/20 pl-10 pr-4 text-sm text-primary outline-none transition placeholder:text-primary/40 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/15"
+    className="h-10 w-full rounded-xl border border-secondary/60 bg-secondary/20 pl-10 pr-4 text-sm text-primary outline-none transition placeholder:text-primary/40 focus:border-primary focus:bg-white "
 
-/>
+    />
 
 </div>
 
