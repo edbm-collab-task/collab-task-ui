@@ -91,11 +91,4 @@ useEffect(() => {
 - **Cross-tab** : logout dans un onglet → `accessToken` supprimé → `storage` event dans les autres onglets → `setUser(null)`.
 - **Offline au focus** : mode `resync` → échec réseau **ne déconnecte pas** l'utilisateur (on conserve la session courante). C'est le comportement voulu pour éviter des déconnexions intempestives.
 
-## Points de vérification (manuel)
 
-- [ ] Ouvrir 2 onglets `/admin`. Changer les droits d'un utilisateur via un compte admin (autre onglet ou autre session). Revenir sur l'onglet ciblé (focus) → droits mis à jour (sans reload).
-- [ ] Navigation rapide sur 10 pages `/admin/*` → 1 seul appel `GET /auth/me` visible dans Network (throttle 60 s).
-- [ ] Retirer une permission à un utilisateur connecté. Celui-ci tente une action → reçoit 403, un resync forcé se déclenche ; si les droits ont changé → toast « Vos droits ont été mis à jour. », puis redirection naturelle par les guards si sur une route perdue.
-- [ ] Logout dans onglet 1 → onglet 2 passe automatiquement à `/login` (via `storage`).
-- [ ] Mise hors-ligne, bascule d'onglet → pas de déconnexion.
-- [ ] Refresh token (401 automatique) → permissions à jour injectées directement sans appel `me()` supplémentaire.
