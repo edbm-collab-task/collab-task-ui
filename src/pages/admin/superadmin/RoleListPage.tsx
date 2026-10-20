@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -94,6 +94,13 @@ export default function RoleListPage() {
     useEffect(() => { loadData(); }, []);
 
     /**
+     * Scrollz au top quand on clique edit des que le form est chargé
+     */
+    useEffect(() => {
+        if (showForm) scrollToForm();
+    }, [showForm, editingRole]);
+
+    /**
      * Codes indisponibles : ceux renvoyés par l'API, plus les codes système
      * réservés, moins ceux du rôle en cours d'édition — sans cette exclusion,
      * ouvrir un rôle existant le déclarerait en collision avec lui-même.
@@ -153,9 +160,15 @@ export default function RoleListPage() {
         }
     };
 
+    const formRef = useRef<HTMLDivElement>(null);
+
+    const scrollToForm = () => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
     /**
      * Ouvre le formulaire en édition : le rôle complet (avec ses permissions)
      * est rechargé avant affichage.
+     * Scroll au top
      */
     const handleEdit = async (role: RoleTable) => {
         try {
@@ -245,19 +258,21 @@ export default function RoleListPage() {
             />
 
             {showForm && (
-                <RoleForm
-                    key={editingRole?.id ?? "create"}
-                    editingRole={editingRole}
-                    allPermissions={allPermissions}
-                    actionsMap={actionsMap}
-                    sourceRoles={sourceRoles}
-                    takenCodes={takenCodes}
-                    onSubmit={handleSave}
-                    onCancel={() => {
-                        setShowForm(false);
-                        setEditingRole(null);
-                    }}
-                />
+                <div ref={formRef}>
+                    <RoleForm
+                        key={editingRole?.id ?? "create"}
+                        editingRole={editingRole}
+                        allPermissions={allPermissions}
+                        actionsMap={actionsMap}
+                        sourceRoles={sourceRoles}
+                        takenCodes={takenCodes}
+                        onSubmit={handleSave}
+                        onCancel={() => {
+                            setShowForm(false);
+                            setEditingRole(null);
+                        }}
+                    />
+                </div>
             )}
 
             <GlobalTable<RoleTable>
