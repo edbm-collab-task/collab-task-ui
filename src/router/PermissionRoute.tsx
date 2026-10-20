@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import usePermissions from "@/hooks/usePermissions";
 import type { PermissionName } from "@/constants/permissions";
-import type { ActionCode } from "@/constants/actions";
+import { ACT, type ActionName } from "@/constants/actions";
 
 /** Props de {@link PermissionRoute}. */
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
      * la permission. Le bit est testé sur le masque accordé porté par la
      * session (`PermissionSummary.totalActionsAccordees`).
      */
-    action: ActionCode;
+    action: ActionName;
 }
 
 /**
@@ -39,7 +39,7 @@ export default function PermissionRoute({
 }: Props) {
     const { hasPermission } = usePermissions();
 
-    if (!hasPermission(permission, action)) {
+    if (!hasPermission(permission, ACT[action])) {
         return <Navigate to="/admin" replace />;
     }
 

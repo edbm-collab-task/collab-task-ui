@@ -27,7 +27,7 @@ import ActivityHistoryPage from "@/pages/admin/project/ActivityHistoryPage";
 import AdminListPage from "@/pages/admin/superadmin/AdminListPage";
 import RoleListPage from "@/pages/admin/superadmin/RoleListPage";
 import { PERM } from "@/constants/permissions";
-import { ACT } from "@/constants/actions";
+import { ACT, ACTN } from "@/constants/actions";
 import PermissionRoute from "@/router/PermissionRoute";
 import SelfRoute from "@/router/SelfRoute";
 
@@ -54,13 +54,13 @@ export default function Router() {
                 <Route index element={<Dashboard />} />
 
                 <Route path="users" element={
-                    <PermissionRoute permission={PERM.MANAGE_USERS} action={ACT.SELECT}><UserListPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_USERS} action={ACTN.SELECT}><UserListPage /></PermissionRoute>
                 } />
                 <Route path="users/create" element={
-                    <PermissionRoute permission={PERM.MANAGE_USERS} action={ACT.INSERT}><CreateUserPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_USERS} action={ACTN.INSERT}><CreateUserPage /></PermissionRoute>
                 } />
                 <Route path="users/edit-role" element={
-                    <PermissionRoute permission={PERM.MANAGE_USERS} action={ACT.UPDATE}><EditUserRolePage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_USERS} action={ACTN.UPDATE}><EditUserRolePage /></PermissionRoute>
                 } />
                 <Route path="users/profile" element={<UserProfile />} />
                 <Route path="users/:id/edit" element={
@@ -69,35 +69,35 @@ export default function Router() {
                 <Route path="users/change-pwd" element={<ChangePwdPage />} />
 
                 <Route path="directions" element={
-                    <PermissionRoute permission={PERM.MANAGE_DIRECTIONS} action={ACT.SELECT}><DirectionsListPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_DIRECTIONS} action={ACTN.SELECT}><DirectionsListPage /></PermissionRoute>
                 } />
                 <Route path="directions/create" element={
-                    <PermissionRoute permission={PERM.MANAGE_DIRECTIONS} action={ACT.INSERT}><CreateDirection /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_DIRECTIONS} action={ACTN.INSERT}><CreateDirection /></PermissionRoute>
                 } />
 
                 <Route path="projects" element={
-                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACT.SELECT}><ProjectListPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACTN.SELECT}><ProjectListPage /></PermissionRoute>
                 } />
                 <Route path="projects/create" element={
-                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACT.INSERT}><ProjectFormPage mode="create" /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACTN.INSERT}><ProjectFormPage mode="create" /></PermissionRoute>
                 } />
                 <Route path="projects/:id" element={
-                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACT.SELECT}><ProjectDetailPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACTN.SELECT}><ProjectDetailPage /></PermissionRoute>
                 } />
                 <Route path="projects/:id/edit" element={
-                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACT.UPDATE}><ProjectFormPage mode="edit" /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACTN.UPDATE}><ProjectFormPage mode="edit" /></PermissionRoute>
                 } />
                 <Route path="projects/:id/history" element={
-                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACT.SELECT}><ActivityHistoryPage /></PermissionRoute>
+                    <PermissionRoute permission={PERM.MANAGE_PROJECTS} action={ACTN.SELECT}><ActivityHistoryPage /></PermissionRoute>
                 } />
 
                 <Route path="messages" element={<MessagePage />} />
 
                 <Route path="notifications" element={<NotificationsPage />} />
 
-                <Route path="dashboard-admin" element={<PermissionRoute permission={PERM.VIEW_REPORTS} action={ACT.SELECT}><AdminDashboard /></PermissionRoute>} />
-                <Route path="admins" element={<PermissionRoute permission={PERM.MANAGE_ADMINS} action={ACT.SELECT}><AdminListPage /></PermissionRoute>} />
-                <Route path="roles" element={<PermissionRoute permission={PERM.MANAGE_ROLES} action={ACT.SELECT}><RoleListPage /></PermissionRoute>} />
+                <Route path="dashboard-admin" element={<PermissionRoute permission={PERM.VIEW_REPORTS} action={ACTN.SELECT}><AdminDashboard /></PermissionRoute>} />
+                <Route path="admins" element={<PermissionRoute permission={PERM.MANAGE_ADMINS} action={ACTN.SELECT}><AdminListPage /></PermissionRoute>} />
+                <Route path="roles" element={<PermissionRoute permission={PERM.MANAGE_ROLES} action={ACTN.SELECT}><RoleListPage /></PermissionRoute>} />
 
             </Route>
 

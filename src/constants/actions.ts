@@ -30,7 +30,14 @@ export const ACTION_NAMES = [
     "ARCHIVE"
 ] as const;
 
-/** Nom d'une action (`INSERT`, `SELECT`, …). */
+    /**
+     * Nom de l'action exigée sur la permission (`"INSERT"`, `"SELECT"`,
+     * `"UPDATE"`, …).
+     *
+     * On passe le nom et non `ACT.*` : le routeur est évalué avant
+     * l'hydratation du catalogue, la valeur serait figée à 0. Le nom est
+     * résolu en code au moment du test, comme dans `AdminMenu`.
+     */
 export type ActionName = (typeof ACTION_NAMES)[number];
 
 /**
@@ -92,6 +99,8 @@ export function hydrateActionCatalog(catalog: ActionCatalogEntry[]): void {
     const act = ACT as Record<string, number>;
     let mask = 0;
 
+    for (const name of Object.keys(act)) act[name] = 0;
+    for (const label of Object.keys(ACTION_LABELS)) delete ACTION_LABELS[label];
     for (const { name, codeAction, label } of catalog) {
         act[name] = codeAction;
         ACTION_LABELS[name] = label;
@@ -117,6 +126,7 @@ export function hasAction(
     action: ActionCode
 ): boolean {
     if (mask === undefined) return false;
+    if (action === 0) return false;
     return (mask & action) === action;
 }
 
@@ -155,3 +165,8 @@ export function maskToActions(mask: number | undefined): ActionName[] {
         hasAction(mask, act[name])
     ) as ActionName[];
 }
+
+
+export const ACTN = Object.fromEntries(
+    ACTION_NAMES.map((name) => [name, name])
+) as { [K in ActionName]: K };
