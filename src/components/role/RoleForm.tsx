@@ -516,6 +516,8 @@ export default function RoleForm({
                 <label className="mb-2 block font-medium">
                     Permissions
                 </label>
+
+                {/* SearcBar */}
                 <div className="mb-3 flex items-center gap-2">
                     <TableSearch value={permSearch} onChange={setPermSearch} />
                     {isSearching && (
@@ -630,6 +632,8 @@ export default function RoleForm({
                                 l'id référencé. `type="button"` évite la
                                 soumission implicite du formulaire parent.
                             */}
+
+                            {/* Category permission */}
                             <button
                                 type="button"
                                 onClick={() => toggleCategory(category)}
@@ -656,7 +660,7 @@ export default function RoleForm({
                                     id={panelId}
                                     role="group"
                                     aria-label={label}
-                                    className="grid grid-cols-1 gap-2"
+                                    className="grid grid-cols-3 max-md:grid-cols-1 gap-2"
                                 >
                                     {perms.map((perm: PermissionWithActionMask) => {
                                         const isChecked = selectedPermissions.includes(perm.name);
@@ -666,7 +670,7 @@ export default function RoleForm({
                                         return (
                                             <div
                                                 key={perm.id}
-                                                className={`rounded-lg p-3 transition-all ${
+                                                className={`rounded-lg p-3 transition-all${
                                                     isChecked ? "bg-accent/10" : ""
                                                 }`}
                                             >
@@ -696,7 +700,7 @@ export default function RoleForm({
                                                     colonne). Sous le breakpoint `sm`, bascule sur
                                                     2 colonnes et autant de lignes que nécessaire.
                                                 */}
-                                                <div className="mt-2 grid grid-flow-col grid-rows-3 gap-1.5 pl-8 max-sm:grid-flow-row max-sm:grid-rows-none max-sm:grid-cols-2">
+                                                <div className="mt-2 grid gap-1.5 pl-8 max-sm:grid-flow-row max-sm:grid-rows-none max-sm:grid-cols-2">
                                                     {availableActions.map((action) => {
                                                         const isActionChecked = selectedForPerm.includes(action);
 
