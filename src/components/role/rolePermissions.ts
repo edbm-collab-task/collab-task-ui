@@ -93,6 +93,16 @@ export interface PermissionSearchResult<T extends Permission> {
 }
 
 /**
+ * Normalise une chaîne pour la recherche : minuscules et suppression des
+ * accents, afin que « piège » et « piege » se correspondent.
+ */
+export const normalizeForSearch = (value: string): string =>
+    value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+/**
  * Filtre les permissions selon une requête libre, en cherchant dans le libellé
  * et le nom technique de la permission, sa description, et les libellés de ses
  * actions.
@@ -109,7 +119,7 @@ export const filterPermissionsByQuery = <T extends PermissionWithActionMask>(
     allPermissions: T[],
     query: string
 ): PermissionSearchResult<T>[] => {
-    const needle = query.trim().toLowerCase();
+    const needle = normalizeForSearch(query);
     if (!needle) return [];
 
     const results: PermissionSearchResult<T>[] = [];
@@ -119,15 +129,15 @@ export const filterPermissionsByQuery = <T extends PermissionWithActionMask>(
         const matchedActions = actions.filter((action) => {
             const label = ACTION_LABELS[action] ?? action;
             return (
-                label.toLowerCase().includes(needle) ||
-                action.toLowerCase().includes(needle)
+                normalizeForSearch(label).includes(needle) ||
+                normalizeForSearch(action).includes(needle)
             );
         });
 
         const matches =
-            getPermissionLabel(perm.name).toLowerCase().includes(needle) ||
-            perm.name.toLowerCase().includes(needle) ||
-            (perm.description ?? "").toLowerCase().includes(needle) ||
+            normalizeForSearch(getPermissionLabel(perm.name)).includes(needle) ||
+            normalizeForSearch(perm.name).includes(needle) ||
+            normalizeForSearch(perm.description ?? "").includes(needle) ||
             matchedActions.length > 0;
 
         if (matches) {
