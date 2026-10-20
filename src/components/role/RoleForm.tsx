@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, RefreshCw } from "lucide-react";
+import { Check, ChevronDown, RefreshCw, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 import RoleTemplateSelect from "@/components/role/RoleTemplateSelect";
 import { ROLE_CODE_MESSAGES } from "@/components/role/roleForm.constants";
 import {
+    filterPermissionsByQuery,
     getDefaultOpenCategories,
     groupPermissionsByCategory
 } from "@/components/role/rolePermissions";
 import type { RoleFormProps } from "@/components/role/roleForm.types";
+import TableSearch from "@/components/table/TableSearch";
 import { ACTION_LABELS, ACT, maskToActions } from "@/constants/actions";
 import { getPermissionCategoryLabel } from "@/constants/permissionCategoryLabels";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
@@ -77,6 +79,11 @@ export default function RoleForm({
      * prochaine permission cochée/décochée.
      */
     const [openCategories, setOpenCategories] = useState<PermissionCategory[]>([]);
+    /**
+     * Requête de recherche des permissions. Vide : affichage groupé par
+     * catégorie ; non vide : liste plate des permissions correspondantes.
+     */
+    const [permSearch, setPermSearch] = useState("");
 
     const ownCode = normalizeRoleCode(editingRole?.codeRole ?? "");
 
@@ -87,6 +94,18 @@ export default function RoleForm({
         () => groupPermissionsByCategory(allPermissions),
         [allPermissions]
     );
+
+    /**
+     * Permissions correspondant à la recherche courante (vide si aucune
+     * requête). Chaque résultat porte sa catégorie et les actions ayant
+     * motivé le match.
+     */
+    const permissionSearchResults = useMemo(
+        () => filterPermissionsByQuery(allPermissions, permSearch),
+        [allPermissions, permSearch]
+    );
+
+    const isSearching = permSearch.trim() !== "";
 
     /**
      * Convertit les actions accordées d'un rôle (masques `totalActionsAccordees`)
@@ -497,7 +516,102 @@ export default function RoleForm({
                 <label className="mb-2 block font-medium">
                     Permissions
                 </label>
-                {permissionsByCategory.map(([category, perms]) => {
+                <div className="mb-3 flex items-center gap-2">
+                    <TableSearch value={permSearch} onChange={setPermSearch} />
+                    {isSearching && (
+                        <button
+                            type="button"
+                            onClick={() => setPermSearch("")}
+                            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        >
+                            <X size={14} />
+                            Réinitialiser
+                        </button>
+                    )}
+                </div>
+
+                {isSearching ? (
+                    <div className="m-2 grid grid-cols-1 gap-2">
+                        {permissionSearchResults.length === 0 && (
+                            <p className="py-4 text-sm text-gray-500">
+                                Aucune permission ne correspond à « {permSearch.trim()} ».
+                            </p>
+                        )}
+                        {permissionSearchResults.map(({ perm, category, matchedActions }) => {
+                            const isChecked = selectedPermissions.includes(perm.name);
+                            const selectedForPerm = selectedActions[perm.name] ?? [];
+                            const availableActions = maskToActions(perm.totalActions);
+
+                            return (
+                                <div
+                                    key={perm.id}
+                                    className={`rounded-lg p-3 transition-all ${
+                                        isChecked ? "bg-accent/10" : ""
+                                    }`}
+                                >
+                                    <p className="mb-1 text-xs uppercase tracking-wide text-gray-400">
+                                        {getPermissionCategoryLabel(category)}
+                                    </p>
+                                    <label className="flex cursor-pointer items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            onChange={() => togglePermission(perm)}
+                                            className="hidden"
+                                        />
+                                        <div
+                                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+                                                isChecked ? "bg-primary" : "border-gray-300"
+                                            }`}
+                                        >
+                                            {isChecked && <Check size={12} className="text-white" />}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-700">{getPermissionLabel(perm.name)}</p>
+                                            <p className="text-xs text-gray-500">{perm.description}</p>
+                                        </div>
+                                    </label>
+
+                                    {availableActions.length > 0 && (
+                                        <div className="mt-2 grid grid-flow-col grid-rows-3 gap-1.5 pl-8 max-sm:grid-flow-row max-sm:grid-rows-none max-sm:grid-cols-2">
+                                            {availableActions.map((action) => {
+                                                const isActionChecked = selectedForPerm.includes(action);
+                                                const isMatched = matchedActions.includes(action);
+
+                                                return (
+                                                    <label
+                                                        key={action}
+                                                        className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors hover:bg-secondary/40 ${
+                                                            isMatched ? "bg-secondary/30" : ""
+                                                        }`}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isActionChecked}
+                                                            onChange={() => toggleAction(perm, action)}
+                                                            className="hidden"
+                                                        />
+                                                        <span
+                                                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                                                isActionChecked ? "bg-primary" : "border-gray-300"
+                                                            }`}
+                                                        >
+                                                            {isActionChecked && (
+                                                                <Check size={10} className="text-white" />
+                                                            )}
+                                                        </span>
+                                                        <span className="text-gray-600">{ACTION_LABELS[action]}</span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    permissionsByCategory.map(([category, perms]) => {
                     const label = getPermissionCategoryLabel(category);
                     const isOpen = openCategories.includes(category);
                     const panelId = `permissions-${category}`;
@@ -618,7 +732,8 @@ export default function RoleForm({
                             )}
                         </div>
                     );
-                })}
+                })
+                )}
             </div>
 
             <div className="flex justify-end gap-2">
