@@ -178,7 +178,11 @@ export default function RoleListPage() {
 
     const columns = createColumns(roles, ROLE_FORM_LABELS, [
         "name",
-        "codeRole",
+        {
+            key: "codeRole",
+            header: ROLE_FORM_LABELS.codeRole,
+            className: "max-md:hidden"
+        },
         "permissions"
     ]);
 
