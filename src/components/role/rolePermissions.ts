@@ -1,8 +1,10 @@
+import { ACTION_LABELS, maskToActions } from "@/constants/actions";
 import {
     FALLBACK_PERMISSION_CATEGORY
 } from "@/constants/permissionCategoryLabels";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
-import type { Permission } from "@/types/role";
+import { getPermissionLabel } from "@/constants/permissions";
+import type { Permission, PermissionWithActionMask } from "@/types/role";
 
 /**
  * Clé de regroupement d'une permission.
@@ -77,4 +79,65 @@ export const getDefaultOpenCategories = (
     if (withSelection.length > 0) return withSelection;
 
     return groups.length > 0 ? [groups[0][0]] : [];
+};
+
+/**
+ * Résultat d'une recherche de permissions : la permission retenue, sa
+ * catégorie (pour l'affichage en liste plate) et les actions dont le libellé
+ * correspond à la requête (mises en évidence dans le résultat).
+ */
+export interface PermissionSearchResult<T extends Permission> {
+    perm: T;
+    category: PermissionCategory;
+    matchedActions: string[];
+}
+
+/**
+ * Filtre les permissions selon une requête libre, en cherchant dans le libellé
+ * et le nom technique de la permission, sa description, et les libellés de ses
+ * actions.
+ *
+ * Une permission est retenue dès qu'un de ces champs contient la requête (sans
+ * tenir compte de la casse). Les actions correspondantes sont collectées dans
+ * `matchedActions` : elles servent à surligner, dans la liste plate, les
+ * actions qui ont motivé le résultat.
+ *
+ * Une requête vide renvoie un tableau vide : l'appelant conserve alors
+ * l'affichage groupé par catégorie.
+ */
+export const filterPermissionsByQuery = <T extends PermissionWithActionMask>(
+    allPermissions: T[],
+    query: string
+): PermissionSearchResult<T>[] => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return [];
+
+    const results: PermissionSearchResult<T>[] = [];
+
+    for (const perm of allPermissions) {
+        const actions = maskToActions(perm.totalActions);
+        const matchedActions = actions.filter((action) => {
+            const label = ACTION_LABELS[action] ?? action;
+            return (
+                label.toLowerCase().includes(needle) ||
+                action.toLowerCase().includes(needle)
+            );
+        });
+
+        const matches =
+            getPermissionLabel(perm.name).toLowerCase().includes(needle) ||
+            perm.name.toLowerCase().includes(needle) ||
+            (perm.description ?? "").toLowerCase().includes(needle) ||
+            matchedActions.length > 0;
+
+        if (matches) {
+            results.push({
+                perm,
+                category: getPermissionCategoryKey(perm),
+                matchedActions,
+            });
+        }
+    }
+
+    return results;
 };
