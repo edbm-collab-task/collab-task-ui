@@ -572,7 +572,7 @@ export default function RoleForm({
                                         </div>
                                     </label>
 
-                                    {matchedActions.length > 0 && (
+                                    {availableActions.length > 0 && (
                                         <div className="mt-2 grid grid-flow-col grid-rows-3 gap-1.5 pl-8 max-sm:grid-flow-row max-sm:grid-rows-none max-sm:grid-cols-2">
                                             {availableActions.map((action) => {
                                                 const isActionChecked = selectedForPerm.includes(action);
