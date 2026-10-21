@@ -35,30 +35,34 @@ export const PERM = {
 export type PermissionName = (typeof PERM)[keyof typeof PERM];
 
 /**
- * Libellés lisibles des permissions, destinés à l'affichage.
+ * Source minimale pour résoudre le libellé d'une permission.
  *
- * Plus courts que les descriptions renvoyées par l'API, ils remplacent le nom
- * technique (`MANAGE_PROJECTS`…) dans l'interface, où il restait opaque.
+ * Satisfaite par les objets renvoyés par l'API (`Permission`,
+ * `PermissionWithActionMask`), qui portent toujours `name` et `description`.
  */
-export const PERMISSION_LABELS: Record<PermissionName, string> = {
-    MANAGE_STATUSES: "Gérer les statuts",
-    MANAGE_DIRECTIONS: "Gérer les directions",
-    MANAGE_ROLES: "Gérer les rôles",
-    MANAGE_ATTACHMENTS: "Gérer les pièces jointes",
-    MANAGE_COMMENTS: "Gérer les commentaires",
-    MANAGE_PROJECT_CONTRIBUTORS: "Gérer les contributeurs",
-    MANAGE_PROJECTS: "Gérer les projets",
-    MANAGE_TASKS: "Gérer les tâches",
-    VIEW_REPORTS: "Voir les rapports",
-    MANAGE_ADMINS: "Gérer les administrateurs",
-    MANAGE_USERS: "Gérer les utilisateurs"
-};
+export interface PermissionLabelSource {
+    /** Nom technique de la permission (`MANAGE_PROJECTS`). */
+    name: string;
+    /** Description de la permission, telle que renvoyée par l'API. */
+    description?: string | null;
+}
 
 /**
- * Retourne le libellé d'une permission, ou son nom technique en repli
- * (permission ajoutée côté backend et pas encore reportée ici).
+ * Retourne le libellé d'une permission : **la description fournie par le
+ * backend fait foi**.
+ *
+ * L'API expose pour chaque permission une `description` rédigée (« Consulter
+ * et exporter les rapports globaux de la plateforme… », « Gérer les
+ * directions », …) : c'est elle qui est affichée, de sorte que le libellé ne
+ * peut pas diverger de celui du backend — notamment pour une permission
+ * ajoutée côté API, qui n'a pas de libellé écrit à la main ici.
+ *
+ * Le nom technique (`MANAGE_PROJECTS`) ne sert que de repli, pour une
+ * permission dépourvue de description.
  */
-export function getPermissionLabel(name: string | null | undefined): string {
-    if (!name) return "—";
-    return PERMISSION_LABELS[name as PermissionName] ?? name;
+export function getPermissionLabel(
+    perm: PermissionLabelSource | null | undefined
+): string {
+    if (!perm) return "—";
+    return perm.description?.trim() || perm.name;
 }

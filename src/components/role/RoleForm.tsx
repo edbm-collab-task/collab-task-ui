@@ -569,8 +569,7 @@ export default function RoleForm({
                                             {isChecked && <Check size={12} className="text-white" />}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-700">{getPermissionLabel(perm.name)}</p>
-                                            <p className="text-xs text-gray-500">{perm.description}</p>
+                                            <p className="text-sm font-medium text-gray-700">{getPermissionLabel(perm)}</p>
                                         </div>
                                     </label>
 
@@ -689,8 +688,7 @@ export default function RoleForm({
                                                         {isChecked && <Check size={12} className="text-white" />}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-700">{getPermissionLabel(perm.name)}</p>
-                                                        <p className="text-xs text-gray-500">{perm.description}</p>
+                                                        <p className="text-sm font-medium text-gray-700">{getPermissionLabel(perm)}</p>
                                                     </div>
                                                 </label>
 

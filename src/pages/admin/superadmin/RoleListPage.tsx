@@ -73,7 +73,7 @@ export default function RoleListPage() {
                 name: r.name,
                 codeRole: r.codeRole || "—",
                 permissions: r.permissions.length > 0
-                    ? r.permissions.map(p => getPermissionLabel(p.name)).join(", ")
+                    ? r.permissions.map(p => getPermissionLabel(p)).join(", ")
                     : "Aucune permission"
             }));
 

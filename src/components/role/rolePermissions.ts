@@ -3,7 +3,6 @@ import {
     FALLBACK_PERMISSION_CATEGORY
 } from "@/constants/permissionCategoryLabels";
 import type { PermissionCategory } from "@/constants/permissionCategoryLabels";
-import { getPermissionLabel } from "@/constants/permissions";
 import type { Permission, PermissionWithActionMask } from "@/types/role";
 
 /**
@@ -103,9 +102,9 @@ export const normalizeForSearch = (value: string): string =>
         .toLowerCase();
 
 /**
- * Filtre les permissions selon une requête libre, en cherchant dans le libellé
- * et le nom technique de la permission, sa description, et les libellés de ses
- * actions.
+ * Filtre les permissions selon une requête libre, en cherchant dans la
+ * description (c'est-à-dire le libellé affiché), le nom technique de la
+ * permission, et les libellés de ses actions.
  *
  * Une permission est retenue dès qu'un de ces champs contient la requête (sans
  * tenir compte de la casse). Les actions correspondantes sont collectées dans
@@ -135,9 +134,8 @@ export const filterPermissionsByQuery = <T extends PermissionWithActionMask>(
         });
 
         const matches =
-            normalizeForSearch(getPermissionLabel(perm.name)).includes(needle) ||
-            normalizeForSearch(perm.name).includes(needle) ||
             normalizeForSearch(perm.description ?? "").includes(needle) ||
+            normalizeForSearch(perm.name).includes(needle) ||
             matchedActions.length > 0;
 
         if (matches) {

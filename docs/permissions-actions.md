@@ -60,10 +60,9 @@ Le fichier ne déclare que la **liste des noms** (`ACTION_NAMES`, clés de `ACT`
 |---|---|
 | `PERM` | Les noms exacts des permissions renvoyées par l'API (`PERM.MANAGE_PROJECTS`, `PERM.MANAGE_USERS`, …) |
 | `PermissionName` | Type dérivé de `PERM` |
-| `PERMISSION_LABELS` | Libellés FR affichables (`MANAGE_PROJECTS → "Gérer les projets"`), plus courts que les `description` de l'API |
-| `getPermissionLabel(name)` | Libellé d'une permission, ou nom technique en repli si inconnue |
+| `getPermissionLabel(perm)` | Libellé d'une permission : la **description fournie par le backend** (repli sur le nom technique si elle est absente) |
 
-La liste de `PERM` est issue de `GET /roles/permissions/actions` (11 permissions). **Toute permission ajoutée côté backend doit y être reportée** (dans `PERM` et `PERMISSION_LABELS`). À l'inverse, une action ajoutée au backend n'exige **aucune modification** du front : l'hydratation l'ajoute automatiquement à `ACT` (seul son usage explicite `ACT.NOUVELLE_ACTION` demande un ajout dans `ACTION_NAMES`).
+La liste de `PERM` est issue de `GET /roles/permissions/actions` (12 permissions). **Toute permission ajoutée côté backend doit y être reportée** (dans `PERM` uniquement). Le libellé affiché, lui, n'est jamais écrit à la main : il provient de la `description` de l'API, ce qui garantit qu'il reste aligné avec le backend. À l'inverse, une action ajoutée au backend n'exige **aucune modification** du front : l'hydratation l'ajoute automatiquement à `ACT` (seul son usage explicite `ACT.NOUVELLE_ACTION` demande un ajout dans `ACTION_NAMES`).
 
 ## Composant `Allow`
 
@@ -128,7 +127,7 @@ Les noms d'actions se déduisent de ces masques via `maskToActions`. Types corre
 
 ## État actuel et migration
 
-- **Formulaire de rôle migré** : `RoleForm` affiche les actions cochables depuis `totalActions` (`maskToActions` + `ACTION_LABELS`) et pré-remplit permissions/actions depuis `/roles/actions-map` (`totalActionsAccordees`), en édition comme via le sélecteur de modèle. Les permissions y sont titrées par `getPermissionLabel` (plus de nom technique).
+- **Formulaire de rôle migré** : `RoleForm` affiche les actions cochables depuis `totalActions` (`maskToActions` + `ACTION_LABELS`) et pré-remplit permissions/actions depuis `/roles/actions-map` (`totalActionsAccordees`), en édition comme via le sélecteur de modèle. Les permissions y sont titrées par la `description` de l'API (via `getPermissionLabel`) : le nom technique n'est jamais affiché.
 - **Écriture inchangée** : `PUT /roles/{id}/actions` attend toujours `Record<nomPermission, string[]>`. La sélection de l'UI (noms d'actions) y est transmise telle quelle.
 - **Masques portés par la session** : `/auth/me` (et `/auth/login`, `/auth/refresh`) renvoie `permissions: PermissionSummary[]` — `{ name, totalActions, totalActionsAccordees }`. `usePermissions().hasPermission(perm, action)` teste directement le bit `totalActionsAccordees`, sans appel `/roles/actions-map`.
 - **Guards/menu migrés** : `PermissionRoute` (permission `PERM.*` **+ action `ACT.*`**, toutes deux obligatoires) et `SelfRoute` (profil personnel, sans permission) remplacent l'ancien `SelfOrPermissionRoute`/`SuperAdminRoute`. Le menu (`AdminNavigation.config.ts`) déclare lui aussi un couple permission + action, filtré par `AdminMenu` via `hasPermission` (plus de filtre par rôle brut) ; `Dashboard` reste typé `PermissionName`. Aucune chaîne littérale de permission ne subsiste dans `src/`. Les entrées de menu stockent le **nom** de l'action (`"SELECT"`, typé `ActionName`) et non son code : le module est évalué au chargement, avant l'hydratation de `ACT` ; `AdminMenu` résout le nom en code (`ACT[m.action]`) au moment du filtrage.
