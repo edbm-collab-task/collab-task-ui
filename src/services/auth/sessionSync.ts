@@ -4,8 +4,9 @@ import type { UserLoginRes } from "@/types/user";
  * Motif d'une demande de resynchronisation de la session.
  * - `navigation` : changement de route (détecté par ProtectedRoute)
  * - `focus` : la fenêtre redevient visible (onglet / application)
- * - `sidebar` : ouverture du sidebar (AdminLayout) — permet d'afficher les
- *   derniers droits avant de parcourir les menus
+ * - `sidebar` : ouverture ou survol de la barre latérale (`Sidebar`,
+ *   `AdminLayout`) — permet d'afficher les derniers droits avant de parcourir
+ *   les menus
  * - `403` : le serveur a refusé une action → les droits de l'utilisateur
  *   ont probablement changé
  * - `token-refresh` : le refresh 401 a renvoyé une session complète

@@ -47,7 +47,10 @@ Modifications principales :
   - `403` → `const before = userRef.current`; `const after = await refreshUser({ resync: true })`; si `before` et `after` existent et que `sessionChanged(before, after)` détecte un changement (`role/codeRole` ou `permissions` sérialisées) → `toast.success("Vos droits ont été mis à jour.")`. Sinon : **aucun toast** (le toast « Accès refusé » existant dans `axios.ts` reste suffisant).
   - `navigation` / `focus` → `await refreshUser({ resync: true })` (aucun toast).
 - **Focus / visibilité de l'onglet** (effet `[]`) : écoute `visibilitychange` + `focus`. Si l'onglet redevient visible **et qu'une session est active** (`userRef.current`), appelle `requestSessionResync("focus")` (throttlé 60 s).
-- **Ouverture du sidebar** (`AdminLayout`, effet sur `sidebarOpen`) : à chaque ouverture du sidebar (bouton hamburger, mobile), appelle `requestSessionResync("sidebar")` (throttlé à 5 s — budget propre à cette raison) — les menus reflètent les derniers droits avant que l'utilisateur ne navigue.
+- **Ouverture du sidebar** : deux déclencheurs, un seul budget (5 s, propre à la raison « sidebar »).
+  - `Sidebar` — **survol de la barre latérale** (`onPointerEnter` sur l'`<aside>`). C'est le geste d'ouverture sur desktop : la barre y est toujours visible et se déploie au survol du rail replié. La barre fermée en mobile étant hors écran, elle n'est pas atteignable au pointeur : rien ne se déclenche.
+  - `AdminLayout` — effet sur `sidebarOpen` : ouverture par le bouton hamburger (mobile).
+- Dans les deux cas, `requestSessionResync("sidebar")` est appelée : les menus reflètent les derniers droits avant que l'utilisateur ne navigue.
 - **Synchronisation multi-onglets** (effet `[]`) : `storage` event. Si `accessToken` devient `null` dans un autre onglet → `setUser(null)` (logout propagé entre onglets). Les autres onglets se déconnectent naturellement sans reload forcé.
 
 **Comparaison de sessions :** `sessionChanged(a,b)` compare `role`, `codeRole` et `JSON.stringify(a.permissions)` (masques `totalActionsAccordées` inclus). Cela évite de spammer un toast quand aucun droit n'a réellement évolué.
