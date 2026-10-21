@@ -11,7 +11,7 @@ Les permissions étaient chargées **une seule fois** au montage de `AuthProvide
 
 ## Stratégie retenue (frontend seul)
 
-On conserve le modèle existant (session stockée uniquement dans le contexte React). À chaque événement opportun (navigation, retour d'onglet, 403, refresh 401), on **resynchronise** la session via `GET /auth/me` ou on **injecte directement** la session renvoyée par le refresh. Dès que `setUser` est appelé avec une nouvelle session, toute l'UI (guards, menus, boutons conditionnels) se réévalue automatiquement.
+On conserve le modèle existant (session stockée uniquement dans le contexte React). À chaque événement opportun (navigation, retour d'onglet, ouverture de la barre latérale, 403, refresh 401), on **resynchronise** la session via `GET /auth/me` ou on **injecte directement** la session renvoyée par le refresh. Dès que `setUser` est appelé avec une nouvelle session, toute l'UI (guards, menus, boutons conditionnels) se réévalue automatiquement.
 
 ## Composants
 
@@ -23,9 +23,12 @@ Fichier sans dépendance React (utilisable dans `axios.ts`). Il expose un bus d'
 - `onSessionResync(listener)` → retourne une fonction `unsubscribe`
 - `requestSessionResync(reason, options?)` → notifie tous les listeners
 
-**Throttling / dédoublonnage (conformément au comportement demandé) :**
+**Throttling / dédoublonnage :**
 
-- **`navigation` / `focus` / `sidebar`** : throttlés à **1 appel maximum toutes les 60 s** (1 min). Si l'utilisateur clique 10 pages en 5 secondes, un seul appel `GET /auth/me` est émis (évite le spam serveur).
+Le budget est **par raison** (`THROTTLE_MS_BY_REASON`) : chaque raison dispose de sa propre fenêtre, si bien qu'une resync « navigation » n'annule plus une resync « sidebar » (et réciproquement). Avant, un budget unique de 1 min était partagé : la demande « sidebar » était presque toujours ignorée, puisqu'une navigation ou un focus avait eu lieu dans la minute précédente.
+
+- **`navigation` / `focus`** : **1 appel maximum toutes les 60 s** (1 min). Si l'utilisateur clique 10 pages en 5 secondes, un seul appel `GET /auth/me` est émis (évite le spam serveur).
+- **`sidebar`** : **1 appel maximum toutes les 5 s**. Geste volontaire de l'utilisateur (ouverture de la barre latérale) : le résultat est attendu immédiatement, la fenêtre est donc courte.
 - **`403` avec `force: true`** : contourne le throttle des raisons « douces », mais est **dédoublonné à 2 s** (plusieurs 403 simultanés n'envoient qu'une seule demande). Cela évite une rafale si une page effectue plusieurs requêtes refusées.
 - **`token-refresh` avec `user` fourni** : **aucun throttle**. Le `UserLoginRes` complet est déjà disponible dans la réponse `/auth/refresh` → `AuthProvider` l'injecte directement via `setUser` **sans appel HTTP supplémentaire** (optimisation + cohérence immédiate). Le test `deliversSession` vérifie la présence de `permissions` pour décider du bypass.
 
@@ -41,10 +44,12 @@ Modifications principales :
 - **`userRef`** : garde une référence toujours à jour de `user` (évite les closures périmées dans les listeners du bus et les `addEventListener`).
 - **Abonnement au bus `onSessionResync`** (effet `[]`) :
   - `token-refresh` + `refreshed.permissions` → `setUser(refreshed)` direct (zéro requête).
-  - `403` → `const before = userRef.current`; `const after = await refreshUser({ resync: true })`; si `before` et `after` existent et que `sessionChanged(before, after)` détecte un changement (`role/codeRole` ou `permissions` sérialisées) → `toast.success("Vos droits ont été mis à jour.")`. Sinon : **aucun toast** (le toast « Accès refusé » existant dans `axios.ts` reste suffisant).
-  - `navigation` / `focus` → `await refreshUser({ resync: true })` (aucun toast).
+  - Toutes les autres raisons (`403`, `navigation`, `focus`, `sidebar`) → `const before = userRef.current`; `const after = await refreshUser({ resync: true })`; si `before` et `after` existent et que `sessionChanged(before, after)` détecte un changement (`role/codeRole` ou `permissions` sérialisées) → `toast.success("Vos droits ont été mis à jour.")`. Sinon : **aucun toast** (le toast « Accès refusé » existant dans `axios.ts` reste suffisant).
 - **Focus / visibilité de l'onglet** (effet `[]`) : écoute `visibilitychange` + `focus`. Si l'onglet redevient visible **et qu'une session est active** (`userRef.current`), appelle `requestSessionResync("focus")` (throttlé 60 s).
-- **Ouverture du sidebar** (`AdminLayout`, effet sur `sidebarOpen`) : à chaque ouverture du sidebar (bouton hamburger, mobile), appelle `requestSessionResync("sidebar")` (throttlé 60 s partagé) — les menus reflètent les derniers droits avant que l'utilisateur ne navigue.
+- **Ouverture du sidebar** : deux déclencheurs, un seul budget (5 s, propre à la raison « sidebar »).
+  - `Sidebar` — **survol de la barre latérale** (`onPointerEnter` sur l'`<aside>`). C'est le geste d'ouverture sur desktop : la barre y est toujours visible et se déploie au survol du rail replié. La barre fermée en mobile étant hors écran, elle n'est pas atteignable au pointeur : rien ne se déclenche.
+  - `AdminLayout` — effet sur `sidebarOpen` : ouverture par le bouton hamburger (mobile).
+- Dans les deux cas, `requestSessionResync("sidebar")` est appelée : les menus reflètent les derniers droits avant que l'utilisateur ne navigue.
 - **Synchronisation multi-onglets** (effet `[]`) : `storage` event. Si `accessToken` devient `null` dans un autre onglet → `setUser(null)` (logout propagé entre onglets). Les autres onglets se déconnectent naturellement sans reload forcé.
 
 **Comparaison de sessions :** `sessionChanged(a,b)` compare `role`, `codeRole` et `JSON.stringify(a.permissions)` (masques `totalActionsAccordées` inclus). Cela évite de spammer un toast quand aucun droit n'a réellement évolué.
@@ -79,15 +84,15 @@ useEffect(() => {
 ## Comportement attendu (scénario validé)
 
 1. **Admin modifie les droits** d'un utilisateur connecté (backend). La session côté navigateur est inchangée à cet instant.
-2. **Utilisateur navigue** vers une autre route sous `/admin` → `ProtectedRoute` détecte le changement de `pathname` → `requestSessionResync("navigation")` (throttlé 60 s). `GET /auth/me` est appelé → `AuthProvider.setUser` reçoit la **nouvelle session**.
+2. **Utilisateur navigue** vers une autre route sous `/admin` → `ProtectedRoute` détecte le changement de `pathname` → `requestSessionResync("navigation")` (throttlé 60 s). `GET /auth/me` est appelé → `AuthProvider.setUser` reçoit la **nouvelle session**. *Ce même résultat est obtenu en survolant la barre latérale* (`requestSessionResync("sidebar")`, budget propre de 5 s), y compris quand l'utilisateur ne change pas de route.
 3. **State mis à jour → UI se réévalue seule.** `usePermissions()`, `Allow`, `AdminMenu`, `TaskCard`, `Dashboard`, `PermissionRoute` lisent tous `user` du contexte React. Un bouton/entrée de menu qui doit disparaître disparaît immédiatement au re-render.
-4. **Pas de toast automatique sur navigation/focus** (conformément au choix). Seul le **cas 403 avec changement effectif** peut afficher `toast.success("Vos droits ont été mis à jour.")`.
+4. **Toast de confirmation.** Si la session rechargée diffère de la précédente (droits réellement modifiés), un `toast.success("Vos droits ont été mis à jour.")` est affiché — quel que soit le déclencheur (navigation, focus, sidebar, 403). Sans changement effectif, aucun toast : l'utilisateur n'est pas perturbé pour rien.
 5. **Navigation vers une route non autorisée** : l'utilisateur clique → React rend **d'abord** avec les anciens droits (très court flash possible, le temps du réseau). Le `GET /auth/me` revient → `setUser(nouveaux droits)` → `PermissionRoute` re-rend et redirige vers `/admin` (`Navigate to="/admin" replace />`). **Important :** la sécurité reste assurée côté backend (tout appel d'API non autorisé renverra 403). Ce mécanisme est purement de **cohérence UI** (évite d'afficher une page inaccessible avant la resync).
 
 ## Notes d'implémentation
 
 - **Zéro modification** des composants de garde/UI existants (`PermissionRoute`, `Allow`, `AdminMenu`, etc.) : ils sont déjà réactifs au contexte. Le gain est uniquement dans le **rafraîchissement opportun** de ce contexte.
-- **Pas de WebSocket requis** (choix frontend seul). Le mécanisme est « pull » opportun (navigation + focus + 403 + refresh token). Latence acceptable vis-à-vis du cas d'usage (retour d'onglet / navigation).
+- **Pas de WebSocket requis** (choix frontend seul). Le mécanisme est « pull » opportun (navigation + focus + sidebar + 403 + refresh token). Latence acceptable vis-à-vis du cas d'usage (retour d'onglet / navigation / ouverture de la barre latérale).
 - **Cross-tab** : logout dans un onglet → `accessToken` supprimé → `storage` event dans les autres onglets → `setUser(null)`.
 - **Offline au focus** : mode `resync` → échec réseau **ne déconnecte pas** l'utilisateur (on conserve la session courante). C'est le comportement voulu pour éviter des déconnexions intempestives.
 

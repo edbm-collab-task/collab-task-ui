@@ -4,8 +4,9 @@ import type { UserLoginRes } from "@/types/user";
  * Motif d'une demande de resynchronisation de la session.
  * - `navigation` : changement de route (détecté par ProtectedRoute)
  * - `focus` : la fenêtre redevient visible (onglet / application)
- * - `sidebar` : ouverture du sidebar (AdminLayout) — permet d'afficher les
- *   derniers droits avant de parcourir les menus
+ * - `sidebar` : ouverture ou survol de la barre latérale (`Sidebar`,
+ *   `AdminLayout`) — permet d'afficher les derniers droits avant de parcourir
+ *   les menus
  * - `403` : le serveur a refusé une action → les droits de l'utilisateur
  *   ont probablement changé
  * - `token-refresh` : le refresh 401 a renvoyé une session complète
@@ -21,15 +22,36 @@ export interface SessionResyncPayload {
 
 type Listener = (payload: SessionResyncPayload) => void;
 
-/** Throttle pour les resyncs "doux" (navigation, focus, sidebar) : 1 appel max / 1 min. */
-const THROTTLE_MS = 60_000;
+/**
+ * Budget de throttle **par raison**.
+ *
+ * Chaque raison dispose de sa propre fenêtre : une resync « navigation » ne
+ * bloque donc plus une resync « sidebar » (et réciproquement). Avant, un
+ * budget unique de 1 min était partagé, si bien qu'une demande « sidebar »
+ * était presque toujours ignorée — l'ouverture de la barre latérale, geste
+ * volontaire de l'utilisateur, ne rafraîchissait jamais les droits.
+ *
+ * - `navigation` / `focus` : 1 appel max / 1 min (déclenchements fréquents,
+ *   le budget limite la charge serveur).
+ * - `sidebar` : 1 appel max / 5 s (geste explicite, le résultat est attendu
+ *   immédiatement).
+ *
+ * Une raison absente de cette table n'est pas throttlée.
+ */
+const THROTTLE_MS_BY_REASON: Partial<Record<SessionResyncReason, number>> = {
+    navigation: 60_000,
+    focus: 60_000,
+    sidebar: 5_000
+};
 
 /** Dédoublonnage pour les resyncs forcés (403) : 1 appel max / 2 s. */
 const DEDUPE_MS = 2_000;
 
 const listeners = new Set<Listener>();
 
-let lastThrottledAt = 0;
+/** Horodatage du dernier appel retenu, par raison (throttle). */
+const lastThrottledAt = new Map<SessionResyncReason, number>();
+
 let lastForcedAt = 0;
 
 /**
@@ -46,10 +68,11 @@ export function onSessionResync(listener: Listener): () => void {
 /**
  * Demande une resynchronisation de la session (GET /auth/me côté AuthProvider).
  *
- * - Raison classique (`navigation`, `focus`, `sidebar`) : throttlée à 1 appel
- *   toutes les 1 min pour ne pas spammer le serveur quand l'utilisateur
- *   navigue vite.
- * - `force: true` (403) : contourne le throttle 1 min mais reste dédoublonné
+ * - Raison classique (`navigation`, `focus`, `sidebar`) : throttlée selon le
+ *   budget de la raison (voir `THROTTLE_MS_BY_REASON`) pour ne pas spammer le
+ *   serveur quand l'utilisateur navigue vite. Chaque raison a son propre
+ *   budget : une resync « navigation » n'annule pas une resync « sidebar ».
+ * - `force: true` (403) : contourne le throttle mais reste dédoublonné
  *   à 2 s (une page peut déclencher plusieurs 403 d'un coup).
  * - Payload `user` déjà complet (refresh 401) : aucun throttle, l'AuthProvider
  *   l'injecte directement sans appel HTTP supplémentaire.
@@ -67,8 +90,15 @@ export function requestSessionResync(
             if (now - lastForcedAt < DEDUPE_MS) return;
             lastForcedAt = now;
         } else {
-            if (now - lastThrottledAt < THROTTLE_MS) return;
-            lastThrottledAt = now;
+            const budget = THROTTLE_MS_BY_REASON[reason];
+
+            if (budget !== undefined) {
+                const last = lastThrottledAt.get(reason) ?? 0;
+
+                if (now - last < budget) return;
+
+                lastThrottledAt.set(reason, now);
+            }
         }
     }
 

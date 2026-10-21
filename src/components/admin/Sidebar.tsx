@@ -3,6 +3,7 @@ import AdminMenu from "./AdminMenu";
 import { X } from "lucide-react";
 import { menus } from "./AdminNavigation.config.ts"
 import logo from "../../assets/logo.png";
+import { requestSessionResync } from "@/services/auth/sessionSync";
 
 
 interface Props {
@@ -12,6 +13,17 @@ interface Props {
     expand: () => void;
 }
 
+/**
+ * Barre latérale de l'espace d'administration.
+ *
+ * L'entrée du pointeur dans la barre déclenche une resynchronisation de la
+ * session : les entrées de menu reflètent ainsi les dernières permissions
+ * accordées côté backend — sur desktop, c'est le survol du rail replié qui
+ * « ouvre » la barre (le bouton hamburger n'existe qu'en mobile).
+ *
+ * Le budget propre à la raison « sidebar » (voir `sessionSync`) borne le
+ * nombre d'appels : le survol répété ne génère pas de rafale.
+ */
 export default function Sidebar({ open, close, collapsed, expand }: Props) {
 
     return (
@@ -24,6 +36,7 @@ export default function Sidebar({ open, close, collapsed, expand }: Props) {
             )}
 
             <aside
+                onPointerEnter={() => requestSessionResync("sidebar")}
                 className={`group/sb fixed inset-y-0 left-0 z-50 flex w-72 transform flex-col bg-primary text-white shadow-2xl transition-all duration-300 lg:static lg:translate-x-0 ${
                     collapsed ? "lg:w-20 lg:hover:w-72" : "lg:w-72"
                 } ${

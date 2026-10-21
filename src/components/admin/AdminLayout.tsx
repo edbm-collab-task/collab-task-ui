@@ -12,9 +12,14 @@ export default function AdminLayout() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     /**
-     * Resynchronise les droits à chaque ouverture du sidebar (throttlé 1 min
-     * par sessionSync) : les menus reflètent les derniers permissions avant
-     * que l'utilisateur ne navigue.
+     * Resynchronise les droits à chaque ouverture du sidebar (bouton
+     * hamburger, mobile) : les menus reflètent les dernières permissions
+     * avant que l'utilisateur ne navigue.
+     *
+     * Sur desktop, la barre étant toujours visible, le geste d'ouverture
+     * est le survol du rail — c'est `Sidebar` qui émet alors la demande. Les
+     * deux déclencheurs partagent le budget de 5 s propre à la raison
+     * « sidebar » (voir `sessionSync`) : ils ne provoquent qu'un seul appel.
      */
     useEffect(() => {
         if (sidebarOpen) requestSessionResync("sidebar");
