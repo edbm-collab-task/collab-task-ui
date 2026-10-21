@@ -27,7 +27,7 @@ import ActivityHistoryPage from "@/pages/admin/project/ActivityHistoryPage";
 import AdminListPage from "@/pages/admin/superadmin/AdminListPage";
 import RoleListPage from "@/pages/admin/superadmin/RoleListPage";
 import { PERM } from "@/constants/permissions";
-import { ACT, ACTN } from "@/constants/actions";
+import { ACTN } from "@/constants/actions";
 import PermissionRoute from "@/router/PermissionRoute";
 import SelfRoute from "@/router/SelfRoute";
 
