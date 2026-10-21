@@ -25,6 +25,11 @@ export const PERM = {
     MANAGE_TASKS: "MANAGE_TASKS",
     /** Voir les rapports et statistiques. */
     VIEW_REPORTS: "VIEW_REPORTS",
+    /**
+     * Consulter et exporter les rapports globaux de la plateforme
+     * (tableau de bord super administrateur).
+     */
+    MANAGE_GLOBAL_REPORTS: "MANAGE_GLOBAL_REPORTS",
     /** Gérer les comptes administrateurs. */
     MANAGE_ADMINS: "MANAGE_ADMINS",
     /** Créer, modifier, supprimer des utilisateurs. */
