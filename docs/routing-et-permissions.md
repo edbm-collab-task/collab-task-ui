@@ -130,7 +130,7 @@ La visibilité des entrées est pilotée par un couple **permission + action** :
 ### Menu d'administration (`superAdminMenus`)
 | Élément | Chemin | Icône | Permission + action |
 |---|---|---|---|
-| Dashboard Admin | `/admin/dashboard-admin` | `BarChart2` | `VIEW_REPORTS` + `SELECT` |
+| Dashboard Admin | `/admin/dashboard-admin` | `BarChart2` | `MANAGE_GLOBAL_REPORTS` + `SELECT` |
 | Administrateurs | `/admin/admins` | `Shield` | `MANAGE_ADMINS` + `SELECT` |
 | Rôles & Permissions | `/admin/roles` | `Settings` | `MANAGE_ROLES` + `SELECT` |
 

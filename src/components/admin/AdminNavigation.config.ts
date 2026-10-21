@@ -90,7 +90,7 @@ export const superAdminMenus: MenuItem[] = [
         name: "Dashboard Admin",
         path: "/admin/dashboard-admin",
         icon: BarChart2,
-        permission: PERM.VIEW_REPORTS,
+        permission: PERM.MANAGE_GLOBAL_REPORTS,
         action: "SELECT",
     },
     {
