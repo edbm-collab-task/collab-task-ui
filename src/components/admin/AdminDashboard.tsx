@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, Users, FolderKanban, AlertCircle, Clock, TrendingUp, CalendarDays } from "lucide-react";
 import Spinner from "@/components/common/Spinner";
+import Allow from "@/components/common/Allow";
 import { adminDashboardService } from "@/services/dashboard/adminDashboard.service";
 import type { AdminDashboardStatsResDto } from "@/types/adminDashboard";
 import type { DashboardPeriod } from "@/types/dashboard";
@@ -11,6 +12,8 @@ import AdminEvolutionChart from "./dashboard/AdminEvolutionChart";
 import OverdueTasksModal from "./dashboard/OverdueTasksModal";
 import { generateIncreasingSparkline, getAdminSparkline } from "@/utils/sparkline";
 import { useDashboardPeriod } from "@/hooks/useDashboardPeriod";
+import { ACT } from "@/constants/actions";
+import { PERM } from "@/constants/permissions";
 
 interface StatCardProps {
     title: string;
@@ -167,13 +170,15 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <button
-                        onClick={handleExportPdf}
-                        className="inline-flex items-center gap-2 rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition hover:bg-secondary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    >
-                        <Download size={16} />
-                        Exporter PDF
-                    </button>
+                    <Allow perm={PERM.MANAGE_GLOBAL_REPORTS} action={ACT.EXPORT}>
+                        <button
+                            onClick={handleExportPdf}
+                            className="inline-flex items-center gap-2 rounded-xl border border-secondary/60 bg-white px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition hover:bg-secondary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        >
+                            <Download size={16} />
+                            Exporter PDF
+                        </button>
+                    </Allow>
                     <TableFilter<DashboardPeriod>
                         value={period}
                         options={DASHBOARD_PERIOD_OPTIONS}
