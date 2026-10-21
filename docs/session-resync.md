@@ -23,9 +23,12 @@ Fichier sans dépendance React (utilisable dans `axios.ts`). Il expose un bus d'
 - `onSessionResync(listener)` → retourne une fonction `unsubscribe`
 - `requestSessionResync(reason, options?)` → notifie tous les listeners
 
-**Throttling / dédoublonnage (conformément au comportement demandé) :**
+**Throttling / dédoublonnage :**
 
-- **`navigation` / `focus` / `sidebar`** : throttlés à **1 appel maximum toutes les 60 s** (1 min). Si l'utilisateur clique 10 pages en 5 secondes, un seul appel `GET /auth/me` est émis (évite le spam serveur).
+Le budget est **par raison** (`THROTTLE_MS_BY_REASON`) : chaque raison dispose de sa propre fenêtre, si bien qu'une resync « navigation » n'annule plus une resync « sidebar » (et réciproquement). Avant, un budget unique de 1 min était partagé : la demande « sidebar » était presque toujours ignorée, puisqu'une navigation ou un focus avait eu lieu dans la minute précédente.
+
+- **`navigation` / `focus`** : **1 appel maximum toutes les 60 s** (1 min). Si l'utilisateur clique 10 pages en 5 secondes, un seul appel `GET /auth/me` est émis (évite le spam serveur).
+- **`sidebar`** : **1 appel maximum toutes les 5 s**. Geste volontaire de l'utilisateur (ouverture de la barre latérale) : le résultat est attendu immédiatement, la fenêtre est donc courte.
 - **`403` avec `force: true`** : contourne le throttle des raisons « douces », mais est **dédoublonné à 2 s** (plusieurs 403 simultanés n'envoient qu'une seule demande). Cela évite une rafale si une page effectue plusieurs requêtes refusées.
 - **`token-refresh` avec `user` fourni** : **aucun throttle**. Le `UserLoginRes` complet est déjà disponible dans la réponse `/auth/refresh` → `AuthProvider` l'injecte directement via `setUser` **sans appel HTTP supplémentaire** (optimisation + cohérence immédiate). Le test `deliversSession` vérifie la présence de `permissions` pour décider du bypass.
 
@@ -44,7 +47,7 @@ Modifications principales :
   - `403` → `const before = userRef.current`; `const after = await refreshUser({ resync: true })`; si `before` et `after` existent et que `sessionChanged(before, after)` détecte un changement (`role/codeRole` ou `permissions` sérialisées) → `toast.success("Vos droits ont été mis à jour.")`. Sinon : **aucun toast** (le toast « Accès refusé » existant dans `axios.ts` reste suffisant).
   - `navigation` / `focus` → `await refreshUser({ resync: true })` (aucun toast).
 - **Focus / visibilité de l'onglet** (effet `[]`) : écoute `visibilitychange` + `focus`. Si l'onglet redevient visible **et qu'une session est active** (`userRef.current`), appelle `requestSessionResync("focus")` (throttlé 60 s).
-- **Ouverture du sidebar** (`AdminLayout`, effet sur `sidebarOpen`) : à chaque ouverture du sidebar (bouton hamburger, mobile), appelle `requestSessionResync("sidebar")` (throttlé 60 s partagé) — les menus reflètent les derniers droits avant que l'utilisateur ne navigue.
+- **Ouverture du sidebar** (`AdminLayout`, effet sur `sidebarOpen`) : à chaque ouverture du sidebar (bouton hamburger, mobile), appelle `requestSessionResync("sidebar")` (throttlé à 5 s — budget propre à cette raison) — les menus reflètent les derniers droits avant que l'utilisateur ne navigue.
 - **Synchronisation multi-onglets** (effet `[]`) : `storage` event. Si `accessToken` devient `null` dans un autre onglet → `setUser(null)` (logout propagé entre onglets). Les autres onglets se déconnectent naturellement sans reload forcé.
 
 **Comparaison de sessions :** `sessionChanged(a,b)` compare `role`, `codeRole` et `JSON.stringify(a.permissions)` (masques `totalActionsAccordées` inclus). Cela évite de spammer un toast quand aucun droit n'a réellement évolué.
