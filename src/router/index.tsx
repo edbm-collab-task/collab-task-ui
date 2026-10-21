@@ -95,7 +95,7 @@ export default function Router() {
 
                 <Route path="notifications" element={<NotificationsPage />} />
 
-                <Route path="dashboard-admin" element={<PermissionRoute permission={PERM.VIEW_REPORTS} action={ACTN.SELECT}><AdminDashboard /></PermissionRoute>} />
+                <Route path="dashboard-admin" element={<PermissionRoute permission={PERM.MANAGE_GLOBAL_REPORTS} action={ACTN.SELECT}><AdminDashboard /></PermissionRoute>} />
                 <Route path="admins" element={<PermissionRoute permission={PERM.MANAGE_ADMINS} action={ACTN.SELECT}><AdminListPage /></PermissionRoute>} />
                 <Route path="roles" element={<PermissionRoute permission={PERM.MANAGE_ROLES} action={ACTN.SELECT}><RoleListPage /></PermissionRoute>} />
 

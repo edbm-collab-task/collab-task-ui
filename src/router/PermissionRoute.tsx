@@ -29,8 +29,9 @@ interface Props {
  * Si la permission ou l'action manque, redirige vers `/admin` (dashboard).
  *
  * Utilisé pour : `MANAGE_USERS` (SELECT/INSERT/UPDATE), `MANAGE_DIRECTIONS`
- * (SELECT/INSERT), `MANAGE_PROJECTS` (SELECT/INSERT/UPDATE), `VIEW_REPORTS`
- * (SELECT), `MANAGE_ADMINS` (SELECT), `MANAGE_ROLES` (SELECT).
+ * (SELECT/INSERT), `MANAGE_PROJECTS` (SELECT/INSERT/UPDATE),
+ * `MANAGE_GLOBAL_REPORTS` (SELECT), `MANAGE_ADMINS` (SELECT), `MANAGE_ROLES`
+ * (SELECT).
  */
 export default function PermissionRoute({
     children,

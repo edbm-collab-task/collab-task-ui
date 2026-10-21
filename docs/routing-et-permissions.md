@@ -100,11 +100,11 @@ L'élément parent est :
 #### Administration (permission + action)
 | Chemin | Guard | Composant | Notes |
 |---|---|---|---|
-| `/admin/dashboard-admin` | `PermissionRoute` (`VIEW_REPORTS` + `SELECT`) | `AdminDashboard` | Anciennement `SuperAdminRoute` |
+| `/admin/dashboard-admin` | `PermissionRoute` (`MANAGE_GLOBAL_REPORTS` + `SELECT`) | `AdminDashboard` | Rapports globaux de la plateforme |
 | `/admin/admins` | `PermissionRoute` (`MANAGE_ADMINS` + `SELECT`) | `AdminListPage` | Gestion des administrateurs |
 | `/admin/roles` | `PermissionRoute` (`MANAGE_ROLES` + `SELECT`) | `RoleListPage` | Gestion des rôles et permissions |
 
-Le rôle `SUPER_ADMIN` y accède via le bypass de `usePermissions`. À noter : `VIEW_REPORTS` étant accordé à plusieurs rôles (ADMIN, USER, …), `/admin/dashboard-admin` leur devient accessible — fuite assumée tant que le backend ne réserve pas une permission dédiée.
+La permission `VIEW_REPORTS` ne donne plus accès à cette page : elle couvre le tableau de bord personnel (`/admin`) et les rapports de projet. Les rapports globaux relèvent de `MANAGE_GLOBAL_REPORTS`, permission accordée (par le backend) au seul rôle `SUPER_ADMIN`. Le rôle `SUPER_ADMIN` y accède également via le bypass de `usePermissions`.
 
 ### Route fallback
 | Chemin | Composant | Notes |
@@ -159,5 +159,6 @@ Seul `ROUTES.HOME` est utilisé (`NotFoundPage`). `USERS` pointe vers `/users` (
 - **Recovery redirect** : `RecoveryProtectedRoute` redirige vers `/reccuperation-comptes` (correction apportée vs ancienne version pointant vers `/forgot-password`).
 - **SelfRoute** : se base sur `userId` numérique et `id` URL (converti via `Number(id)`). À vérifier si `id` peut ne pas être un nombre valide. Aucune permission ni action n'est consultée, y compris pour le `SUPER_ADMIN` (règle « seul moi »).
 - **SuperAdminRoute supprimé** : les pages `/admin/dashboard-admin`, `/admin/admins` et `/admin/roles` sont protégées par `PermissionRoute` (permission + action). Le `SUPER_ADMIN` y accède via le bypass de `usePermissions` (`user.role === "SUPER_ADMIN"` → `true`), plus par un garde de rôle dédié.
+- **Rapports globaux vs rapports personnels** : `/admin/dashboard-admin` exige `MANAGE_GLOBAL_REPORTS` (+ `SELECT`), permission que le backend n'accorde qu'au rôle `SUPER_ADMIN` ; `VIEW_REPORTS` reste la porte d'entrée du tableau de bord personnel (`/admin`) et des rapports de projet.
 - **Redirections par permission (plus par rôle)** : `UserListPage` redirige vers `/admin/admins` dès que `hasPermission(MANAGE_ADMINS, SELECT)` (et non plus `role === "SUPER_ADMIN"`) ; `CreateUserPage` redirige de la même façon après création et ne propose tous les rôles qu'à ce profil. Un simple gestionnaire d'utilisateurs (`MANAGE_USERS` sans `MANAGE_ADMINS`) reste sur `/admin/users`.
 - **Aucun lazy loading** : toutes les pages sont importées statiquement. Acceptable pour cette app, mais impacte la taille initiale du bundle.
