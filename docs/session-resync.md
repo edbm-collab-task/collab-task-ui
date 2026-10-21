@@ -11,7 +11,7 @@ Les permissions étaient chargées **une seule fois** au montage de `AuthProvide
 
 ## Stratégie retenue (frontend seul)
 
-On conserve le modèle existant (session stockée uniquement dans le contexte React). À chaque événement opportun (navigation, retour d'onglet, 403, refresh 401), on **resynchronise** la session via `GET /auth/me` ou on **injecte directement** la session renvoyée par le refresh. Dès que `setUser` est appelé avec une nouvelle session, toute l'UI (guards, menus, boutons conditionnels) se réévalue automatiquement.
+On conserve le modèle existant (session stockée uniquement dans le contexte React). À chaque événement opportun (navigation, retour d'onglet, ouverture de la barre latérale, 403, refresh 401), on **resynchronise** la session via `GET /auth/me` ou on **injecte directement** la session renvoyée par le refresh. Dès que `setUser` est appelé avec une nouvelle session, toute l'UI (guards, menus, boutons conditionnels) se réévalue automatiquement.
 
 ## Composants
 
@@ -44,8 +44,7 @@ Modifications principales :
 - **`userRef`** : garde une référence toujours à jour de `user` (évite les closures périmées dans les listeners du bus et les `addEventListener`).
 - **Abonnement au bus `onSessionResync`** (effet `[]`) :
   - `token-refresh` + `refreshed.permissions` → `setUser(refreshed)` direct (zéro requête).
-  - `403` → `const before = userRef.current`; `const after = await refreshUser({ resync: true })`; si `before` et `after` existent et que `sessionChanged(before, after)` détecte un changement (`role/codeRole` ou `permissions` sérialisées) → `toast.success("Vos droits ont été mis à jour.")`. Sinon : **aucun toast** (le toast « Accès refusé » existant dans `axios.ts` reste suffisant).
-  - `navigation` / `focus` → `await refreshUser({ resync: true })` (aucun toast).
+  - Toutes les autres raisons (`403`, `navigation`, `focus`, `sidebar`) → `const before = userRef.current`; `const after = await refreshUser({ resync: true })`; si `before` et `after` existent et que `sessionChanged(before, after)` détecte un changement (`role/codeRole` ou `permissions` sérialisées) → `toast.success("Vos droits ont été mis à jour.")`. Sinon : **aucun toast** (le toast « Accès refusé » existant dans `axios.ts` reste suffisant).
 - **Focus / visibilité de l'onglet** (effet `[]`) : écoute `visibilitychange` + `focus`. Si l'onglet redevient visible **et qu'une session est active** (`userRef.current`), appelle `requestSessionResync("focus")` (throttlé 60 s).
 - **Ouverture du sidebar** : deux déclencheurs, un seul budget (5 s, propre à la raison « sidebar »).
   - `Sidebar` — **survol de la barre latérale** (`onPointerEnter` sur l'`<aside>`). C'est le geste d'ouverture sur desktop : la barre y est toujours visible et se déploie au survol du rail replié. La barre fermée en mobile étant hors écran, elle n'est pas atteignable au pointeur : rien ne se déclenche.
@@ -85,15 +84,15 @@ useEffect(() => {
 ## Comportement attendu (scénario validé)
 
 1. **Admin modifie les droits** d'un utilisateur connecté (backend). La session côté navigateur est inchangée à cet instant.
-2. **Utilisateur navigue** vers une autre route sous `/admin` → `ProtectedRoute` détecte le changement de `pathname` → `requestSessionResync("navigation")` (throttlé 60 s). `GET /auth/me` est appelé → `AuthProvider.setUser` reçoit la **nouvelle session**.
+2. **Utilisateur navigue** vers une autre route sous `/admin` → `ProtectedRoute` détecte le changement de `pathname` → `requestSessionResync("navigation")` (throttlé 60 s). `GET /auth/me` est appelé → `AuthProvider.setUser` reçoit la **nouvelle session**. *Ce même résultat est obtenu en survolant la barre latérale* (`requestSessionResync("sidebar")`, budget propre de 5 s), y compris quand l'utilisateur ne change pas de route.
 3. **State mis à jour → UI se réévalue seule.** `usePermissions()`, `Allow`, `AdminMenu`, `TaskCard`, `Dashboard`, `PermissionRoute` lisent tous `user` du contexte React. Un bouton/entrée de menu qui doit disparaître disparaît immédiatement au re-render.
-4. **Pas de toast automatique sur navigation/focus** (conformément au choix). Seul le **cas 403 avec changement effectif** peut afficher `toast.success("Vos droits ont été mis à jour.")`.
+4. **Toast de confirmation.** Si la session rechargée diffère de la précédente (droits réellement modifiés), un `toast.success("Vos droits ont été mis à jour.")` est affiché — quel que soit le déclencheur (navigation, focus, sidebar, 403). Sans changement effectif, aucun toast : l'utilisateur n'est pas perturbé pour rien.
 5. **Navigation vers une route non autorisée** : l'utilisateur clique → React rend **d'abord** avec les anciens droits (très court flash possible, le temps du réseau). Le `GET /auth/me` revient → `setUser(nouveaux droits)` → `PermissionRoute` re-rend et redirige vers `/admin` (`Navigate to="/admin" replace />`). **Important :** la sécurité reste assurée côté backend (tout appel d'API non autorisé renverra 403). Ce mécanisme est purement de **cohérence UI** (évite d'afficher une page inaccessible avant la resync).
 
 ## Notes d'implémentation
 
 - **Zéro modification** des composants de garde/UI existants (`PermissionRoute`, `Allow`, `AdminMenu`, etc.) : ils sont déjà réactifs au contexte. Le gain est uniquement dans le **rafraîchissement opportun** de ce contexte.
-- **Pas de WebSocket requis** (choix frontend seul). Le mécanisme est « pull » opportun (navigation + focus + 403 + refresh token). Latence acceptable vis-à-vis du cas d'usage (retour d'onglet / navigation).
+- **Pas de WebSocket requis** (choix frontend seul). Le mécanisme est « pull » opportun (navigation + focus + sidebar + 403 + refresh token). Latence acceptable vis-à-vis du cas d'usage (retour d'onglet / navigation / ouverture de la barre latérale).
 - **Cross-tab** : logout dans un onglet → `accessToken` supprimé → `storage` event dans les autres onglets → `setUser(null)`.
 - **Offline au focus** : mode `resync` → échec réseau **ne déconnecte pas** l'utilisateur (on conserve la session courante). C'est le comportement voulu pour éviter des déconnexions intempestives.
 

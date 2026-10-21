@@ -157,7 +157,12 @@ export default function AuthProvider({children}: Props) {
 
     /**
      * Resynchronisation demandée par le bus `sessionSync` (intercepteur axios,
-     * ProtectedRoute, focus de fenêtre, ouverture du sidebar).
+     * ProtectedRoute, focus de fenêtre, ouverture/survol de la barre
+     * latérale).
+     *
+     * La session est rechargée puis comparée à la précédente : si les droits
+     * ont réellement changé, l'utilisateur en est informé par un toast — quel
+     * que soit le déclencheur (403, navigation, focus, sidebar).
      */
     useEffect(()=>{
 
@@ -171,23 +176,15 @@ export default function AuthProvider({children}: Props) {
 
             }
 
-            if (reason === "403") {
+            const before = userRef.current;
 
-                const before = userRef.current;
+            const after = await refreshUser({resync:true});
 
-                const after = await refreshUser({resync:true});
+            if (before && after && sessionChanged(before,after)) {
 
-                if (before && after && sessionChanged(before,after)) {
-
-                    toast.success("Vos droits ont été mis à jour.");
-
-                }
-
-                return;
+                toast.success("Vos droits ont été mis à jour.");
 
             }
-
-            await refreshUser({resync:true});
 
         });
 
