@@ -48,23 +48,26 @@ export default function Sparkline({
         };
     }, [data, color, fillColor]);
 
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false },
-        },
-        interaction: { mode: "index" as const, intersect: false },
-        scales: {
-            x: { display: false },
-            y: { display: false },
-        },
-        elements: {
-            line: { borderWidth: 2, tension: 0.4 },
-            point: { radius: 0, hoverRadius: 4 },
-        },
-    };
+    const options = useMemo(
+        () => ({
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false },
+            },
+            interaction: { mode: "index" as const, intersect: false },
+            scales: {
+                x: { display: false },
+                y: { display: false },
+            },
+            elements: {
+                line: { borderWidth: 2, tension: 0.4 },
+                point: { radius: 0, hoverRadius: 4 },
+            },
+        }),
+        []
+    );
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -87,7 +90,7 @@ export default function Sparkline({
                 chartRef.current = null;
             }
         };
-    }, [chartData]);
+    }, [chartData, options]);
 
     return (
         <div style={{ width, height }}>
