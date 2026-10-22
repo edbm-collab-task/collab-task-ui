@@ -360,10 +360,13 @@ export default function TaskModal({
     const isLastStep = activeTabIndex === tabs.length - 1;
 
     const navigateTab = (direction: "next" | "prev") => {
-        if (direction === "next" && activeTabIndex < tabs.length - 1) {
-            setActiveTab(tabs[activeTabIndex + 1].id);
-        } else if (direction === "prev" && activeTabIndex > 0) {
-            setActiveTab(tabs[activeTabIndex - 1].id);
+        const target =
+            direction === "next"
+                ? tabs[activeTabIndex + 1]
+                : tabs[activeTabIndex - 1];
+
+        if (target) {
+            setActiveTab(target.id);
         }
     };
 

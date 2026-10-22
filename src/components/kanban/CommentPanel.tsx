@@ -102,7 +102,7 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
         const textBeforeCursor = value.slice(0, cursorPos);
         const atMatch = textBeforeCursor.match(/@(\w*)$/);
         if (atMatch) {
-            setMentionQuery(atMatch[1]);
+            setMentionQuery(atMatch[1] ?? null);
         } else {
             setMentionQuery(null);
         }

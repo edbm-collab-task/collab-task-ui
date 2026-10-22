@@ -6,12 +6,14 @@ export function createColumns<T extends object>(
     visibleColumns?: (keyof T | Column<T>)[]
 ): Column<T>[] {
 
-    if (data.length === 0) {
+    const first = data[0];
+
+    if (!first) {
         return [];
     }
 
     const keys = visibleColumns
-        ?? (Object.keys(data[0]) as (keyof T)[]);
+        ?? (Object.keys(first) as (keyof T)[]);
 
     return keys.map(item => {
 

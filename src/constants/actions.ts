@@ -161,9 +161,10 @@ export function maskToActions(mask: number | undefined): ActionName[] {
     const known: string[] = [...ACTION_NAMES];
     const act = ACT as Record<string, number>;
     const extra = Object.keys(act).filter((name) => !known.includes(name));
-    return [...known, ...extra].filter((name) =>
-        hasAction(mask, act[name])
-    ) as ActionName[];
+    return [...known, ...extra].filter((name) => {
+        const action = act[name];
+        return action !== undefined && hasAction(mask, action);
+    }) as ActionName[];
 }
 
 

@@ -77,7 +77,8 @@ export const getDefaultOpenCategories = (
     const withSelection = getCategoriesWithSelection(groups, selectedPermissions);
     if (withSelection.length > 0) return withSelection;
 
-    return groups.length > 0 ? [groups[0][0]] : [];
+    const firstGroup = groups[0];
+    return firstGroup ? [firstGroup[0]] : [];
 };
 
 /**
