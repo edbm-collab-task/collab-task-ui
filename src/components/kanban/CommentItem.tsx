@@ -93,8 +93,16 @@ export default function CommentItem({
 
             while ((idx = text.indexOf(mentionText, searchFrom)) !== -1) {
                 const afterIdx = idx + mentionText.length;
-                const isWordBoundary = afterIdx >= text.length || !/[a-zA-ZÀ-ÿ]/.test(text[afterIdx]);
-                const isStartBoundary = idx === 0 || !/[a-zA-ZÀ-ÿ]/.test(text[idx - 1]);
+                const nextChar = text[afterIdx];
+                const prevChar = text[idx - 1];
+                const isWordBoundary =
+                    afterIdx >= text.length ||
+                    nextChar === undefined ||
+                    !/[a-zA-ZÀ-ÿ]/.test(nextChar);
+                const isStartBoundary =
+                    idx === 0 ||
+                    prevChar === undefined ||
+                    !/[a-zA-ZÀ-ÿ]/.test(prevChar);
                 if (idx > lastIndex && isStartBoundary && isWordBoundary) {
                     parts.push(text.slice(lastIndex, idx));
                 }

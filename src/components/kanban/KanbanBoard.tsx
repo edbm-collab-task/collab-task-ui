@@ -177,7 +177,9 @@ export default function KanbanBoard({
         if (before) return nodeId;
         const nodes = columnTrees.get(statusId) ?? [];
         const index = nodes.findIndex(n => n.task.taskId === nodeId);
-        return index >= 0 && index < nodes.length - 1 ? nodes[index + 1].task.taskId : null;
+        if (index < 0 || index >= nodes.length - 1) return null;
+        const next = nodes[index + 1];
+        return next ? next.task.taskId : null;
     };
 
     return (
