@@ -9,7 +9,8 @@ export default function RegisterPage() {
 
         try {
 
-            const { confirmPassword, ...user } = data;
+            // confirmPassword sert uniquement à la validation du formulaire (matchField) : on l'exclut du payload.
+            const { confirmPassword: _confirmPassword, ...user } = data;
 
             await authService.register(user);
 
