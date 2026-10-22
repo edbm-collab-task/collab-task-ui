@@ -18,7 +18,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         return { hasError: true };
     }
 
-    render() {
+    override render() {
         if (this.state.hasError) {
             return (
                 <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
