@@ -87,7 +87,7 @@ export default function Dashboard() {
             });
 
         return () => { cancelled = true; };
-    }, [canView, period, startDate, endDate, selectedProjectId, reloadKey]);
+    }, [canView, shouldFetch, periodParams, selectedProjectId, reloadKey]);
 
     if (!canView) {
         return (

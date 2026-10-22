@@ -1,4 +1,4 @@
-import {createContext,useEffect,useRef,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import type {ReactNode} from "react";
 import toast from "react-hot-toast";
 import type {UserLoginReq,UserLoginRes} from "@/types/user";
@@ -6,24 +6,7 @@ import {authService} from "@/services/auth/auth.service";
 import {onSessionResync,requestSessionResync} from "@/services/auth/sessionSync";
 import {roleService} from "@/services/role/role.service";
 import {hydrateActionCatalog} from "@/constants/actions";
-
-
-interface AuthContextType {
-
-    user: UserLoginRes | null;
-
-    loading: boolean;
-
-    login(data: UserLoginReq): Promise<UserLoginRes>;
-
-    logout(): Promise<void>;
-
-    refreshUser(): Promise<UserLoginRes | null>;
-
-}
-
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import {AuthContext} from "./AuthContext";
 
 
 interface Props {

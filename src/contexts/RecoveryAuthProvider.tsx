@@ -1,19 +1,7 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { authService } from "@/services/auth/auth.service";
-
-interface RecoveryAuthContextType {
-
-    authenticated: boolean;
-
-    loading: boolean;
-
-    refreshRecovery(): Promise<boolean>;
-
-}
-
-export const RecoveryAuthContext =
-    createContext<RecoveryAuthContextType | undefined>(undefined);
+import { RecoveryAuthContext } from "./RecoveryAuthContext";
 
 interface Props {
     children: ReactNode;

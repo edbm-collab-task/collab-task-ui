@@ -192,7 +192,7 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
             setPlaceholderIndex(i => (i + 1) % placeholders.length);
         }, 2000);
         return () => clearInterval(interval);
-    }, [replyTo]);
+    }, [replyTo, placeholders.length]);
     return (
         <>
             {/* Overlay */}
@@ -274,7 +274,6 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
                                 <CommentItem
                                     key={comment.commentId}
                                     comment={comment}
-                                    taskId={task.taskId}
                                     currentUserId={currentUserId}
                                     availableUsers={users}
                                     onUpdate={handleUpdate}
