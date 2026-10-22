@@ -24,7 +24,8 @@ export function generateIncreasingSparkline(baseValue: number, points: number = 
         const ideal = Math.round(start + step * i);
         const jitter = Math.round((rand() - 0.5) * step * 0.16);
         let v = ideal + jitter;
-        if (i > 0) v = Math.max(v, res[i - 1] + 1);
+        const previous = res[i - 1];
+        if (previous !== undefined) v = Math.max(v, previous + 1);
         v = Math.min(v, target);
         if (i === points - 1) v = target;
         res.push(Math.max(0, v));

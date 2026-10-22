@@ -26,6 +26,8 @@ interface Props {
  */
 export default function Sidebar({ open, close, collapsed, expand }: Props) {
 
+    const homeMenu = menus[0];
+
     return (
         <>
             {open && (
@@ -48,21 +50,23 @@ export default function Sidebar({ open, close, collapsed, expand }: Props) {
                     collapsed ? "lg:justify-start lg:px-4 lg:group-hover/sb:justify-center lg:group-hover/sb:px-8" : "lg:justify-center lg:px-8"
                 }`}>
 
-                    <NavLink
-                        to={menus[0].path}
-                        end={menus[0].path === "/admin"}
-                        className={`flex w-full mt-5 items-center justify-center transition-all duration-300 ${
-                            collapsed ? "lg:justify-start lg:group-hover/sb:justify-center" : ""
-                        }`}
-                    >
-                        <img
-                            src={logo}
-                            alt="CollaB Tasks"
-                            className={`h-26 w-auto transition-all duration-300 ${
-                                collapsed ? "lg:h-10 lg:group-hover/sb:h-26" : "lg:h-26"
+                    {homeMenu && (
+                        <NavLink
+                            to={homeMenu.path}
+                            end={homeMenu.path === "/admin"}
+                            className={`flex w-full mt-5 items-center justify-center transition-all duration-300 ${
+                                collapsed ? "lg:justify-start lg:group-hover/sb:justify-center" : ""
                             }`}
-                        />
-                    </NavLink>
+                        >
+                            <img
+                                src={logo}
+                                alt="CollaB Tasks"
+                                className={`h-26 w-auto transition-all duration-300 ${
+                                    collapsed ? "lg:h-10 lg:group-hover/sb:h-26" : "lg:h-26"
+                                }`}
+                            />
+                        </NavLink>
+                    )}
 
                     <button
                         onClick={close}
