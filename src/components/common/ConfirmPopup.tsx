@@ -29,11 +29,12 @@ export function ConfirmPopup({
         if (open) {
             setMounted(true);
             requestAnimationFrame(() => setVisible(true));
-        } else {
-            setVisible(false);
-            const timeout = setTimeout(() => setMounted(false), 200);
-            return () => clearTimeout(timeout);
+            return;
         }
+
+        setVisible(false);
+        const timeout = setTimeout(() => setMounted(false), 200);
+        return () => clearTimeout(timeout);
     }, [open]);
 
     if (!mounted) return null;
