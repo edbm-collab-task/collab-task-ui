@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { RecoveryAuthContext } from "@/contexts/RecoveryAuthProvider";
+import { RecoveryAuthContext } from "@/contexts/RecoveryAuthContext";
 
 export default function useRecoveryAuth() {
 
