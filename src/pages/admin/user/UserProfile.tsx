@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import {
     Camera,
     Pencil,
@@ -34,6 +34,8 @@ export default function UserProfile() {
 
     const { user } = useAuth();
 
+    const userEmail = user?.email;
+
     const navigate = useNavigate();
 
     const fileInputRef =
@@ -43,10 +45,10 @@ export default function UserProfile() {
      * Charge les détails du profil via l'email de l'utilisateur connecté.
      * showLoading contrôle l'affichage du spinner global (true au mount, false pour le polling).
      */
-    const loadUserDetails = async (
+    const loadUserDetails = useCallback(async (
         showLoading = false
     ) => {
-        if (!user?.email) {
+        if (!userEmail) {
             return;
         }
 
@@ -56,7 +58,7 @@ export default function UserProfile() {
             }
 
             const emailData: Email = {
-                email: user.email
+                email: userEmail
             };
 
             const response =
@@ -75,13 +77,13 @@ export default function UserProfile() {
                 setLoading(false);
             }
         }
-    };
+    }, [userEmail]);
 
     // Chargement initial + polling toutes les 5s pour détecter les changements
     // (ex: modification de profil par un admin, changement de statut en ligne)
     // On ne montre le spinner qu'au premier chargement (showLoading=true)
     useEffect(() => {
-        if (!user?.email) {
+        if (!userEmail) {
             return;
         }
 
@@ -94,7 +96,7 @@ export default function UserProfile() {
         return () => {
             clearInterval(interval);
         };
-    }, [user?.email]);
+    }, [userEmail, loadUserDetails]);
 
     const handleEditPhoto = () => {
         if (uploadingImage) {
