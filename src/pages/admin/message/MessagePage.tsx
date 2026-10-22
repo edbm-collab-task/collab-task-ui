@@ -127,7 +127,7 @@ const MessagePage = () => {
         return () => {
             mounted = false;
         };
-    }, []);
+    }, [loadMessages, loadConversations, setSelectedConversation]);
 
     const handleNewConversation = async (user: ChatUser) => {
         try {
@@ -272,7 +272,7 @@ const MessagePage = () => {
         } catch (error) {
             console.error("Erreur lors de la sélection de la conversation :", error);
         }
-    }, [selectConversation, loadMessages, setSelectedConversation]);
+    }, [selectConversation, loadMessages, setSelectedConversation, setReplyMessage]);
 
     // En dessous de md, une seule vue est montée à la fois :
     // la liste par défaut, la conversation après sélection (retour via le bouton du header)
