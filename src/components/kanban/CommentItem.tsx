@@ -21,7 +21,6 @@ import { ACT } from "@/constants/actions";
 
 interface Props {
     comment: TaskComment;
-    taskId: number;
     currentUserId: number;
     availableUsers?: UserResponse[];
     isReply?: boolean;
@@ -44,7 +43,6 @@ function isImageType(ct: string | null | undefined): boolean {
 
 export default function CommentItem({
     comment,
-    taskId,
     currentUserId,
     availableUsers = [],
     isReply = false,
@@ -371,7 +369,6 @@ export default function CommentItem({
                         <CommentItem
                             key={reply.commentId}
                             comment={reply}
-                            taskId={taskId}
                             currentUserId={currentUserId}
                             availableUsers={availableUsers}
                             isReply

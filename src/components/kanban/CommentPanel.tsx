@@ -274,7 +274,6 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
                                 <CommentItem
                                     key={comment.commentId}
                                     comment={comment}
-                                    taskId={task.taskId}
                                     currentUserId={currentUserId}
                                     availableUsers={users}
                                     onUpdate={handleUpdate}
