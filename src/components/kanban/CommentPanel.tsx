@@ -192,7 +192,7 @@ export default function CommentPanel({ open, task, currentUserId, availableUsers
             setPlaceholderIndex(i => (i + 1) % placeholders.length);
         }, 2000);
         return () => clearInterval(interval);
-    }, [replyTo]);
+    }, [replyTo, placeholders.length]);
     return (
         <>
             {/* Overlay */}
