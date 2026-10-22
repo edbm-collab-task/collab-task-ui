@@ -97,7 +97,7 @@ export default function AdminDashboard() {
             });
 
         return () => { cancelled = true; };
-    }, [period, startDate, endDate]);
+    }, [shouldFetch, periodParams]);
 
     // ===== EXPORT PDF GLOBAL PAR PÉRIODE =====
     const handleExportPdf = async () => {
