@@ -93,6 +93,10 @@ const MessagePage = () => {
                         loadedConversations.find((conversation) => !conversation.archived) ??
                         loadedConversations[0];
 
+                    if (!firstConversation) {
+                        return;
+                    }
+
                     setSelectedConversation(firstConversation);
 
                     await loadMessages(firstConversation.id);
