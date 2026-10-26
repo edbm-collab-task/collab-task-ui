@@ -309,7 +309,8 @@ export default function UserProfile() {
                     <ProfileFieldRow
                         icon={<Building2 size={19} />}
                         label="Direction"
-                        value={userDetails.direction}
+                        value={userDetails.direction ?? ""}
+                        fallback="Non affectée"
                     />
                     <ProfileFieldRow
                         icon={<BriefcaseBusiness size={19} />}

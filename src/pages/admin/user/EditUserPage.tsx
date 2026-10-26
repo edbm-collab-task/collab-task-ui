@@ -9,6 +9,7 @@ import { directionService } from "@/services/direction/direction.service";
 
 import type { EditUser } from "@/types/user";
 import type { DirectionRes } from "@/types/direction";
+import { parseDirectionIdInput } from "@/utils/direction";
 
 export default function EditUserPage() {
 
@@ -49,7 +50,7 @@ export default function EditUserPage() {
                     email: userResponse.email,
                     number: userResponse.number ?? "",
                     gender: userResponse.gender,
-                    directionId: currentDirection?.directionId,
+                    directionId: currentDirection?.directionId ?? null,
                 };
 
                 setUser(editUser);
@@ -90,13 +91,16 @@ export default function EditUserPage() {
                 gender: data.gender,
             };
 
-            if (
-                data.directionId !== undefined &&
-                data.directionId !== user.directionId
-            ) {
+            const currentDirectionId = user.directionId ?? null;
+            const parsedDirectionId =
+                parseDirectionIdInput(data.directionId);
+            const nextDirectionId =
+                parsedDirectionId === undefined
+                    ? currentDirectionId
+                    : parsedDirectionId;
 
-                payload.directionId = data.directionId;
-
+            if (nextDirectionId !== currentDirectionId) {
+                payload.directionId = nextDirectionId;
             }
 
             await userService.updateUser(payload);

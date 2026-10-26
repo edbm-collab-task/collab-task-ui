@@ -87,10 +87,7 @@ export const editUserFormFields = (
         label: "Direction",
         type: "select",
         placeholder: "Choisir la direction...",
-        options: toDirectionOptions(directions),
-        validation: {
-            required: "La direction est requise",
-        },
+        options: toDirectionOptions(directions, true),
     },
 
     {
