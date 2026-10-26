@@ -14,7 +14,7 @@ export interface UserRequest {
 
     job : string ; 
 
-    directionId : number ;
+    directionId?: number | null;
 
     password: string;
 
@@ -28,7 +28,7 @@ export interface CreateUser{
 
     email: string;
 
-    directionId : number ;
+    directionId?: number | null;
 
     role: string;
 }
@@ -49,7 +49,7 @@ export interface UserResponse {
 
     gender: Gender;
 
-    direction: string;
+    direction: string | null;
 
     job: string;
     
@@ -94,7 +94,7 @@ export interface UserDetails {
 
     gender: Gender;
 
-    direction: string;
+    direction: string | null;
 
     job: string;
 
@@ -181,7 +181,7 @@ export interface UserProfile {
 
     gender: Gender;
 
-    direction: string;
+    direction: string | null;
     job: string;
 
     imagePath: string;
@@ -203,5 +203,5 @@ export interface EditUser {
     email: string;
     number: string;
     gender: Gender;
-    directionId?: number;
+    directionId?: number | null;
 }

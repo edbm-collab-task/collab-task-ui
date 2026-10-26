@@ -283,7 +283,7 @@ export default function AdminDashboard() {
                                                     <span className="shrink-0 rounded-full bg-secondary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
                                                         {user.role}
                                                     </span>
-                                                    <p className="mt-0.5 truncate text-xs text-gray-500">{user.direction}</p>
+                                                    <p className="mt-0.5 truncate text-xs text-gray-500">{user.direction && user.direction !== "—" ? user.direction : "Non affectée"}</p>
                                                 </div>
                                             </div>
                                         </div>

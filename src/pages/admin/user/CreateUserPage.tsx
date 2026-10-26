@@ -10,6 +10,7 @@ import { createUserFormFields } from "@/components/user/createUserForm"
 import usePermissions from "@/hooks/usePermissions";
 import { PERM } from "@/constants/permissions";
 import { ACT } from "@/constants/actions";
+import { parseDirectionIdInput } from "@/utils/direction";
 
 export default function CreateUserPage() {
 
@@ -22,7 +23,16 @@ export default function CreateUserPage() {
     const handleRegister = async (data: CreateUser) => {
 
         try {
-            await authService.create(data);
+            const directionId = parseDirectionIdInput(data.directionId);
+            const payload: CreateUser = { ...data };
+
+            if (directionId === undefined || directionId === null) {
+                delete payload.directionId;
+            } else {
+                payload.directionId = directionId;
+            }
+
+            await authService.create(payload);
 
             navigate(canManageAdmins ? "/admin/admins" : "/admin/users");
 

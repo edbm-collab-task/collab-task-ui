@@ -37,6 +37,7 @@ export const userDetailFields: DetailField<UserDetails>[] = [
         key: "direction",
         label: "Direction",
         icon: <Building2 className="h-4 w-4" />,
+        render: (value) => value ? String(value) : "Non affectée",
     },
     {
         key: "job",

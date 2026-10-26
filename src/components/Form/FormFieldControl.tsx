@@ -44,6 +44,10 @@ export default function FormFieldControl<T extends FieldValues>({
 
     const isEmail = field.type === "email";
 
+    const hasEmptyOption = field.options?.some(
+        (option) => option.value === ""
+    );
+
     return (
         <div className="space-y-2">
 
@@ -59,9 +63,11 @@ export default function FormFieldControl<T extends FieldValues>({
                     className={inputClass}
                 >
 
-                    <option value="">
-                        Select...
-                    </option>
+                    {!hasEmptyOption && (
+                        <option value="">
+                            Select...
+                        </option>
+                    )}
 
                     {field.options?.map((option) => (
                         <option
