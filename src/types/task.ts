@@ -1,7 +1,8 @@
 // Priorités : couleurs indexées par NOM, car l'association ID↔nom peut varier
 // selon la base (seed initial ou import de données réelles). Le nom vient
 // toujours de l'API (task.priorityName), jamais d'un ID supposé.
-// Le backend n'expose pas d'endpoint pour lister les priorités.
+// La liste des priorités disponibles est chargée depuis le backend via
+// GET /priorities (référentiel Priority), jamais déduite des tâches existantes.
 export const PRIORITY_COLORS: Record<string, string> = {
     "Basse": "bg-slate-100 text-slate-700",
     "Moyenne": "bg-sky-100 text-sky-700",
@@ -41,11 +42,13 @@ export function extractPrioritiesFromTasks(tasks: TaskRes[]): PriorityOption[] {
     );
 }
 
-// Priorité par défaut d'une nouvelle tâche : "Moyenne" si présente, sinon la
+// Priorité par défaut d'une nouvelle tâche : "Basse" si présente, sinon la
 // première priorité disponible (résolue par nom, jamais par ID en dur).
+// La sélection par défaut ne retire jamais les autres priorités du select :
+// les 4 restent proposées (le default ne choisit que l'option initiale).
 export function defaultPriorityId(options: PriorityOption[]): number {
-    const middle = options.find(o => o.priorityName === "Moyenne");
-    return middle?.priorityId ?? options[0]?.priorityId ?? 0;
+    const lowest = options.find(o => o.priorityName === "Basse");
+    return lowest?.priorityId ?? options[0]?.priorityId ?? 0;
 }
 
 // Statuts par défaut : valeurs fixées dans data.sql du backend.
