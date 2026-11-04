@@ -337,41 +337,7 @@ export default function UserProfile() {
                 </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 className="text-base font-semibold text-gray-900">
-                            Statut du compte
-                        </h2>
 
-                        <p className="mt-1 text-sm text-gray-500">
-                            État de connexion du compte utilisateur
-                        </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                        {/* status = présence en temps réel (WebSocket/heartbeat) */}
-                        <span
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
-                                userDetails.status
-                                    ? "bg-primary/10 text-primary"
-                                    : "bg-bg text-gray-500"
-                            }`}
-                        >
-                            <span
-                                className={`h-2 w-2 rounded-full ${
-                                    userDetails.status
-                                        ? "bg-primary"
-                                        : "bg-gray-400"
-                                }`}
-                            />
-                            {userDetails.status
-                                ? "En ligne"
-                                : "Hors ligne"}
-                        </span>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }
