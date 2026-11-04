@@ -167,16 +167,6 @@ export default function ChangePwdPage() {
 
                         {step === 2 && (
                             <div>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setStep(1)}
-                                    className="mb-3 text-sm font-medium text-primary hover:text-primary/80"
-                                >
-                                    ← Retour
-                                </button>
-
-
                                 <GlobalForms<RecoverPasswordFormUI>
                                     title="Changer le mot de passe"
                                     fields={recoveryFormFields}
