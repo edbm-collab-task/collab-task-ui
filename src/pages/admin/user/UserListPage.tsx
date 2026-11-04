@@ -20,6 +20,7 @@ import useAuth from "@/hooks/useAuth";
 import usePermissions from "@/hooks/usePermissions";
 import { PERM } from "@/constants/permissions";
 import { ACT } from "@/constants/actions";
+import { getRoleLabel } from "@/constants/roleLabels";
 
 type StatusFilter = "all" | "active" | "disable";
 
@@ -138,7 +139,16 @@ export default function UserListPage() {
     const columns = createColumns(
         users,
         userTr,
-        ["firstname", "lastname", "email", "codeRole"]
+        [
+            "firstname",
+            "lastname",
+            "email",
+            {
+                key: "codeRole",
+                header: "Rôle",
+                render: (value, row) => getRoleLabel(String(value ?? ""), row.role)
+            }
+        ]
     );
 
 
@@ -270,11 +280,14 @@ export default function UserListPage() {
             const value =
                 search.toLowerCase();
 
-            return SEARCH_FIELDS.some(field =>
+            const matchesField = SEARCH_FIELDS.some(field =>
                 String(item[field])
                     .toLowerCase()
                     .includes(value)
             );
+
+            return matchesField
+                || getRoleLabel(item.codeRole, item.role).toLowerCase().includes(value);
         });
 
 

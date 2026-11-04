@@ -11,6 +11,7 @@ import usePermissions from "@/hooks/usePermissions";
 import { PERM } from "@/constants/permissions";
 import { ACT } from "@/constants/actions";
 import { parseDirectionIdInput } from "@/utils/direction";
+import { getRoleLabel } from "@/constants/roleLabels";
 
 export default function CreateUserPage() {
 
@@ -63,7 +64,7 @@ export default function CreateUserPage() {
                 const filtered = canManageAdmins
                     ? allRoles
                     : allRoles.filter(r => r.name === "USER");
-                setRoles(filtered.map(r => ({ label: r.name, value: r.codeRole })));
+                setRoles(filtered.map(r => ({ label: getRoleLabel(r.codeRole, r.name), value: r.codeRole })));
             } catch (error) {
                 console.error(error);
             }

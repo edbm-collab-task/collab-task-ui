@@ -12,8 +12,14 @@ export const ROLE_LABELS: Record<string, string> = {
 
 /**
  * Retourne le libellé du rôle, ou le code brut en fallback.
+ *
+ * `fallback` permet de conserver le nom d'un rôle personnalisé lorsque son
+ * code n'a pas de libellé dédié (ex. « Chef de projet » plutôt que « CDP »).
  */
-export function getRoleLabel(role: string | null | undefined): string {
-    if (!role) return "—";
-    return ROLE_LABELS[role] ?? role;
+export function getRoleLabel(
+    role: string | null | undefined,
+    fallback?: string | null
+): string {
+    if (!role) return fallback || "—";
+    return ROLE_LABELS[role] ?? (fallback || role);
 }
