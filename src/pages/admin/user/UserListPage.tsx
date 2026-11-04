@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Eye, Plus } from "lucide-react";
+import { Eye, Pencil, Plus } from "lucide-react";
 
 import GlobalTable from "@/components/table/GlobalTable";
 import TableHeader from "@/components/table/TableHeader";
@@ -183,6 +183,29 @@ export default function UserListPage() {
                     );
                 }
             },
+        });
+    }
+
+
+    /**
+     * Modifier le rôle — nécessite `MANAGE_USERS` ou `MANAGE_ADMINS` + `UPDATE`.
+     */
+    if (hasPermission(PERM.MANAGE_USERS, ACT.UPDATE) || hasPermission(PERM.MANAGE_ADMINS, ACT.UPDATE)) {
+
+        actions.push({
+
+            label: "Modifier le rôle",
+
+            type: "edit",
+
+            icon: <Pencil size={18} />,
+
+            onClick: (user) => {
+
+                navigate("/admin/users/edit-role", {
+                    state: { email: user.email }
+                });
+            }
         });
     }
 

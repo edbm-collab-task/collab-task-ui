@@ -112,15 +112,15 @@ export interface UserDetails {
 
 export const userTr = {
 
-    firstname: "PrÃ©nom",
+    firstname: "Prénom",
 
     lastname: "Nom",
 
     email: "Email",
 
-    role: "RÃ´le",
+    role: "Rôle",
 
-    codeRole: "RÃ´le",
+    codeRole: "Rôle",
 
 } as const;
 

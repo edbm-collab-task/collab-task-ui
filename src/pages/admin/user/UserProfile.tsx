@@ -320,7 +320,7 @@ export default function UserProfile() {
                     <ProfileFieldRow
                         icon={<ShieldCheck size={19} />}
                         label="Rôle"
-                        value={userDetails.codeRole}
+                        value={userDetails.role}
                         variant="badge"
                     />
                     <ProfileFieldRow
@@ -345,33 +345,12 @@ export default function UserProfile() {
                         </h2>
 
                         <p className="mt-1 text-sm text-gray-500">
-                            État actuel de votre compte utilisateur
+                            État de connexion du compte utilisateur
                         </p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                        {/* isActive = compte activé/désactivé (admin) — gère l'accès à l'application */}
-                        <span
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
-                                userDetails.isActive
-                                    ? "bg-secondary/40 text-primary"
-                                    : "bg-accent/10 text-accent"
-                            }`}
-                        >
-                            <span
-                                className={`h-2 w-2 rounded-full ${
-                                    userDetails.isActive
-                                        ? "bg-primary"
-                                        : "bg_accent"
-                                }`}
-                            />
-
-                            {userDetails.isActive
-                                ? "Compte actif"
-                                : "Compte désactivé"}
-                        </span>
-
-                        {/* status = présence en temps réel (WebSocket/heartbeat) — indépendant de isActive */}
+                        {/* status = présence en temps réel (WebSocket/heartbeat) */}
                         <span
                             className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
                                 userDetails.status
@@ -379,6 +358,13 @@ export default function UserProfile() {
                                     : "bg-bg text-gray-500"
                             }`}
                         >
+                            <span
+                                className={`h-2 w-2 rounded-full ${
+                                    userDetails.status
+                                        ? "bg-primary"
+                                        : "bg-gray-400"
+                                }`}
+                            />
                             {userDetails.status
                                 ? "En ligne"
                                 : "Hors ligne"}
