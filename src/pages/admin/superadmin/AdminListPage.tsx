@@ -22,6 +22,7 @@ import useAuth from "@/hooks/useAuth";
 import usePermissions from "@/hooks/usePermissions";
 import { PERM } from "@/constants/permissions";
 import { ACT } from "@/constants/actions";
+import { getRoleLabel } from "@/constants/roleLabels";
 
 const adminTr = {
     firstname: "Prénom",
@@ -140,7 +141,11 @@ export default function AdminListPage() {
             "firstname",
             "lastname",
             "email",
-            "codeRole"
+            {
+                key: "codeRole",
+                header: "Rôle",
+                render: (value, row) => getRoleLabel(String(value ?? ""), row.role)
+            }
         ]
     );
 
@@ -407,7 +412,7 @@ export default function AdminListPage() {
                             value: "all"
                         },
                         ...roles.map(role => ({
-                            label: role.codeRole,
+                            label: getRoleLabel(role.codeRole, role.name),
                             value: role.codeRole
                         }))
                     ]}

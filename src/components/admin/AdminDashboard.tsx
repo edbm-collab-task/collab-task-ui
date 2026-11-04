@@ -14,6 +14,7 @@ import { generateIncreasingSparkline, getAdminSparkline } from "@/utils/sparklin
 import { useDashboardPeriod } from "@/hooks/useDashboardPeriod";
 import { ACT } from "@/constants/actions";
 import { PERM } from "@/constants/permissions";
+import { getRoleLabel } from "@/constants/roleLabels";
 
 interface StatCardProps {
     title: string;
@@ -281,7 +282,7 @@ export default function AdminDashboard() {
                                                 </p>
                                                 <div className="flex max-sm:justify-around max-sm:w-full">
                                                     <span className="shrink-0 rounded-full bg-secondary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
-                                                        {user.role}
+                                                        {getRoleLabel(user.role)}
                                                     </span>
                                                     <p className="mt-0.5 truncate text-xs text-gray-500">{user.direction && user.direction !== "—" ? user.direction : "Non affectée"}</p>
                                                 </div>

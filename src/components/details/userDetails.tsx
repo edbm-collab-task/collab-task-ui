@@ -1,5 +1,6 @@
 import type { DetailField } from "@/components/details/globalDetail";
 import type { UserDetails} from "@/types/user";
+import { getRoleLabel } from "@/constants/roleLabels";
 
 import {
     User,
@@ -41,7 +42,7 @@ export const userDetailFields: DetailField<UserDetails>[] = [
     },
     {
         key: "job",
-        label: "Rôle",
+        label: "Poste",
         icon: <BriefcaseBusiness className="h-4 w-4" />,
     },
     
@@ -62,10 +63,10 @@ export const userDetailFields: DetailField<UserDetails>[] = [
         },
     },
     {
-        key: "role",
+        key: "codeRole",
         label: "Rôle",
         icon: <Shield className="h-4 w-4" />,
-        render: (value) => String(value),
+        render: (value, data) => getRoleLabel(String(value ?? ""), data.role),
     },
 
     {

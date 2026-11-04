@@ -1,4 +1,9 @@
-import { useForm, type FieldValues, type FieldError } from "react-hook-form";
+import {
+    useForm,
+    type DefaultValues,
+    type FieldValues,
+    type FieldError
+} from "react-hook-form";
 import type { FormField } from "@/components/Form/Forms";
 import { useState } from "react";
 import { getRegisterOptions } from "@/components/Form/formLogic";
@@ -10,6 +15,7 @@ interface Props<T extends FieldValues> {
     title?: string;
     subtitle?: string;
     fields: FormField<T>[];
+    defaultValues?: DefaultValues<T>;
     onSubmit: (data: T) => void | Promise<void>;
     submitLabel?: string;
 }
@@ -18,6 +24,7 @@ export default function GlobalForms<T extends FieldValues>({
     title = "Formulaire",
     subtitle,
     fields,
+    defaultValues,
     onSubmit,
     submitLabel = "Enregistrer",
 }: Props<T>) {
@@ -27,7 +34,7 @@ export default function GlobalForms<T extends FieldValues>({
         handleSubmit,
         getValues,
         formState: { errors }
-    } = useForm<T>();
+    } = useForm<T>({ defaultValues });
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);

@@ -16,6 +16,7 @@ import useAuth from "@/hooks/useAuth";
 import { authService } from "@/services/auth/auth.service";
 import { userService } from "@/services/user/user.service";
 import { getUserImageUrlWithCacheBust } from "@/utils/image";
+import { getRoleLabel } from "@/constants/roleLabels";
 import UserProfileSkeleton from "@/components/user/UserProfileSkeleton";
 import ProfileFieldRow from "@/components/user/ProfileFieldRow";
 
@@ -320,7 +321,7 @@ export default function UserProfile() {
                     <ProfileFieldRow
                         icon={<ShieldCheck size={19} />}
                         label="Rôle"
-                        value={userDetails.role}
+                        value={getRoleLabel(userDetails.codeRole, userDetails.role)}
                         variant="badge"
                     />
                     <ProfileFieldRow

@@ -9,6 +9,7 @@ import { useClickOutside } from "@/hooks/useClickOutside";
 import { useToggle } from "@/hooks/useToggle";
 import type { Email } from "@/types/email";
 import type { UserResponse } from "@/types/user";
+import { getRoleLabel } from "@/constants/roleLabels";
 
 export default function UserDropdown() {
     const [open, toggleOpen, setOpen] = useToggle();
@@ -125,7 +126,7 @@ export default function UserDropdown() {
                         </p>
 
                         <p className="text-sm text-gray-500">
-                            {currentUser.codeRole || "—"}
+                            {getRoleLabel(currentUser.codeRole, currentUser.role)}
                         </p>
                     </div>
 
