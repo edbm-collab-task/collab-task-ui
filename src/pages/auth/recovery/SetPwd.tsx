@@ -135,14 +135,14 @@ export default function ChangePwdPage() {
                                             <LockKeyhole className="h-6 w-6 text-accent" />
                                         </div>
 
-                                            ( <h2 className="text-xl font-bold text-primary">
+                                            <h2 className="text-xl font-bold text-primary">
                                                     Gestion du mot de passe
                                                 </h2>
 
                                                 <p className="mt-2 text-sm leading-5 text-gray-500">
                                                     Vous allez modifier le mot de passe de votre compte.
                                                     Choisissez un mot de passe unique et sécurisé.
-                                                </p>)
+                                                </p>
 
                                     </div>
                                     }
