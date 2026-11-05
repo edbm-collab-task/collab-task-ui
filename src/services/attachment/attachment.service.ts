@@ -25,6 +25,18 @@ export const attachmentService = {
         return response.data;
     },
 
+    /**
+     * Récupère le fichier en binaire via axios (cookies + Bearer) pour l'aperçu
+     * ou le téléchargement. `timeout: 0` : pas de limite pour les gros fichiers.
+     */
+    getBlob: async (attachmentId: number): Promise<Blob> => {
+        const response = await api.get<Blob>(
+            API_ENDPOINTS.ATTACHMENTS.DOWNLOAD(attachmentId),
+            { responseType: "blob", timeout: 0 }
+        );
+        return response.data;
+    },
+
     downloadUrl: (attachmentId: number): string => {
         return `${API_CONFIG.BASE_URL}${API_ENDPOINTS.ATTACHMENTS.DOWNLOAD(attachmentId)}`;
     },

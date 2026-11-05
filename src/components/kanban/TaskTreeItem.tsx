@@ -12,6 +12,8 @@ interface TaskTreeItemProps {
     onEditTask?: (task: any) => void;
     onDeleteTask?: (task: any) => void;
     setCommentTaskId?: (taskId: number) => void;
+    setAttachmentTaskId?: (taskId: number) => void;
+    getAttachmentCount?: (taskId: number) => number | undefined;
     setDraggedTask?: (task: any) => void;
     setOverColumn?: (column: any) => void;
     showActions?: boolean;
@@ -46,6 +48,8 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
     onEditTask,
     onDeleteTask,
     setCommentTaskId,
+    setAttachmentTaskId,
+    getAttachmentCount,
     setDraggedTask,
     setOverColumn,
     showActions = true,
@@ -68,6 +72,8 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
             onEditTask={onEditTask}
             onDeleteTask={onDeleteTask}
             setCommentTaskId={setCommentTaskId}
+            setAttachmentTaskId={setAttachmentTaskId}
+            getAttachmentCount={getAttachmentCount}
             setDraggedTask={setDraggedTask}
             setOverColumn={setOverColumn}
             showActions={showActions}
@@ -93,6 +99,8 @@ export const TaskTreeItem: React.FC<TaskTreeItemProps> = ({
                     onEditTask={onEditTask}
                     onDeleteTask={onDeleteTask}
                     setCommentTaskId={setCommentTaskId}
+                    setAttachmentTaskId={setAttachmentTaskId}
+                    getAttachmentCount={getAttachmentCount}
                     setDraggedTask={setDraggedTask}
                     setOverColumn={setOverColumn}
                     showActions={showActions}

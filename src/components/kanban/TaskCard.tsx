@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, ListTree, ChevronDown, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, Users, CalendarDays, GitBranch, MessageSquare, Paperclip, ListTree, ChevronDown, ChevronRight } from 'lucide-react';
 import Allow from '@/components/common/Allow';
 import { PERM } from '@/constants/permissions';
 import { ACT } from '@/constants/actions';
@@ -21,6 +21,10 @@ interface TaskCardProps {
     onEditTask?: (task: any) => void;
     onDeleteTask?: (task: any) => void;
     setCommentTaskId?: (taskId: any) => void;
+    /** Ouvre la fenêtre des pièces jointes de la tâche */
+    setAttachmentTaskId?: (taskId: any) => void;
+    /** Nombre de pièces jointes (undefined tant qu'il n'est pas connu) */
+    getAttachmentCount?: (taskId: any) => number | undefined;
     setDraggedTask?: (task: any) => void;
     setOverColumn?: (column: any) => void;
     showActions?: boolean;
@@ -62,6 +66,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     onEditTask,
     onDeleteTask,
     setCommentTaskId,
+    setAttachmentTaskId,
+    getAttachmentCount,
     setDraggedTask,
     setOverColumn,
     showActions = true,
@@ -74,6 +80,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 }) => {
     const priority = priorityBadge(task.priorityName);
     const commentCount = getCount(task.taskId);
+    const attachmentCount = getAttachmentCount?.(task.taskId);
     const isNested = depth > 0;
     // Une sous-tâche (parentTaskId renseigné) n'est pas déplaçable.
     const isSubtask = Boolean(task.parentTaskId);
@@ -214,6 +221,23 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                             >
                                 <MessageSquare size={11} />
                                 {commentCount}
+                            </button>
+                        </Allow>
+                    )}
+
+                    {/* Pièces jointes btn */}
+                    {showActions && setAttachmentTaskId && (
+                        <Allow perm={PERM.MANAGE_ATTACHMENTS} action={ACT.SELECT}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setAttachmentTaskId(task.taskId);
+                                }}
+                                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 transition hover:bg-blue-50 hover:text-accent"
+                                title="Pièces jointes"
+                            >
+                                <Paperclip size={11} />
+                                {attachmentCount}
                             </button>
                         </Allow>
                     )}

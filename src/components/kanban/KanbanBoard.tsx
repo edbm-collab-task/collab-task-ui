@@ -15,6 +15,7 @@ import { toStatusListFromSeed } from "@/mappers/status.mapper";
 import { buildColumnTaskTrees, countColumnNodes } from "@/utils/taskTree";
 import type { UserResponse } from "@/types/user";
 import CommentPanel from "./CommentPanel";
+import TaskAttachmentsPanel from "./TaskAttachmentsPanel";
 import { TaskTreeItem } from "./TaskTreeItem";
 import Allow from "@/components/common/Allow";
 import { PERM } from "@/constants/permissions";
@@ -100,6 +101,9 @@ export default function KanbanBoard({
     const [commentTaskId, setCommentTaskId] = useState<number | null>(null);
     // Compteur de commentaires par tâche (mis à jour via onCountChange du CommentPanel)
     const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
+    // Fenêtre pièces jointes : ID de la tâche concernée + compteurs mis à jour localement
+    const [attachmentTaskId, setAttachmentTaskId] = useState<number | null>(null);
+    const [attachmentCounts, setAttachmentCounts] = useState<Record<number, number>>({});
     // Colonnes repliées par statut : un statut présent dans cet ensemble masque
     // sa zone de cartes (seul l'en-tête reste visible).
     const [collapsedStatuses, setCollapsedStatuses] = useState<Set<number>>(new Set());
@@ -136,6 +140,16 @@ export default function KanbanBoard({
     }, [tasks]);
 
     const getCount = (taskId: number) => commentCounts[taskId] ?? initialCounts[taskId] ?? 0;
+
+    const attachmentTask = useMemo(
+        () => attachmentTaskId !== null ? tasks.find(t => t.taskId === attachmentTaskId) ?? null : null,
+        [attachmentTaskId, tasks]
+    );
+
+    // Compteur de pièces jointes : valeur locale (après ouverture de la fenêtre)
+    // sinon `task.attachmentCount` si le backend l'envoie, sinon inconnu.
+    const getAttachmentCount = (taskId: number): number | undefined =>
+        attachmentCounts[taskId] ?? tasks.find(t => t.taskId === taskId)?.attachmentCount;
 
     // Fallback sur les statuts "en dur" si l'API ne renvoie pas de statuts personnalisés
     const fallbackStatuses: Status[] = toStatusListFromSeed(STATUSES);
@@ -318,6 +332,8 @@ export default function KanbanBoard({
                                             onEditTask={onEditTask}
                                             onDeleteTask={onDeleteTask}
                                             setCommentTaskId={setCommentTaskId}
+                                            setAttachmentTaskId={setAttachmentTaskId}
+                                            getAttachmentCount={getAttachmentCount}
                                             setDraggedTask={setDraggedTask}
                                             setOverColumn={setOverColumn}
                                             showActions={true}
@@ -344,6 +360,17 @@ export default function KanbanBoard({
                 onCountChange={(count) => {
                     if (commentTaskId) {
                         setCommentCounts(prev => ({ ...prev, [commentTaskId]: count }));
+                    }
+                }}
+            />
+
+            <TaskAttachmentsPanel
+                open={attachmentTaskId !== null}
+                task={attachmentTask}
+                onClose={() => setAttachmentTaskId(null)}
+                onCountChange={(count) => {
+                    if (attachmentTaskId) {
+                        setAttachmentCounts(prev => ({ ...prev, [attachmentTaskId]: count }));
                     }
                 }}
             />
