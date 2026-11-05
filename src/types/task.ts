@@ -78,6 +78,8 @@ export interface TaskRes {
     statusName: string;
     parentTaskId: number | null;
     commentCount: number;
+    // Nombre de pièces jointes : optionnel tant que le backend ne l'expose pas
+    attachmentCount?: number;
     assignees: AssigneeRes[];
     sortOrder?: number;
 }

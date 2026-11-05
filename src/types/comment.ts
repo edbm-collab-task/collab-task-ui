@@ -36,4 +36,17 @@ export interface CommentReq {
     parentCommentId?: number | null;
 }
 
-export const REACTION_EMOJIS = ["👍", "❤️", "🎉", "🚀", "👀"] as const;
+/**
+ * Réactions suggérées en accès rapide dans le sélecteur.
+ * Identifiants Unicode (unified) attendus par la bibliothèque emoji-picker-react.
+ */
+export const REACTION_EMOJIS: string[] = [
+    "1f44d",
+    "2764-fe0f",
+    "1f389",
+    "1f680",
+    "1f440",
+    "1f602",
+    "1f64f",
+    "1f525",
+];

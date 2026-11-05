@@ -24,6 +24,8 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
 
     const fileRef = useRef<HTMLInputElement | null>(null);
     const editorRef = useRef<HTMLDivElement | null>(null);
+    const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
+    const savedRangeRef = useRef<Range | null>(null);
 
     /**
      * Gestion des fichiers sélectionnés
@@ -127,15 +129,51 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
     };
 
     /**
-     * Ajouter un emoji
+     * Mémoriser la position du curseur dans l'éditeur.
+     *
+     * Le sélecteur d'emojis contient un champ de recherche : ouvrir le
+     * sélecteur fait perdre le focus et la sélection courante. On conserve
+     * donc le dernier Range connu pour réinsérer l'emoji exactement à cet
+     * endroit.
+     */
+    const saveSelection = () => {
+        const selection = window.getSelection();
+
+        if (!selection || selection.rangeCount === 0) return;
+
+        const range = selection.getRangeAt(0);
+
+        if (editorRef.current?.contains(range.commonAncestorContainer)) {
+            savedRangeRef.current = range.cloneRange();
+        }
+    };
+
+    /**
+     * Restaurer la dernière position du curseur mémorisée.
+     */
+    const restoreSelection = () => {
+        if (!savedRangeRef.current) return;
+
+        const selection = window.getSelection();
+
+        if (!selection) return;
+
+        selection.removeAllRanges();
+        selection.addRange(savedRangeRef.current);
+    };
+
+    /**
+     * Ajouter un emoji à la position du curseur
      */
     const addEmoji = (emoji: string) => {
         if (!editorRef.current) return;
 
         editorRef.current.focus();
+        restoreSelection();
         document.execCommand("insertText", false, emoji);
         setContent(editorRef.current.innerHTML);
-        setShowEmoji(false);
+        saveSelection();
+        setShowMention(false);
     };
 
     /**
@@ -218,7 +256,7 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
                 </div>
 
                 {/* TEXT EDITOR */}
-                <div ref={editorRef} contentEditable={!sending} suppressContentEditableWarning onInput={(event) => setContent(event.currentTarget.innerHTML)} onKeyDown={keyDown} data-placeholder="Écrire un message..." className="block min-h-[80px] w-full overflow-y-auto px-4 py-3 text-sm text-gray-800 outline-none empty:before:text-primary/40 empty:before:content-[attr(data-placeholder)]" role="textbox" aria-multiline="true" />
+                <div ref={editorRef} contentEditable={!sending} suppressContentEditableWarning onInput={(event) => { setContent(event.currentTarget.innerHTML); saveSelection(); }} onKeyUp={saveSelection} onMouseUp={saveSelection} onBlur={saveSelection} onKeyDown={keyDown} data-placeholder="Écrire un message..." className="block min-h-[80px] w-full overflow-y-auto px-4 py-3 text-sm text-gray-800 outline-none empty:before:text-primary/40 empty:before:content-[attr(data-placeholder)]" role="textbox" aria-multiline="true" />
 
                 {/* BOTTOM ACTIONS */}
                 <div className="flex items-center justify-between px-3 pb-3">
@@ -236,7 +274,7 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
                         </Allow>
 
                         {/* EMOJI */}
-                        <button type="button" title="Emoji" onClick={() => { setShowEmoji((value) => !value); setShowMention(false); }} disabled={sending} className="flex h-8 w-8 items-center justify-center rounded-full text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary disabled:opacity-40">
+                        <button ref={emojiButtonRef} type="button" title="Emoji" aria-expanded={showEmoji} aria-haspopup="dialog" onClick={() => { setShowEmoji((value) => !value); setShowMention(false); }} disabled={sending} className="flex h-8 w-8 items-center justify-center rounded-full text-primary/60 transition-colors hover:bg-secondary/60 hover:text-primary disabled:opacity-40">
                             <Smile size={18} />
                         </button>
 
@@ -246,7 +284,12 @@ const MessageComposer = ({ users, replyMessage, onCancelReply, onSend }: Props) 
                         </button>
 
                         {/* EMOJI PICKER */}
-                        {showEmoji && <EmojiPicker onSelect={addEmoji} />}
+                        <EmojiPicker
+                            open={showEmoji}
+                            anchorRef={emojiButtonRef}
+                            onSelect={addEmoji}
+                            onClose={() => setShowEmoji(false)}
+                        />
 
                         {/* MENTION PICKER */}
                         {showMention && <MentionPicker users={users} onSelect={addMention} />}

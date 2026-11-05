@@ -8,15 +8,19 @@ import { commentService } from "@/services/comment/comment.service";
 function FilePreviewModal({
     onClose,
     attachmentPath,
+    src,
     attachmentName,
     attachmentContentType,
 }: {
     onClose: () => void;
-    attachmentPath: string;
+    /** Chemin d'une pièce jointe de commentaire (résolu via commentService). */
+    attachmentPath?: string;
+    /** URL directe à afficher (ex. URL blob d'une pièce jointe de tâche) : prioritaire sur attachmentPath. */
+    src?: string;
     attachmentName: string;
     attachmentContentType: string | null;
 }) {
-    const viewUrl = commentService.getAttachmentUrl(attachmentPath);
+    const viewUrl = src ?? commentService.getAttachmentUrl(attachmentPath ?? "");
     const isPdf = attachmentContentType === "application/pdf";
     const [scale, setScale] = useState(1);
     const [fit, setFit] = useState(true);
