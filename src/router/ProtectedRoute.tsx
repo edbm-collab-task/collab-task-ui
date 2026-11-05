@@ -69,6 +69,20 @@ export default function ProtectedRoute({ children }: Props) {
     }
 
 
+    /**
+     * Un compte créé par un administrateur reçoit un mot de passe temporaire :
+     * tant qu'il n'a pas été changé, toute navigation est redirigée vers la
+     * page dédiée. Cette page reste accessible pour permettre le changement.
+     */
+    const isPasswordChangeRoute = location.pathname === "/admin/users/change-pwd";
+
+    if (user.firstLogin && !isPasswordChangeRoute) {
+
+        return <Navigate to="/admin/users/change-pwd" replace />;
+
+    }
+
+
     return children;
 
 }

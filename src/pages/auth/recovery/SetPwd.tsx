@@ -11,10 +11,12 @@ import toast from "react-hot-toast";
 import { BackButton } from "@/components/common/BackButton";
 
 export default function ChangePwdPage() {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const [email, setEmail] = useState<string | null>(null);
     const [step, setStep] = useState(1);
     const navigate = useNavigate();
+
+    const firstLogin = user?.firstLogin === true;
 
     useEffect(() => {
         if (user?.email) {
@@ -34,7 +36,15 @@ export default function ChangePwdPage() {
 
         try {
             await authService.recovery(email, data);
-            navigate("/admin/users/profile");
+
+            // Recharge la session : le backend vient de repasser firstLogin à
+            // false, ce qui lève le blocage de ProtectedRoute.
+            await refreshUser();
+
+            navigate(
+                firstLogin ? "/admin" : "/admin/users/profile",
+                { replace: true }
+            );
             setTimeout(() => toast.success("Mot de passe modifié avec succès"));
         } catch (error) {
             console.error(error);
@@ -56,7 +66,7 @@ export default function ChangePwdPage() {
             <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl md:grid-cols-2">
                 
                     {
-                        step == 1 &&
+                        step == 1 && !firstLogin &&
                         <div className="m-2 absolute">
                             <BackButton/>
                         </div>
@@ -117,22 +127,35 @@ export default function ChangePwdPage() {
                         {step === 1 && (
                             <div className="space-y-4">
 
-                                <div className="text-center">
+                                {
+                                    !firstLogin &&
+                                    <div className="text-center">
 
-                                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15">
-                                        <LockKeyhole className="h-6 w-6 text-accent" />
+                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15">
+                                            <LockKeyhole className="h-6 w-6 text-accent" />
+                                        </div>
+
+                                            <h2 className="text-xl font-bold text-primary">
+                                                    Gestion du mot de passe
+                                                </h2>
+
+                                                <p className="mt-2 text-sm leading-5 text-gray-500">
+                                                    Vous allez modifier le mot de passe de votre compte.
+                                                    Choisissez un mot de passe unique et sécurisé.
+                                                </p>
+
                                     </div>
+                                    }
 
-                                    <h2 className="text-xl font-bold text-primary">
-                                        Gestion du mot de passe
-                                    </h2>
-
-                                    <p className="mt-2 text-sm leading-5 text-gray-500">
-                                        Vous allez modifier le mot de passe de votre compte.
-                                        Choisissez un mot de passe unique et sécurisé.
-                                    </p>
-
-                                </div>
+                                {firstLogin && (
+                                    <div className="rounded-xl p-3 text-sm leading-5">
+                                        <p className="font-semibold text-primary text-center text-lg">Première connexion</p>
+                                        <p className="mt-1">
+                                            Vous devez changer le mot de passe temporaire reçu par email
+                                            avant de pouvoir accéder à l'application.
+                                        </p>
+                                    </div>
+                                )}
 
                                 <div className="rounded-xl border border-secondary/60 p-3">
 

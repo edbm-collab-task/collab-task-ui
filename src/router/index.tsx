@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import NotFoundPage from "@/pages/NotFoundPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -7,6 +7,7 @@ import RecoveryPage from "@/pages/auth/recovery/RecoveryPage";
 import VerificationPage from "@/pages/auth/verification/VerificationPage";
 import SearchUserPage from "@/pages/user/SearchUserPage";
 import RecoveryProtectedRoute from "@/router/RecoveryProtectedRoute";
+import RecoveryAuthProvider from "@/contexts/RecoveryAuthProvider";
 import AdminLayout from "@/components/admin/AdminLayout";
 import CreateUserPage from "@/pages/admin/user/CreateUserPage";
 import UserListPage from "@/pages/admin/user/UserListPage";
@@ -101,11 +102,15 @@ export default function Router() {
 
             </Route>
 
-            {/* Recovery */}
-            <Route path="/information-personnelle" element={<RecoveryProtectedRoute><RecoveryPage /></RecoveryProtectedRoute>} />
+            {/* Recovery / vérification : le provider n'est monté que sur ces
+                routes pour éviter un appel /auth/recovery/me (401) ailleurs. */}
+            <Route element={<RecoveryAuthProvider><Outlet /></RecoveryAuthProvider>}>
 
-            {/* Verification */}
-            <Route path="/verification" element={<RecoveryProtectedRoute><VerificationPage /></RecoveryProtectedRoute>} />
+                <Route path="/information-personnelle" element={<RecoveryProtectedRoute><RecoveryPage /></RecoveryProtectedRoute>} />
+
+                <Route path="/verification" element={<RecoveryProtectedRoute><VerificationPage /></RecoveryProtectedRoute>} />
+
+            </Route>
 
 
             {/*Search User */}
