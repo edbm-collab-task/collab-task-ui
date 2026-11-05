@@ -1,18 +1,25 @@
-import {Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import GlobalForms from "@/components/Form/GlobalForm";
 import type { UserLoginReq } from "@/types/user";
-import { authService } from "@/services/auth/auth.service";
 import { loginFormFields } from "@/components/user/auth/loginForm";
+import useAuth from "@/hooks/useAuth";
 import Logo from "@/assets/logo.png";
 import toast from "react-hot-toast";
 
 
 export default function LoginPage() {
 
+    const navigate = useNavigate();
+    const { login } = useAuth();
+
     const handleLogin = async (data: UserLoginReq) => {
         try {
-            await authService.login(data);
-            window.location.replace("/admin");
+            const response = await login(data);
+
+            navigate(
+                response.firstLogin ? "/admin/users/change-pwd" : "/admin",
+                { replace: true }
+            );
         } catch (error) {
             console.error("Login failed :", error);
             toast.error("Veuillez vérifier vos identifiants.");

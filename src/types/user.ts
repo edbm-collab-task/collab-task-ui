@@ -150,6 +150,12 @@ export interface UserLoginRes {
   permissions: PermissionSummary[];
   accessToken?: string;
   refreshToken?: string;
+  /**
+   * Vrai lorsque le compte vient d'être créé par un administrateur et que le
+   * mot de passe temporaire n'a pas encore été changé. Le front force alors la
+   * redirection vers la page de changement de mot de passe.
+   */
+  firstLogin: boolean;
 }
 
 export interface RegisterForm extends UserRequest {

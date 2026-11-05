@@ -36,6 +36,9 @@ export default function RecoveryAuthProvider({ children }: Props) {
 
     }
 
+    // Le provider n'est monté que sur les routes de récupération (voir le
+    // routeur) : sur /login ou dans l'admin, aucun appel /auth/recovery/me
+    // n'est donc émis.
     useEffect(() => {
 
         refreshRecovery();

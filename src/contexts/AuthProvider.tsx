@@ -36,6 +36,13 @@ export default function AuthProvider({children}: Props) {
 
     const userRef = useRef<UserLoginRes | null>(null);
 
+    /**
+     * Version de session : incrémentée à chaque login/logout.
+     * Permet d'ignorer une réponse de `refreshUser()` lancée avant le login
+     * (hydratation initiale) qui écraserait sinon la session fraîchement créée.
+     */
+    const sessionVersionRef = useRef(0);
+
 
     useEffect(()=>{
 
@@ -53,9 +60,17 @@ export default function AuthProvider({children}: Props) {
      */
     async function refreshUser(options?: {resync?: boolean}): Promise<UserLoginRes | null>{
 
+        const versionAtStart = sessionVersionRef.current;
+
         try {
 
             const response = await authService.me();
+
+            // Un login/logout a eu lieu pendant la requête : la réponse est
+            // obsolète et ne doit pas écraser la session courante.
+            if (versionAtStart !== sessionVersionRef.current) {
+                return userRef.current;
+            }
 
             setUser(response);
 
@@ -64,6 +79,10 @@ export default function AuthProvider({children}: Props) {
         }
         catch{
 
+            if (versionAtStart !== sessionVersionRef.current) {
+                return userRef.current;
+            }
+
             if (!options?.resync) setUser(null);
 
             return null;
@@ -71,7 +90,9 @@ export default function AuthProvider({children}: Props) {
         }
         finally{
 
-            setLoading(false);
+            if (versionAtStart === sessionVersionRef.current) {
+                setLoading(false);
+            }
 
         }
 
@@ -81,8 +102,15 @@ export default function AuthProvider({children}: Props) {
     async function login(data: UserLoginReq): Promise<UserLoginRes>{
 
         const response = await authService.login(data);
-       
+
+        // Invalide les éventuelles hydratations encore en cours.
+        sessionVersionRef.current += 1;
+
         setUser(response);
+
+        // La session est établie : ProtectedRoute n'a plus de raison d'attendre
+        // la fin de l'hydratation initiale pour afficher la page de destination.
+        setLoading(false);
 
         return response;
 
@@ -98,7 +126,10 @@ export default function AuthProvider({children}: Props) {
         }
         finally {
 
+            sessionVersionRef.current += 1;
+
             setUser(null);
+            setLoading(false);
 
         }
 
