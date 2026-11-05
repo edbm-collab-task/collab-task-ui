@@ -1,3 +1,4 @@
+@layer epr, theme, base, components, utilities;
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @theme{
@@ -40,4 +41,22 @@
 
 body {
     font-family: var(--font-sans);
+}
+
+/*
+ * Sélecteur d'emojis (emoji-picker-react) : alignement sur la palette de
+ * l'application. La couche « epr » est déclarée en tête de fichier pour que
+ * les utilitaires Tailwind puissent la surcharger sans conflit.
+ */
+.collab-emoji-picker {
+    --epr-bg-color: #ffffff;
+    --epr-category-label-bg-color: #ffffffcc;
+    --epr-text-color: var(--color-primary);
+    --epr-highlight-color: var(--color-accent);
+    --epr-hover-bg-color: var(--color-secondary);
+    --epr-focus-bg-color: var(--color-secondary);
+    --epr-picker-border-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    --epr-search-input-bg-color: var(--color-bg);
+    --epr-search-input-bg-color-active: #ffffff;
+    --epr-emoji-size: 24px;
 }

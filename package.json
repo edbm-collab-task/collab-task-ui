@@ -16,6 +16,7 @@
     "axios": "^1.18.1",
     "chart.js": "^4.5.1",
     "dompurify": "^3.4.14",
+    "emoji-picker-react": "^5.1.4",
     "lucide-react": "^1.26.0",
     "react": "^19.2.7",
     "react-chartjs-2": "^5.3.1",
