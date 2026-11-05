@@ -33,7 +33,7 @@ interface ConfirmState {
 }
 
 // Mêmes types de fichiers acceptés que l'onglet « Pièces jointes » de TaskModal.
-const ACCEPTED_FILES = ".pdf,.doc,.docx,.xls,.xlsx,.csv";
+const ACCEPTED_FILES = ".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*";
 
 // Seuls les images et les PDF peuvent être affichés par FilePreviewModal.
 const canPreview = (contentType: string) =>

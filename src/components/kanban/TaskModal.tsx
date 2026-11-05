@@ -315,7 +315,7 @@ export default function TaskModal({
     const openFilePicker = () => {
         const input = document.createElement("input");
         input.type = "file";
-        input.accept = ".pdf,.doc,.docx,.xls,.xlsx,.csv";
+        input.accept = ".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*";
         input.onchange = (e) => {
             const file = (e.target as HTMLInputElement).files?.[0];
             if (file) handleFileUpload(file);
