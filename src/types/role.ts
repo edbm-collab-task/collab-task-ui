@@ -18,6 +18,11 @@ export interface Role {
     id: number;
     name: string;
     codeRole: string;
+    /**
+     * Rang hiérarchique exposé par l'API (1 = SUPER_ADMIN, 2 = ADMIN,
+     * 3 = tous les autres). Optionnel pour tolérer une API non migrée.
+     */
+    sortOrder?: number;
     /** Permissions du rôle, exposées dans leur forme complète par l'API. */
     permissions: Permission[];
 }
