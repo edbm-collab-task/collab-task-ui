@@ -4,12 +4,15 @@ import Spinner from "@/components/common/Spinner";
 import { userService } from "@/services/user/user.service";
 import { roleService } from "@/services/role/role.service";
 import { getRoleLabel } from "@/constants/roleLabels";
+import useAuth from "@/hooks/useAuth";
+import { getAssignableRoles } from "@/utils/roleHierarchy";
 import { useLocation, useNavigate } from "react-router";
 import type { UserResponse } from "@/types/user";
 
 export default function EditUserRolePage() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { user: currentUser } = useAuth();
     const [roles, setRoles] = useState<{ label: string; value: string }[]>([]);
     const [user, setUser] = useState<UserResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -24,16 +27,21 @@ export default function EditUserRolePage() {
 
         const loadData = async () => {
             try {
-                const [allRoles, currentUser] = await Promise.all([
+                const [allRoles, targetUser] = await Promise.all([
                     roleService.getAll(),
                     userService.getByEmail({ email })
                 ]);
 
-                setRoles(allRoles.map(r => ({
+                // On ne propose que les rôles que le backend accepterait :
+                // rang strictement supérieur à celui de l'appelant, sauf
+                // SUPER_ADMIN qui court-circuite la règle.
+                const assignableRoles = getAssignableRoles(allRoles, currentUser?.role);
+
+                setRoles(assignableRoles.map(r => ({
                     label: getRoleLabel(r.codeRole, r.name),
                     value: r.codeRole
                 })));
-                setUser(currentUser);
+                setUser(targetUser);
             } catch (error) {
                 console.error("Erreur chargement du rôle:", error);
             } finally {
@@ -42,7 +50,7 @@ export default function EditUserRolePage() {
         };
 
         loadData();
-    }, [email]);
+    }, [email, currentUser?.role]);
 
     const handleEdit = async (data: { role: string }) => {
         try {
@@ -90,13 +98,12 @@ export default function EditUserRolePage() {
                         name: "role",
                         label: "Rôle",
                         type: "select",
-                        options: roles.length > 0
-                            ? roles
-                            : [
-                                { label: "Utilisateur", value: "U1S" },
-                                { label: "Administrateur", value: "A1D" },
-                                { label: "Super Administrateur", value: "S1ADM" }
-                            ],
+                        // Fail-closed : aucun fallback codé en dur, sinon on
+                        // reproposerait des rôles refusés par le backend.
+                        options: roles,
+                        description: roles.length === 0
+                            ? "Aucun rôle attribuable avec vos droits."
+                            : undefined,
                         validation: {
                             required: "Le rôle est requis"
                         }
